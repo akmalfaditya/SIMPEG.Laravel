@@ -1,0 +1,326 @@
+@extends('layouts.app')
+@section('title', 'Detail Pegawai')
+@section('header', 'Detail Pegawai')
+
+@section('content')
+<div class="space-y-6">
+    {{-- Header Card --}}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex items-start justify-between flex-wrap gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">{{ $pegawai->nama_lengkap }}</h3>
+                <p class="text-sm text-slate-500 font-mono mt-1">NIP: {{ $pegawai->nip }}</p>
+                <div class="flex gap-4 mt-3 text-sm text-slate-600 flex-wrap">
+                    <span><strong>Golongan:</strong> {{ $pegawai->pangkat_terakhir ?? '-' }}</span>
+                    <span><strong>Jabatan:</strong> {{ $pegawai->jabatan_terakhir ?? '-' }}</span>
+                    <span><strong>Masa Kerja:</strong> {{ $pegawai->masa_kerja }}</span>
+                    <span><strong>Unit Kerja:</strong> {{ $pegawai->unit_kerja ?? '-' }}</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('pegawai.edit', $pegawai) }}" class="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">Edit</a>
+                <form method="POST" action="{{ route('pegawai.destroy', $pegawai) }}" onsubmit="return confirm('Yakin hapus data ini?')">
+                    @csrf @method('DELETE')
+                    <button class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Data Pribadi --}}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h4 class="text-sm font-semibold text-slate-700 mb-4">Data Pribadi</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div><p class="text-slate-400 text-xs">Tempat Lahir</p><p class="text-slate-700 font-medium">{{ $pegawai->tempat_lahir ?? '-' }}</p></div>
+            <div><p class="text-slate-400 text-xs">Tanggal Lahir</p><p class="text-slate-700 font-medium">{{ $pegawai->tanggal_lahir->format('d/m/Y') }}</p></div>
+            <div><p class="text-slate-400 text-xs">Jenis Kelamin</p><p class="text-slate-700 font-medium">{{ $pegawai->jenis_kelamin->label() }}</p></div>
+            <div><p class="text-slate-400 text-xs">Agama</p><p class="text-slate-700 font-medium">{{ $pegawai->agama->label() }}</p></div>
+            <div><p class="text-slate-400 text-xs">Status Pernikahan</p><p class="text-slate-700 font-medium">{{ $pegawai->status_pernikahan->label() }}</p></div>
+            <div><p class="text-slate-400 text-xs">Golongan Darah</p><p class="text-slate-700 font-medium">{{ $pegawai->golongan_darah->label() }}</p></div>
+            <div><p class="text-slate-400 text-xs">Email</p><p class="text-slate-700 font-medium">{{ $pegawai->email ?? '-' }}</p></div>
+            <div><p class="text-slate-400 text-xs">No Telepon</p><p class="text-slate-700 font-medium">{{ $pegawai->no_telepon ?? '-' }}</p></div>
+            <div class="col-span-2"><p class="text-slate-400 text-xs">Alamat</p><p class="text-slate-700 font-medium">{{ $pegawai->alamat ?? '-' }}</p></div>
+            <div><p class="text-slate-400 text-xs">TMT CPNS</p><p class="text-slate-700 font-medium">{{ $pegawai->tmt_cpns->format('d/m/Y') }}</p></div>
+            <div><p class="text-slate-400 text-xs">TMT PNS</p><p class="text-slate-700 font-medium">{{ $pegawai->tmt_pns?->format('d/m/Y') ?? '-' }}</p></div>
+            <div><p class="text-slate-400 text-xs">Gaji Pokok</p><p class="text-slate-700 font-medium">Rp {{ number_format($pegawai->gaji_pokok, 0, ',', '.') }}</p></div>
+            <div><p class="text-slate-400 text-xs">NPWP</p><p class="text-slate-700 font-medium">{{ $pegawai->npwp ?? '-' }}</p></div>
+        </div>
+    </div>
+
+    {{-- Tabs for Riwayat --}}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
+            @foreach(['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP'] as $key => $label)
+            <button onclick="showTab('{{ $key }}')" class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}" data-tab="{{ $key }}">{{ $label }}</button>
+            @endforeach
+        </div>
+
+        {{-- Pangkat --}}
+        <div class="tab-content p-5" id="tab-pangkat">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.pangkat.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Golongan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tgl SK</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatPangkat->sortByDesc('tmt_pangkat') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->golongan_ruang->label() }}</td>
+                        <td class="px-3 py-2">{{ $r->nomor_sk }}</td>
+                        <td class="px-3 py-2">{{ $r->tmt_pangkat->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">{{ $r->tanggal_sk->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.pangkat.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.pangkat.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Jabatan --}}
+        <div class="tab-content p-5 hidden" id="tab-jabatan">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.jabatan.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jabatan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatJabatan->sortByDesc('tmt_jabatan') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->jabatan->nama_jabatan ?? '-' }}</td>
+                        <td class="px-3 py-2">{{ $r->nomor_sk }}</td>
+                        <td class="px-3 py-2">{{ $r->tmt_jabatan->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.jabatan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.jabatan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- KGB --}}
+        <div class="tab-content p-5 hidden" id="tab-kgb">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.kgb.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Gaji Lama</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Gaji Baru</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatKgb->sortByDesc('tmt_kgb') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->nomor_sk }}</td>
+                        <td class="px-3 py-2">{{ $r->tmt_kgb->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">Rp {{ number_format($r->gaji_lama, 0, ',', '.') }}</td>
+                        <td class="px-3 py-2">Rp {{ number_format($r->gaji_baru, 0, ',', '.') }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.kgb.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.kgb.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Hukuman --}}
+        <div class="tab-content p-5 hidden" id="tab-hukuman">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.hukuman.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tingkat</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jenis</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatHukumanDisiplin->sortByDesc('tmt_hukuman') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">
+                            <span class="px-2 py-0.5 text-xs rounded-full {{ $r->tingkat_hukuman == \App\Enums\TingkatHukuman::Berat ? 'bg-red-100 text-red-700' : ($r->tingkat_hukuman == \App\Enums\TingkatHukuman::Sedang ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ $r->tingkat_hukuman->label() }}</span>
+                        </td>
+                        <td class="px-3 py-2">{{ $r->jenis_hukuman }}</td>
+                        <td class="px-3 py-2">{{ $r->tmt_hukuman->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.hukuman.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.hukuman.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pendidikan --}}
+        <div class="tab-content p-5 hidden" id="tab-pendidikan">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.pendidikan.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tingkat</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Institusi</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jurusan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Lulus</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatPendidikan->sortByDesc('tahun_lulus') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->tingkat_pendidikan }}</td>
+                        <td class="px-3 py-2">{{ $r->institusi }}</td>
+                        <td class="px-3 py-2">{{ $r->jurusan }}</td>
+                        <td class="px-3 py-2">{{ $r->tahun_lulus }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.pendidikan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.pendidikan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Latihan --}}
+        <div class="tab-content p-5 hidden" id="tab-latihan">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.latihan.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Nama Latihan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tahun</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jam</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Penyelenggara</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatLatihanJabatan->sortByDesc('tahun_pelaksanaan') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->nama_latihan }}</td>
+                        <td class="px-3 py-2">{{ $r->tahun_pelaksanaan }}</td>
+                        <td class="px-3 py-2">{{ $r->jumlah_jam }}</td>
+                        <td class="px-3 py-2">{{ $r->penyelenggara }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.latihan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.latihan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- SKP --}}
+        <div class="tab-content p-5 hidden" id="tab-skp">
+            <div class="flex justify-end mb-3"><a href="{{ route('riwayat.skp.create', $pegawai->id) }}" class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tahun</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Nilai SKP</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->penilaianKinerja->sortByDesc('tahun') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->tahun }}</td>
+                        <td class="px-3 py-2">
+                            <span class="px-2 py-0.5 text-xs rounded-full {{ $r->nilai_skp === 'Sangat Baik' ? 'bg-emerald-100 text-emerald-700' : ($r->nilai_skp === 'Baik' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700') }}">{{ $r->nilai_skp }}</span>
+                        </td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('riwayat.skp.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('riwayat.skp.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="3" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-blue-600', 'text-blue-600'); el.classList.add('border-transparent', 'text-slate-500'); });
+    document.getElementById('tab-' + name).classList.remove('hidden');
+    document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('border-blue-600', 'text-blue-600');
+    document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.remove('border-transparent', 'text-slate-500');
+}
+</script>
+@endpush
