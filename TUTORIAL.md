@@ -12,11 +12,14 @@ Panduan lengkap untuk membuat Sistem Informasi Manajemen Pegawai (SIMPEG) menggu
 4. [Membuat Database Migration](#4-membuat-database-migration)
 5. [Membuat Eloquent Model](#5-membuat-eloquent-model)
 6. [Membuat Database Seeder](#6-membuat-database-seeder)
-7. [Membuat Service Layer (Business Logic)](#7-membuat-service-layer-business-logic)
-8. [Membuat Controller](#8-membuat-controller)
-9. [Mendefinisikan Routes](#9-mendefinisikan-routes)
-10. [Membuat Views (Blade + Tailwind)](#10-membuat-views-blade--tailwind)
-11. [Build & Menjalankan Aplikasi](#11-build--menjalankan-aplikasi)
+7. [Membuat FormRequest (Validasi)](#7-membuat-formrequest-validasi)
+8. [Membuat DTO (Data Transfer Object)](#8-membuat-dto-data-transfer-object)
+9. [Membuat Service Layer (Business Logic)](#9-membuat-service-layer-business-logic)
+10. [Membuat API Resource](#10-membuat-api-resource)
+11. [Membuat Controller](#11-membuat-controller)
+12. [Mendefinisikan Routes](#12-mendefinisikan-routes)
+13. [Membuat Views (Blade + Tailwind)](#13-membuat-views-blade--tailwind)
+14. [Build & Menjalankan Aplikasi](#14-build--menjalankan-aplikasi)
 
 ---
 
@@ -800,21 +803,180 @@ class DatabaseSeeder extends Seeder
 
 ---
 
-## 7. Membuat Service Layer (Business Logic)
+## 7. Membuat FormRequest (Validasi)
 
-Buat folder `app/Services/` dan buat 7 service class:
+> **Prinsip:** Controller **tidak boleh** mengandung rule validasi secara langsung (`$request->validate([...])`). Semua validasi dipindahkan ke FormRequest class.
 
-### 7.1 PegawaiService
+Buat folder `app/Http/Requests/` beserta sub-folder `Riwayat/` dan `Auth/`.
+
+### 7.1 Pegawai FormRequest
+
+**`app/Http/Requests/StorePegawaiRequest.php`**:
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StorePegawaiRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+
+    public function rules(): array
+    {
+        return [
+            'nip' => 'required|string|unique:pegawais,nip',
+            'nama_lengkap' => 'required|string|max:255',
+            'tempat_lahir' => 'nullable|string',
+            'tanggal_lahir' => 'required|date',
+            'jenis_kelamin' => 'required|integer',
+            // ... field lainnya
+        ];
+    }
+}
+```
+
+**`app/Http/Requests/UpdatePegawaiRequest.php`** — sama tetapi NIP unique rule meng-exclude record saat ini:
+```php
+'nip' => 'required|string|unique:pegawais,nip,' . $this->route('pegawai')->id,
+```
+
+### 7.2 Riwayat FormRequest
+
+Buat Store/Update pair untuk setiap tipe riwayat di `app/Http/Requests/Riwayat/`:
+
+| File | Untuk |
+|---|---|
+| `StorePangkatRequest` / `UpdatePangkatRequest` | Riwayat Pangkat |
+| `StoreJabatanRequest` / `UpdateJabatanRequest` | Riwayat Jabatan |
+| `StoreKGBRequest` / `UpdateKGBRequest` | Riwayat KGB |
+| `StoreHukumanRequest` / `UpdateHukumanRequest` | Riwayat Hukuman Disiplin |
+| `StorePendidikanRequest` / `UpdatePendidikanRequest` | Riwayat Pendidikan |
+| `StoreLatihanRequest` / `UpdateLatihanRequest` | Riwayat Latihan Jabatan |
+| `StoreSKPRequest` / `UpdateSKPRequest` | Penilaian Kinerja (SKP) |
+
+> **Pola:** Store request memiliki `'pegawai_id' => 'required|exists:pegawais,id'`, Update request tidak karena pegawai_id sudah ada di model.
+
+### 7.3 Auth FormRequest
+
+**`app/Http/Requests/Auth/LoginRequest.php`**:
+```php
+public function rules(): array
+{
+    return [
+        'email' => 'required|email',
+        'password' => 'required',
+    ];
+}
+```
+
+---
+
+## 8. Membuat DTO (Data Transfer Object)
+
+> **Prinsip:** Jangan pass associative array (`$validated`) dari Controller ke Service. Gunakan class DTO yang strongly-typed.
+
+Buat folder `app/DTOs/` dan `app/DTOs/Riwayat/`.
+
+### 8.1 PegawaiDTO
+
+**`app/DTOs/PegawaiDTO.php`**:
+
+```php
+<?php
+
+namespace App\DTOs;
+
+class PegawaiDTO
+{
+    public function __construct(
+        public readonly string $nip,
+        public readonly string $namaLengkap,
+        public readonly ?string $tempatLahir,
+        public readonly string $tanggalLahir,
+        public readonly int $jenisKelamin,
+        // ... field lainnya
+        public readonly bool $isActive = true,
+    ) {}
+
+    public static function fromRequest(array $validated): self
+    {
+        return new self(
+            nip: $validated['nip'],
+            namaLengkap: $validated['nama_lengkap'],
+            tempatLahir: $validated['tempat_lahir'] ?? null,
+            tanggalLahir: $validated['tanggal_lahir'],
+            jenisKelamin: (int) $validated['jenis_kelamin'],
+            // ...
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'nip' => $this->nip,
+            'nama_lengkap' => $this->namaLengkap,
+            // ...
+        ];
+    }
+}
+```
+
+### 8.2 Riwayat DTOs
+
+Buat DTO untuk setiap tipe riwayat di `app/DTOs/Riwayat/`:
+
+| DTO Class | Untuk |
+|---|---|
+| `RiwayatPangkatDTO` | Riwayat Pangkat |
+| `RiwayatJabatanDTO` | Riwayat Jabatan |
+| `RiwayatKgbDTO` | Riwayat KGB |
+| `RiwayatHukumanDisiplinDTO` | Riwayat Hukuman Disiplin |
+| `RiwayatPendidikanDTO` | Riwayat Pendidikan |
+| `RiwayatLatihanJabatanDTO` | Riwayat Latihan Jabatan |
+| `PenilaianKinerjaDTO` | Penilaian Kinerja (SKP) |
+
+Setiap DTO memiliki:
+- Constructor dengan `readonly` typed properties
+- `fromRequest(array $validated): self` — factory method
+- `toArray(): array` — convert kembali ke snake_case untuk Eloquent
+
+---
+
+## 9. Membuat Service Layer (Business Logic)
+
+Buat folder `app/Services/` dan buat 9 service class:
+
+### 9.1 PegawaiService
 
 ```php
 // app/Services/PegawaiService.php
-// Berisi: getAll(), getById(), search(), create(), update(), delete()
-// - Eager loading relationships
-// - Search by NIP, nama, unit kerja
-// - Soft delete (set is_active = false, lalu delete)
+// Menerima PegawaiDTO, bukan array
+// Semua operasi dibungkus DB::transaction()
+// Berisi: getAll(), getById(), search(), create(PegawaiDTO), update(Pegawai, PegawaiDTO), delete(Pegawai)
 ```
 
-### 7.2 KGBService
+### 9.2 RiwayatService (BARU)
+
+```php
+// app/Services/RiwayatService.php
+// Menerima DTO per tipe riwayat
+// Semua operasi dibungkus DB::transaction()
+// storeKgb() juga mengupdate gaji_pokok Pegawai dalam satu transaksi
+// Berisi: store/update/delete untuk setiap tipe riwayat
+```
+
+### 9.3 JabatanService (BARU)
+
+```php
+// app/Services/JabatanService.php
+// Menghilangkan direct Eloquent call di Controller
+// Berisi: getAllOrderedByName()
+```
+
+### 9.4 KGBService
 
 ```php
 // app/Services/KGBService.php
@@ -824,7 +986,7 @@ Buat folder `app/Services/` dan buat 7 service class:
 // Berisi: getAllKGBStatus(), getUpcomingKGB(), getEligiblePegawai()
 ```
 
-### 7.3 PensiunService
+### 9.5 PensiunService
 
 ```php
 // app/Services/PensiunService.php
@@ -834,7 +996,7 @@ Buat folder `app/Services/` dan buat 7 service class:
 // Berisi: getPensiunAlerts()
 ```
 
-### 7.4 KenaikanPangkatService
+### 9.6 KenaikanPangkatService
 
 ```php
 // app/Services/KenaikanPangkatService.php
@@ -846,7 +1008,7 @@ Buat folder `app/Services/` dan buat 7 service class:
 // Berisi: getEligiblePegawai()
 ```
 
-### 7.5 SatyalencanaService
+### 9.7 SatyalencanaService
 
 ```php
 // app/Services/SatyalencanaService.php
@@ -857,7 +1019,7 @@ Buat folder `app/Services/` dan buat 7 service class:
 // Berisi: getEligibleCandidates(), getCandidatesByMilestone()
 ```
 
-### 7.6 DUKService
+### 9.8 DUKService
 
 ```php
 // app/Services/DUKService.php
@@ -871,7 +1033,7 @@ Buat folder `app/Services/` dan buat 7 service class:
 // Berisi: getDUK()
 ```
 
-### 7.7 DashboardService
+### 9.9 DashboardService
 
 ```php
 // app/Services/DashboardService.php
@@ -882,31 +1044,76 @@ Buat folder `app/Services/` dan buat 7 service class:
 
 ---
 
-## 8. Membuat Controller
+## 10. Membuat API Resource
+
+> **Prinsip:** Jangan return raw model atau array tanpa key dari controller. Gunakan API Resource untuk membentuk response yang eksplisit.
+
+**`app/Http/Resources/PegawaiResource.php`**:
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class PegawaiResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'nip' => $this->nip,
+            'nama_lengkap' => $this->nama_lengkap,
+            'pangkat_terakhir' => $this->pangkat_terakhir ?? '-',
+            'jabatan_terakhir' => $this->jabatan_terakhir ?? '-',
+            'masa_kerja' => $this->masa_kerja ?? '-',
+        ];
+    }
+}
+```
+
+Digunakan di `PegawaiController@getPaginated` untuk menggantikan mapping array manual.
+
+---
+
+## 11. Membuat Controller
 
 Buat 9 controller di `app/Http/Controllers/`:
 
 | Controller | Fungsi |
 |---|---|
-| `AuthController` | `showLogin()`, `login()`, `logout()` |
+| `AuthController` | `showLogin()`, `login(LoginRequest)`, `logout()` |
 | `DashboardController` | `index()` — inject `DashboardService` |
-| `PegawaiController` | CRUD + `getPaginated()` untuk API pagination |
-| `RiwayatController` | CRUD untuk 7 jenis riwayat (Pangkat, Jabatan, KGB, Hukuman, Pendidikan, Latihan, SKP) |
+| `PegawaiController` | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource` |
+| `RiwayatController` | CRUD untuk 7 jenis riwayat — inject `RiwayatService` dan `JabatanService`, menggunakan FormRequest + DTO per tipe |
 | `KGBController` | `index()`, `upcoming()`, `eligible()` |
 | `KenaikanPangkatController` | `index()`, `eligible()` |
 | `PensiunController` | `index()` |
 | `DUKController` | `index()` |
 | `SatyalencanaController` | `index()` dengan filter milestone |
 
-**Pola umum:**
+**Pola Controller (setelah refactor):**
+
+```
+Request masuk → FormRequest (validasi otomatis)
+              → Controller (orkestrasi saja)
+                  → DTO::fromRequest($request->validated())
+                  → Service->method($dto)   // dibungkus DB::transaction()
+                  → return redirect/view
+```
+
+**Aturan ketat:**
+- Controller **TIDAK BOLEH** mengandung `$request->validate([...])`
+- Controller **TIDAK BOLEH** memanggil Eloquent secara langsung (kecuali route model binding)
+- Magic number (page default, limit) dipindah ke `private const`
 - Inject service via constructor dependency injection
-- Validasi input di `store()` dan `update()`
-- Return redirect dengan flash message setelah create/update/delete
 - Pass enum `::cases()` ke view untuk form select options
 
 ---
 
-## 9. Mendefinisikan Routes
+## 12. Mendefinisikan Routes
 
 Edit `routes/web.php`:
 
@@ -942,7 +1149,7 @@ Route::middleware('auth')->group(function () {
 
 ---
 
-## 10. Membuat Views (Blade + Tailwind)
+## 13. Membuat Views (Blade + Tailwind)
 
 ### 10.1 Struktur View
 
@@ -1049,7 +1256,7 @@ function showTab(name) {
 
 ---
 
-## 11. Build & Menjalankan Aplikasi
+## 14. Build & Menjalankan Aplikasi
 
 ### Build Assets
 
@@ -1086,22 +1293,72 @@ Buka browser ke **http://localhost:8000** dan login dengan:
 ## Ringkasan Arsitektur
 
 ```
-Request → Route → Controller → Service → Model → Database
-                                   ↓
-                             View (Blade)
-                                   ↓
-                           Response (HTML)
+Request → Route → FormRequest (validasi) → Controller (orkestrasi)
+                                                ↓
+                                     DTO::fromRequest($validated)
+                                                ↓
+                                    Service (DB::transaction)
+                                                ↓
+                                       Model → Database
+                                                ↓
+                                 API Resource / View (Blade)
+                                                ↓
+                                        Response (HTML/JSON)
 ```
 
 | Layer | Tanggung Jawab |
 |---|---|
 | **Route** | URL mapping ke controller |
-| **Controller** | Validasi input, orkestrasi, return view |
-| **Service** | Business logic murni (perhitungan KGB, pensiun, dll) |
+| **FormRequest** | Validasi input & otorisasi (controller **tidak** boleh validate) |
+| **Controller** | Orkestrasi saja: menerima FormRequest, membuat DTO, memanggil Service |
+| **DTO** | Strongly-typed data contract antara Controller ↔ Service |
+| **Service** | Business logic murni, semua DML dibungkus `DB::transaction()` |
 | **Model** | Data access, relationships, computed attributes |
+| **API Resource** | Transformasi model → JSON/array response yang eksplisit |
 | **View** | Presentasi HTML dengan Tailwind CSS |
 | **Enum** | Tipe data konstan dengan label display |
 | **Seeder** | Data awal untuk testing |
+
+### Struktur Folder Baru
+
+```
+app/
+├── DTOs/
+│   ├── PegawaiDTO.php
+│   └── Riwayat/
+│       ├── RiwayatPangkatDTO.php
+│       ├── RiwayatJabatanDTO.php
+│       ├── RiwayatKgbDTO.php
+│       ├── RiwayatHukumanDisiplinDTO.php
+│       ├── RiwayatPendidikanDTO.php
+│       ├── RiwayatLatihanJabatanDTO.php
+│       └── PenilaianKinerjaDTO.php
+├── Enums/
+├── Http/
+│   ├── Controllers/
+│   ├── Requests/
+│   │   ├── StorePegawaiRequest.php
+│   │   ├── UpdatePegawaiRequest.php
+│   │   ├── Auth/
+│   │   │   └── LoginRequest.php
+│   │   └── Riwayat/
+│   │       ├── StorePangkatRequest.php
+│   │       ├── UpdatePangkatRequest.php
+│   │       └── ... (14 file total)
+│   └── Resources/
+│       └── PegawaiResource.php
+├── Models/
+└── Services/
+    ├── PegawaiService.php
+    ├── RiwayatService.php
+    ├── JabatanService.php
+    ├── KGBService.php
+    ├── PensiunService.php
+    ├── KenaikanPangkatService.php
+    ├── SatyalencanaService.php
+    ├── DUKService.php
+    └── DashboardService.php
+```
 
 ---
 
@@ -1113,10 +1370,13 @@ Request → Route → Controller → Service → Model → Database
 - [ ] Buat 4 Migration (11 tabel)
 - [ ] Buat 10 Eloquent Model dengan relationships
 - [ ] Buat 3 Seeder (User, MasterData, Pegawai)
-- [ ] Buat 7 Service class
+- [ ] Buat 17 FormRequest (2 Pegawai + 14 Riwayat + 1 Auth)
+- [ ] Buat 8 DTO (1 Pegawai + 7 Riwayat)
+- [ ] Buat 9 Service class (termasuk RiwayatService & JabatanService)
+- [ ] Buat 1 API Resource (PegawaiResource)
 - [ ] Buat 9 Controller
 - [ ] Definisikan 59 Routes
 - [ ] Buat 1 Layout + 24 Blade Views
 - [ ] Build + Test
 
-**Estimasi waktu pengerjaan:** 8-12 jam untuk programmer yang sudah familiar dengan Laravel.
+**Estimasi waktu pengerjaan:** 10-14 jam untuk programmer yang sudah familiar dengan Laravel.
