@@ -77,7 +77,7 @@ Ini akan membuat semua tabel dan mengisi data sampel:
 ### 6. Build Assets Frontend
 
 ```bash
-npm run install
+npm install
 npm run build
 ```
 
