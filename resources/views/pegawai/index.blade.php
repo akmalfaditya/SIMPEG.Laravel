@@ -53,12 +53,12 @@ function loadData() {
             }
             d.data.forEach(r => {
                 body.innerHTML += `<tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-4 py-3 font-mono text-xs text-slate-600">${r[0]}</td>
-                    <td class="px-4 py-3 font-medium text-slate-800">${r[1]}</td>
-                    <td class="px-4 py-3 text-slate-600">${r[2]}</td>
-                    <td class="px-4 py-3 text-slate-600">${r[3]}</td>
-                    <td class="px-4 py-3 text-slate-600">${r[4]}</td>
-                    <td class="px-4 py-3"><a href="/pegawai/${r[5]}" class="text-blue-600 hover:underline text-xs font-medium">Detail →</a></td>
+                    <td class="px-4 py-3 font-mono text-xs text-slate-600">${r.nip}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${r.nama_lengkap}</td>
+                    <td class="px-4 py-3 text-slate-600">${r.pangkat_terakhir}</td>
+                    <td class="px-4 py-3 text-slate-600">${r.jabatan_terakhir}</td>
+                    <td class="px-4 py-3 text-slate-600">${r.masa_kerja}</td>
+                    <td class="px-4 py-3"><a href="/pegawai/${r.id}" class="text-blue-600 hover:underline text-xs font-medium">Detail →</a></td>
                 </tr>`;
             });
             const totalPages = Math.ceil(d.total / limit);

@@ -4,19 +4,53 @@ namespace App\Http\Controllers;
 
 use App\Enums\GolonganRuang;
 use App\Enums\TingkatHukuman;
-use App\Models\Jabatan;
 use App\Models\Pegawai;
-use App\Models\PenilaianKinerja;
 use App\Models\RiwayatHukumanDisiplin;
 use App\Models\RiwayatJabatan;
 use App\Models\RiwayatKgb;
 use App\Models\RiwayatLatihanJabatan;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
-use Illuminate\Http\Request;
+use App\Models\PenilaianKinerja;
+
+use App\Services\RiwayatService;
+use App\Services\JabatanService;
+
+use App\Http\Requests\Riwayat\StorePangkatRequest;
+use App\Http\Requests\Riwayat\UpdatePangkatRequest;
+use App\DTOs\Riwayat\RiwayatPangkatDTO;
+
+use App\Http\Requests\Riwayat\StoreJabatanRequest;
+use App\Http\Requests\Riwayat\UpdateJabatanRequest;
+use App\DTOs\Riwayat\RiwayatJabatanDTO;
+
+use App\Http\Requests\Riwayat\StoreKGBRequest;
+use App\Http\Requests\Riwayat\UpdateKGBRequest;
+use App\DTOs\Riwayat\RiwayatKgbDTO;
+
+use App\Http\Requests\Riwayat\StoreHukumanRequest;
+use App\Http\Requests\Riwayat\UpdateHukumanRequest;
+use App\DTOs\Riwayat\RiwayatHukumanDisiplinDTO;
+
+use App\Http\Requests\Riwayat\StorePendidikanRequest;
+use App\Http\Requests\Riwayat\UpdatePendidikanRequest;
+use App\DTOs\Riwayat\RiwayatPendidikanDTO;
+
+use App\Http\Requests\Riwayat\StoreLatihanRequest;
+use App\Http\Requests\Riwayat\UpdateLatihanRequest;
+use App\DTOs\Riwayat\RiwayatLatihanJabatanDTO;
+
+use App\Http\Requests\Riwayat\StoreSKPRequest;
+use App\Http\Requests\Riwayat\UpdateSKPRequest;
+use App\DTOs\Riwayat\PenilaianKinerjaDTO;
 
 class RiwayatController extends Controller
 {
+    public function __construct(
+        private RiwayatService $service,
+        private JabatanService $jabatanService,
+    ) {}
+
     // --- PANGKAT ---
     public function createPangkat(int $pegawaiId)
     {
@@ -26,19 +60,11 @@ class RiwayatController extends Controller
         ]);
     }
 
-    public function storePangkat(Request $request)
+    public function storePangkat(StorePangkatRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'golongan_ruang' => 'required|integer',
-            'nomor_sk' => 'nullable|string',
-            'tmt_pangkat' => 'required|date',
-            'tanggal_sk' => 'required|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        RiwayatPangkat::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat Pangkat berhasil ditambahkan.');
+        $dto = RiwayatPangkatDTO::fromRequest($request->validated());
+        $this->service->storePangkat($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pangkat berhasil ditambahkan.');
     }
 
     public function editPangkat(RiwayatPangkat $riwayatPangkat)
@@ -49,24 +75,17 @@ class RiwayatController extends Controller
         ]);
     }
 
-    public function updatePangkat(Request $request, RiwayatPangkat $riwayatPangkat)
+    public function updatePangkat(UpdatePangkatRequest $request, RiwayatPangkat $riwayatPangkat)
     {
-        $validated = $request->validate([
-            'golongan_ruang' => 'required|integer',
-            'nomor_sk' => 'nullable|string',
-            'tmt_pangkat' => 'required|date',
-            'tanggal_sk' => 'required|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        $riwayatPangkat->update($validated);
+        $dto = RiwayatPangkatDTO::fromRequest($request->validated());
+        $this->service->updatePangkat($riwayatPangkat, $dto);
         return redirect()->route('pegawai.show', $riwayatPangkat->pegawai_id)->with('success', 'Riwayat Pangkat berhasil diperbarui.');
     }
 
     public function destroyPangkat(RiwayatPangkat $riwayatPangkat)
     {
         $pegawaiId = $riwayatPangkat->pegawai_id;
-        $riwayatPangkat->delete();
+        $this->service->deletePangkat($riwayatPangkat);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -75,51 +94,36 @@ class RiwayatController extends Controller
     {
         return view('riwayat.create-jabatan', [
             'pegawaiId' => $pegawaiId,
-            'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
+            'jabatanOptions' => $this->jabatanService->getAllOrderedByName(),
         ]);
     }
 
-    public function storeJabatan(Request $request)
+    public function storeJabatan(StoreJabatanRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'jabatan_id' => 'required|exists:jabatans,id',
-            'nomor_sk' => 'nullable|string',
-            'tmt_jabatan' => 'required|date',
-            'tanggal_sk' => 'required|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        RiwayatJabatan::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat Jabatan berhasil ditambahkan.');
+        $dto = RiwayatJabatanDTO::fromRequest($request->validated());
+        $this->service->storeJabatan($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Jabatan berhasil ditambahkan.');
     }
 
     public function editJabatan(RiwayatJabatan $riwayatJabatan)
     {
         return view('riwayat.edit-jabatan', [
             'riwayat' => $riwayatJabatan,
-            'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
+            'jabatanOptions' => $this->jabatanService->getAllOrderedByName(),
         ]);
     }
 
-    public function updateJabatan(Request $request, RiwayatJabatan $riwayatJabatan)
+    public function updateJabatan(UpdateJabatanRequest $request, RiwayatJabatan $riwayatJabatan)
     {
-        $validated = $request->validate([
-            'jabatan_id' => 'required|exists:jabatans,id',
-            'nomor_sk' => 'nullable|string',
-            'tmt_jabatan' => 'required|date',
-            'tanggal_sk' => 'required|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        $riwayatJabatan->update($validated);
+        $dto = RiwayatJabatanDTO::fromRequest($request->validated());
+        $this->service->updateJabatan($riwayatJabatan, $dto);
         return redirect()->route('pegawai.show', $riwayatJabatan->pegawai_id)->with('success', 'Riwayat Jabatan berhasil diperbarui.');
     }
 
     public function destroyJabatan(RiwayatJabatan $riwayatJabatan)
     {
         $pegawaiId = $riwayatJabatan->pegawai_id;
-        $riwayatJabatan->delete();
+        $this->service->deleteJabatan($riwayatJabatan);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -133,23 +137,11 @@ class RiwayatController extends Controller
         ]);
     }
 
-    public function storeKGB(Request $request)
+    public function storeKGB(StoreKGBRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'nomor_sk' => 'nullable|string',
-            'tmt_kgb' => 'required|date',
-            'gaji_lama' => 'required|numeric',
-            'gaji_baru' => 'required|numeric',
-            'masa_kerja_golongan_tahun' => 'required|integer',
-            'masa_kerja_golongan_bulan' => 'required|integer',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        RiwayatKgb::create($validated);
-        // Update gaji pokok
-        Pegawai::where('id', $validated['pegawai_id'])->update(['gaji_pokok' => $validated['gaji_baru']]);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat KGB berhasil ditambahkan.');
+        $dto = RiwayatKgbDTO::fromRequest($request->validated());
+        $this->service->storeKgb($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat KGB berhasil ditambahkan.');
     }
 
     public function editKGB(RiwayatKgb $riwayatKgb)
@@ -157,26 +149,17 @@ class RiwayatController extends Controller
         return view('riwayat.edit-kgb', ['riwayat' => $riwayatKgb]);
     }
 
-    public function updateKGB(Request $request, RiwayatKgb $riwayatKgb)
+    public function updateKGB(UpdateKGBRequest $request, RiwayatKgb $riwayatKgb)
     {
-        $validated = $request->validate([
-            'nomor_sk' => 'nullable|string',
-            'tmt_kgb' => 'required|date',
-            'gaji_lama' => 'required|numeric',
-            'gaji_baru' => 'required|numeric',
-            'masa_kerja_golongan_tahun' => 'required|integer',
-            'masa_kerja_golongan_bulan' => 'required|integer',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        $riwayatKgb->update($validated);
+        $dto = RiwayatKgbDTO::fromRequest($request->validated());
+        $this->service->updateKgb($riwayatKgb, $dto);
         return redirect()->route('pegawai.show', $riwayatKgb->pegawai_id)->with('success', 'Riwayat KGB berhasil diperbarui.');
     }
 
     public function destroyKGB(RiwayatKgb $riwayatKgb)
     {
         $pegawaiId = $riwayatKgb->pegawai_id;
-        $riwayatKgb->delete();
+        $this->service->deleteKgb($riwayatKgb);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -189,20 +172,11 @@ class RiwayatController extends Controller
         ]);
     }
 
-    public function storeHukuman(Request $request)
+    public function storeHukuman(StoreHukumanRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'tingkat_hukuman' => 'required|integer',
-            'jenis_hukuman' => 'required|string',
-            'nomor_sk' => 'nullable|string',
-            'tanggal_sk' => 'nullable|date',
-            'tmt_hukuman' => 'required|date',
-            'tmt_selesai_hukuman' => 'nullable|date',
-            'deskripsi' => 'nullable|string',
-        ]);
-        RiwayatHukumanDisiplin::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat Hukuman berhasil ditambahkan.');
+        $dto = RiwayatHukumanDisiplinDTO::fromRequest($request->validated());
+        $this->service->storeHukuman($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Hukuman berhasil ditambahkan.');
     }
 
     public function editHukuman(RiwayatHukumanDisiplin $riwayatHukuman)
@@ -213,25 +187,17 @@ class RiwayatController extends Controller
         ]);
     }
 
-    public function updateHukuman(Request $request, RiwayatHukumanDisiplin $riwayatHukuman)
+    public function updateHukuman(UpdateHukumanRequest $request, RiwayatHukumanDisiplin $riwayatHukuman)
     {
-        $validated = $request->validate([
-            'tingkat_hukuman' => 'required|integer',
-            'jenis_hukuman' => 'required|string',
-            'nomor_sk' => 'nullable|string',
-            'tanggal_sk' => 'nullable|date',
-            'tmt_hukuman' => 'required|date',
-            'tmt_selesai_hukuman' => 'nullable|date',
-            'deskripsi' => 'nullable|string',
-        ]);
-        $riwayatHukuman->update($validated);
+        $dto = RiwayatHukumanDisiplinDTO::fromRequest($request->validated());
+        $this->service->updateHukuman($riwayatHukuman, $dto);
         return redirect()->route('pegawai.show', $riwayatHukuman->pegawai_id)->with('success', 'Riwayat Hukuman berhasil diperbarui.');
     }
 
     public function destroyHukuman(RiwayatHukumanDisiplin $riwayatHukuman)
     {
         $pegawaiId = $riwayatHukuman->pegawai_id;
-        $riwayatHukuman->delete();
+        $this->service->deleteHukuman($riwayatHukuman);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -241,21 +207,11 @@ class RiwayatController extends Controller
         return view('riwayat.create-pendidikan', ['pegawaiId' => $pegawaiId]);
     }
 
-    public function storePendidikan(Request $request)
+    public function storePendidikan(StorePendidikanRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'tingkat_pendidikan' => 'required|string',
-            'institusi' => 'required|string',
-            'jurusan' => 'required|string',
-            'tahun_lulus' => 'required|integer',
-            'no_ijazah' => 'nullable|string',
-            'tanggal_ijazah' => 'nullable|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        RiwayatPendidikan::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat Pendidikan berhasil ditambahkan.');
+        $dto = RiwayatPendidikanDTO::fromRequest($request->validated());
+        $this->service->storePendidikan($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pendidikan berhasil ditambahkan.');
     }
 
     public function editPendidikan(RiwayatPendidikan $riwayatPendidikan)
@@ -263,26 +219,17 @@ class RiwayatController extends Controller
         return view('riwayat.edit-pendidikan', ['riwayat' => $riwayatPendidikan]);
     }
 
-    public function updatePendidikan(Request $request, RiwayatPendidikan $riwayatPendidikan)
+    public function updatePendidikan(UpdatePendidikanRequest $request, RiwayatPendidikan $riwayatPendidikan)
     {
-        $validated = $request->validate([
-            'tingkat_pendidikan' => 'required|string',
-            'institusi' => 'required|string',
-            'jurusan' => 'required|string',
-            'tahun_lulus' => 'required|integer',
-            'no_ijazah' => 'nullable|string',
-            'tanggal_ijazah' => 'nullable|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        $riwayatPendidikan->update($validated);
+        $dto = RiwayatPendidikanDTO::fromRequest($request->validated());
+        $this->service->updatePendidikan($riwayatPendidikan, $dto);
         return redirect()->route('pegawai.show', $riwayatPendidikan->pegawai_id)->with('success', 'Riwayat Pendidikan berhasil diperbarui.');
     }
 
     public function destroyPendidikan(RiwayatPendidikan $riwayatPendidikan)
     {
         $pegawaiId = $riwayatPendidikan->pegawai_id;
-        $riwayatPendidikan->delete();
+        $this->service->deletePendidikan($riwayatPendidikan);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -292,21 +239,11 @@ class RiwayatController extends Controller
         return view('riwayat.create-latihan', ['pegawaiId' => $pegawaiId]);
     }
 
-    public function storeLatihan(Request $request)
+    public function storeLatihan(StoreLatihanRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'nama_latihan' => 'required|string',
-            'tahun_pelaksanaan' => 'required|integer',
-            'jumlah_jam' => 'required|integer|min:0',
-            'penyelenggara' => 'nullable|string',
-            'tempat_pelaksanaan' => 'nullable|string',
-            'no_sertifikat' => 'nullable|string',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        RiwayatLatihanJabatan::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Riwayat Latihan berhasil ditambahkan.');
+        $dto = RiwayatLatihanJabatanDTO::fromRequest($request->validated());
+        $this->service->storeLatihan($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Latihan berhasil ditambahkan.');
     }
 
     public function editLatihan(RiwayatLatihanJabatan $riwayatLatihan)
@@ -314,26 +251,17 @@ class RiwayatController extends Controller
         return view('riwayat.edit-latihan', ['riwayat' => $riwayatLatihan]);
     }
 
-    public function updateLatihan(Request $request, RiwayatLatihanJabatan $riwayatLatihan)
+    public function updateLatihan(UpdateLatihanRequest $request, RiwayatLatihanJabatan $riwayatLatihan)
     {
-        $validated = $request->validate([
-            'nama_latihan' => 'required|string',
-            'tahun_pelaksanaan' => 'required|integer',
-            'jumlah_jam' => 'required|integer|min:0',
-            'penyelenggara' => 'nullable|string',
-            'tempat_pelaksanaan' => 'nullable|string',
-            'no_sertifikat' => 'nullable|string',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
-        ]);
-        $riwayatLatihan->update($validated);
+        $dto = RiwayatLatihanJabatanDTO::fromRequest($request->validated());
+        $this->service->updateLatihan($riwayatLatihan, $dto);
         return redirect()->route('pegawai.show', $riwayatLatihan->pegawai_id)->with('success', 'Riwayat Latihan berhasil diperbarui.');
     }
 
     public function destroyLatihan(RiwayatLatihanJabatan $riwayatLatihan)
     {
         $pegawaiId = $riwayatLatihan->pegawai_id;
-        $riwayatLatihan->delete();
+        $this->service->deleteLatihan($riwayatLatihan);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 
@@ -343,15 +271,11 @@ class RiwayatController extends Controller
         return view('riwayat.create-skp', ['pegawaiId' => $pegawaiId]);
     }
 
-    public function storeSKP(Request $request)
+    public function storeSKP(StoreSKPRequest $request)
     {
-        $validated = $request->validate([
-            'pegawai_id' => 'required|exists:pegawais,id',
-            'tahun' => 'required|integer',
-            'nilai_skp' => 'required|string',
-        ]);
-        PenilaianKinerja::create($validated);
-        return redirect()->route('pegawai.show', $validated['pegawai_id'])->with('success', 'Penilaian Kinerja berhasil ditambahkan.');
+        $dto = PenilaianKinerjaDTO::fromRequest($request->validated());
+        $this->service->storeSKP($dto);
+        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Penilaian Kinerja berhasil ditambahkan.');
     }
 
     public function editSKP(PenilaianKinerja $penilaianKinerja)
@@ -359,20 +283,17 @@ class RiwayatController extends Controller
         return view('riwayat.edit-skp', ['riwayat' => $penilaianKinerja]);
     }
 
-    public function updateSKP(Request $request, PenilaianKinerja $penilaianKinerja)
+    public function updateSKP(UpdateSKPRequest $request, PenilaianKinerja $penilaianKinerja)
     {
-        $validated = $request->validate([
-            'tahun' => 'required|integer',
-            'nilai_skp' => 'required|string',
-        ]);
-        $penilaianKinerja->update($validated);
+        $dto = PenilaianKinerjaDTO::fromRequest($request->validated());
+        $this->service->updateSKP($penilaianKinerja, $dto);
         return redirect()->route('pegawai.show', $penilaianKinerja->pegawai_id)->with('success', 'Penilaian Kinerja berhasil diperbarui.');
     }
 
     public function destroySKP(PenilaianKinerja $penilaianKinerja)
     {
         $pegawaiId = $penilaianKinerja->pegawai_id;
-        $penilaianKinerja->delete();
+        $this->service->deleteSKP($penilaianKinerja);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
     }
 }

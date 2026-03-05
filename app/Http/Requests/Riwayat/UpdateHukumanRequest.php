@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Requests\Riwayat;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateHukumanRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'tingkat_hukuman' => 'required|integer',
+            'jenis_hukuman' => 'required|string',
+            'nomor_sk' => 'nullable|string',
+            'tanggal_sk' => 'nullable|date',
+            'tmt_hukuman' => 'required|date',
+            'tmt_selesai_hukuman' => 'nullable|date',
+            'deskripsi' => 'nullable|string',
+        ];
+    }
+}

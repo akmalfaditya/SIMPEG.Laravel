@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Pegawai;
+use App\DTOs\PegawaiDTO;
+use Illuminate\Support\Facades\DB;
 
 class PegawaiService
 {
@@ -34,21 +36,26 @@ class PegawaiService
             ->get();
     }
 
-    public function create(array $data): Pegawai
+    public function create(PegawaiDTO $dto): Pegawai
     {
-        $data['is_active'] = true;
-        return Pegawai::create($data);
+        return DB::transaction(function() use ($dto) {
+            return Pegawai::create($dto->toArray());
+        });
     }
 
-    public function update(Pegawai $pegawai, array $data): bool
+    public function update(Pegawai $pegawai, PegawaiDTO $dto): bool
     {
-        return $pegawai->update($data);
+        return DB::transaction(function() use ($pegawai, $dto) {
+            return $pegawai->update($dto->toArray());
+        });
     }
 
     public function delete(Pegawai $pegawai): bool
     {
-        $pegawai->is_active = false;
-        $pegawai->save();
-        return $pegawai->delete();
+        return DB::transaction(function() use ($pegawai) {
+            $pegawai->is_active = false;
+            $pegawai->save();
+            return $pegawai->delete();
+        });
     }
 }

@@ -8,10 +8,17 @@ use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
 use App\Models\Pegawai;
 use App\Services\PegawaiService;
+use App\Http\Requests\StorePegawaiRequest;
+use App\Http\Requests\UpdatePegawaiRequest;
+use App\DTOs\PegawaiDTO;
+use App\Http\Resources\PegawaiResource;
 use Illuminate\Http\Request;
 
 class PegawaiController extends Controller
 {
+    private const DEFAULT_PAGE = 1;
+    private const DEFAULT_LIMIT = 10;
+
     public function __construct(private PegawaiService $service) {}
 
     public function index()
@@ -21,8 +28,8 @@ class PegawaiController extends Controller
 
     public function getPaginated(Request $request)
     {
-        $page = $request->input('page', 1);
-        $limit = $request->input('limit', 10);
+        $page = $request->input('page', self::DEFAULT_PAGE);
+        $limit = $request->input('limit', self::DEFAULT_LIMIT);
         $search = $request->input('search');
 
         $pegawaiList = $search
@@ -30,14 +37,10 @@ class PegawaiController extends Controller
             : $this->service->getAll();
 
         $total = $pegawaiList->count();
-        $paged = $pegawaiList->slice(($page - 1) * $limit, $limit)->map(fn($p) => [
-            $p->nip,
-            $p->nama_lengkap,
-            $p->pangkat_terakhir ?? '-',
-            $p->jabatan_terakhir ?? '-',
-            $p->masa_kerja ?? '-',
-            $p->id,
-        ])->values();
+        $pagedModels = $pegawaiList->slice(($page - 1) * $limit, $limit)->values();
+        
+        // Convert to explicitly structured Resource
+        $paged = PegawaiResource::collection($pagedModels);
 
         return response()->json(['data' => $paged, 'total' => $total]);
     }
@@ -63,30 +66,11 @@ class PegawaiController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePegawaiRequest $request)
     {
-        $validated = $request->validate([
-            'nip' => 'required|string|unique:pegawais,nip',
-            'nama_lengkap' => 'required|string|max:255',
-            'tempat_lahir' => 'nullable|string',
-            'tanggal_lahir' => 'required|date',
-            'jenis_kelamin' => 'required|integer',
-            'alamat' => 'nullable|string',
-            'no_telepon' => 'nullable|string',
-            'email' => 'nullable|email',
-            'tmt_cpns' => 'required|date',
-            'tmt_pns' => 'nullable|date',
-            'gaji_pokok' => 'required|numeric|min:0',
-            'agama' => 'required|integer',
-            'status_pernikahan' => 'required|integer',
-            'golongan_darah' => 'required|integer',
-            'npwp' => 'nullable|string',
-            'no_karpeg' => 'nullable|string',
-            'no_taspen' => 'nullable|string',
-            'unit_kerja' => 'nullable|string',
-        ]);
-
-        $pegawai = $this->service->create($validated);
+        $dto = PegawaiDTO::fromRequest($request->validated());
+        $pegawai = $this->service->create($dto);
+        
         return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil ditambahkan.');
     }
 
@@ -101,32 +85,11 @@ class PegawaiController extends Controller
         ]);
     }
 
-    public function update(Request $request, Pegawai $pegawai)
+    public function update(UpdatePegawaiRequest $request, Pegawai $pegawai)
     {
-        $validated = $request->validate([
-            'nip' => 'required|string|unique:pegawais,nip,' . $pegawai->id,
-            'nama_lengkap' => 'required|string|max:255',
-            'tempat_lahir' => 'nullable|string',
-            'tanggal_lahir' => 'required|date',
-            'jenis_kelamin' => 'required|integer',
-            'alamat' => 'nullable|string',
-            'no_telepon' => 'nullable|string',
-            'email' => 'nullable|email',
-            'tmt_cpns' => 'required|date',
-            'tmt_pns' => 'nullable|date',
-            'gaji_pokok' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-            'agama' => 'required|integer',
-            'status_pernikahan' => 'required|integer',
-            'golongan_darah' => 'required|integer',
-            'npwp' => 'nullable|string',
-            'no_karpeg' => 'nullable|string',
-            'no_taspen' => 'nullable|string',
-            'unit_kerja' => 'nullable|string',
-        ]);
-
-        $validated['is_active'] = $request->boolean('is_active', true);
-        $this->service->update($pegawai, $validated);
+        $dto = PegawaiDTO::fromRequest($request->validated());
+        $this->service->update($pegawai, $dto);
+        
         return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
