@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Detail Pegawai')
 @section('header', 'Detail Pegawai')
+@section('breadcrumb')
+<a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a> / <a href="{{ route('pegawai.index') }}" class="hover:text-blue-600">Pegawai</a> / <span class="text-slate-700">{{ $pegawai->nama_lengkap }}</span>
+@endsection
 
 @section('content')
 <div class="space-y-6">
@@ -19,10 +22,7 @@
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('pegawai.edit', $pegawai) }}" class="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">Edit</a>
-                <form method="POST" action="{{ route('pegawai.destroy', $pegawai) }}" onsubmit="return confirm('Yakin hapus data ini?')">
-                    @csrf @method('DELETE')
-                    <button class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Hapus</button>
-                </form>
+                <button onclick="confirmDelete('{{ route('pegawai.destroy', $pegawai) }}', 'Yakin ingin menghapus data pegawai {{ $pegawai->nama_lengkap }}? Tindakan ini tidak dapat dibatalkan.')" class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Hapus</button>
             </div>
         </div>
     </div>
@@ -78,10 +78,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.pangkat.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.pangkat.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.pangkat.destroy', $r) }}', 'Hapus data riwayat pangkat ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -113,10 +110,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.jabatan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.jabatan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.jabatan.destroy', $r) }}', 'Hapus data riwayat jabatan ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -150,10 +144,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.kgb.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.kgb.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.kgb.destroy', $r) }}', 'Hapus data riwayat KGB ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -187,10 +178,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.hukuman.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.hukuman.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.hukuman.destroy', $r) }}', 'Hapus data riwayat hukuman ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -224,10 +212,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.pendidikan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.pendidikan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.pendidikan.destroy', $r) }}', 'Hapus data riwayat pendidikan ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -261,10 +246,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.latihan.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.latihan.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.latihan.destroy', $r) }}', 'Hapus data riwayat latihan ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -296,10 +278,7 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.skp.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                <form method="POST" action="{{ route('riwayat.skp.destroy', $r) }}" class="inline" onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('riwayat.skp.destroy', $r) }}', 'Hapus data SKP ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>

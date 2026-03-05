@@ -60,10 +60,10 @@ class RiwayatService
     {
         return DB::transaction(function () use ($dto) {
             $riwayat = RiwayatKgb::create($dto->toArray());
-            
+
             // Update Base Salary
             Pegawai::where('id', $dto->pegawaiId)->update(['gaji_pokok' => $dto->gajiBaru]);
-            
+
             return $riwayat;
         });
     }
@@ -138,6 +138,17 @@ class RiwayatService
     }
 
     public function deleteSKP(PenilaianKinerja $riwayat): bool
+    {
+        return DB::transaction(fn () => $riwayat->delete());
+    }
+
+    // --- PENGHARGAAN ---
+    public function storePenghargaan(array $data): \App\Models\RiwayatPenghargaan
+    {
+        return DB::transaction(fn () => \App\Models\RiwayatPenghargaan::create($data));
+    }
+
+    public function deletePenghargaan(\App\Models\RiwayatPenghargaan $riwayat): bool
     {
         return DB::transaction(fn () => $riwayat->delete());
     }

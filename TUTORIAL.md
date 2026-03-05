@@ -19,7 +19,9 @@ Panduan lengkap untuk membuat Sistem Informasi Manajemen Pegawai (SIMPEG) menggu
 11. [Membuat Controller](#11-membuat-controller)
 12. [Mendefinisikan Routes](#12-mendefinisikan-routes)
 13. [Membuat Views (Blade + Tailwind)](#13-membuat-views-blade--tailwind)
-14. [Build & Menjalankan Aplikasi](#14-build--menjalankan-aplikasi)
+14. [Menambahkan Export PDF & Excel](#14-menambahkan-export-pdf--excel)
+15. [Menambahkan Activity Log](#15-menambahkan-activity-log)
+16. [Build & Menjalankan Aplikasi](#16-build--menjalankan-aplikasi)
 
 ---
 
@@ -560,6 +562,41 @@ return new class extends Migration
 };
 ```
 
+### 4.5 Tabel Gaji PP 15/2019
+
+Buat file `database/migrations/2024_01_01_000005_create_tabel_gajis_table.php`:
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tabel_gajis', function (Blueprint $table) {
+            $table->id();
+            $table->string('golongan');           // e.g. "I/a", "III/b"
+            $table->integer('masa_kerja_tahun');   // 0, 2, 4, 6, ...
+            $table->decimal('gaji_pokok', 15, 2);
+            $table->timestamps();
+
+            $table->unique(['golongan', 'masa_kerja_tahun']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tabel_gajis');
+    }
+};
+```
+
+> **Catatan:** Tabel ini digunakan oleh `KGBCalculationService` untuk lookup gaji baru berdasarkan golongan dan masa kerja saat membuat riwayat KGB. Data di-seed melalui `TabelGajiSeeder`.
+
 ---
 
 ## 5. Membuat Eloquent Model
@@ -719,6 +756,30 @@ class RiwayatPangkat extends Model
 > - `belongsTo(Pegawai::class)` relationship
 > - `RiwayatJabatan` juga punya `belongsTo(Jabatan::class)`
 
+### 5.5 Model TabelGaji
+
+Buat file `app/Models/TabelGaji.php`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class TabelGaji extends Model
+{
+    protected $fillable = ['golongan', 'masa_kerja_tahun', 'gaji_pokok'];
+
+    protected function casts(): array
+    {
+        return ['gaji_pokok' => 'decimal:2'];
+    }
+}
+```
+
+> Model ini digunakan oleh `KGBCalculationService` untuk lookup gaji berdasarkan golongan dan masa kerja.
+
 ---
 
 ## 6. Membuat Database Seeder
@@ -795,11 +856,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             MasterDataSeeder::class,
+            TabelGajiSeeder::class,
             PegawaiSeeder::class,
         ]);
     }
 }
 ```
+
+> **TabelGajiSeeder** berisi data tabel gaji PNS berdasarkan PP 15/2019 yang digunakan oleh `KGBCalculationService` untuk menghitung gaji baru secara otomatis saat pembuatan riwayat KGB. Seeder ini membuat record untuk setiap kombinasi golongan dan masa kerja.
 
 ---
 
@@ -958,7 +1022,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getAll(), getById(), search(), create(PegawaiDTO), update(Pegawai, PegawaiDTO), delete(Pegawai)
 ```
 
-### 9.2 RiwayatService (BARU)
+### 9.2 RiwayatService
 
 ```php
 // app/Services/RiwayatService.php
@@ -968,7 +1032,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: store/update/delete untuk setiap tipe riwayat
 ```
 
-### 9.3 JabatanService (BARU)
+### 9.3 JabatanService
 
 ```php
 // app/Services/JabatanService.php
@@ -986,7 +1050,16 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getAllKGBStatus(), getUpcomingKGB(), getEligiblePegawai()
 ```
 
-### 9.5 PensiunService
+### 9.5 KGBCalculationService
+
+```php
+// app/Services/KGBCalculationService.php
+// Menghitung gaji baru berdasarkan tabel gaji PP 15/2019
+// Lookup dari model TabelGaji berdasarkan golongan dan masa kerja
+// Berisi: getNextKGBSalary(Pegawai) → ['gaji_lama', 'gaji_baru', 'golongan', 'masa_kerja_tahun', 'masa_kerja_total_tahun']
+```
+
+### 9.6 PensiunService
 
 ```php
 // app/Services/PensiunService.php
@@ -996,7 +1069,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getPensiunAlerts()
 ```
 
-### 9.6 KenaikanPangkatService
+### 9.7 KenaikanPangkatService
 
 ```php
 // app/Services/KenaikanPangkatService.php
@@ -1008,7 +1081,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getEligiblePegawai()
 ```
 
-### 9.7 SatyalencanaService
+### 9.8 SatyalencanaService
 
 ```php
 // app/Services/SatyalencanaService.php
@@ -1019,7 +1092,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getEligibleCandidates(), getCandidatesByMilestone()
 ```
 
-### 9.8 DUKService
+### 9.9 DUKService
 
 ```php
 // app/Services/DUKService.php
@@ -1033,13 +1106,21 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getDUK()
 ```
 
-### 9.9 DashboardService
+### 9.10 DashboardService
 
 ```php
 // app/Services/DashboardService.php
 // Menggabungkan data dari KGB, Pensiun, Satyalencana service
 // plus chart data (distribusi golongan, gender, usia, unit kerja)
 // Berisi: getDashboardData()
+```
+
+### 9.11 DocumentUploadService
+
+```php
+// app/Services/DocumentUploadService.php
+// Menangani upload dan manajemen file dokumen SK, ijazah, dll
+// Berisi: upload(), delete()
 ```
 
 ---
@@ -1080,19 +1161,22 @@ Digunakan di `PegawaiController@getPaginated` untuk menggantikan mapping array m
 
 ## 11. Membuat Controller
 
-Buat 9 controller di `app/Http/Controllers/`:
+Buat 13 controller di `app/Http/Controllers/`:
 
 | Controller | Fungsi |
 |---|---|
 | `AuthController` | `showLogin()`, `login(LoginRequest)`, `logout()` |
 | `DashboardController` | `index()` — inject `DashboardService` |
 | `PegawaiController` | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource` |
-| `RiwayatController` | CRUD untuk 7 jenis riwayat — inject `RiwayatService` dan `JabatanService`, menggunakan FormRequest + DTO per tipe |
+| `RiwayatController` | CRUD untuk 7 jenis riwayat — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
 | `KGBController` | `index()`, `upcoming()`, `eligible()` |
 | `KenaikanPangkatController` | `index()`, `eligible()` |
 | `PensiunController` | `index()` |
 | `DUKController` | `index()` |
-| `SatyalencanaController` | `index()` dengan filter milestone |
+| `SatyalencanaController` | `index()` dengan filter milestone, `award()` untuk pencatatan penghargaan |
+| `ExportController` | `export($type, $format)` — export PDF (DomPDF) dan Excel (Maatwebsite) untuk 5 jenis laporan |
+| `ActivityLogController` | `index()` — menampilkan riwayat aktivitas dari Spatie Activity Log |
+| `ProfileController` | `show()`, `updatePassword()` — profil user dan ganti password |
 
 **Pola Controller (setelah refactor):**
 
@@ -1141,29 +1225,43 @@ Route::middleware('auth')->group(function () {
     Route::get('/kgb/upcoming', ...)->name('kgb.upcoming');
     Route::get('/kgb/eligible', ...)->name('kgb.eligible');
     Route::get('/kenaikan-pangkat', ...)->name('kenaikan-pangkat.index');
+    Route::get('/kenaikan-pangkat/eligible', ...)->name('kenaikan-pangkat.eligible');
     Route::get('/pensiun', ...)->name('pensiun.index');
     Route::get('/duk', ...)->name('duk.index');
     Route::get('/satyalencana', ...)->name('satyalencana.index');
+    Route::post('/satyalencana/award', ...)->name('satyalencana.award');
+
+    // Export PDF & Excel
+    Route::get('/export/{type}/{format}', [ExportController::class, 'export'])->name('export');
+
+    // Profile & Password
+    Route::get('/profile', ...)->name('profile.show');
+    Route::put('/profile/password', ...)->name('profile.password.update');
+
+    // Activity Log
+    Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 ```
+
+> **Total route:** ~64 route (7 resource pegawai + 35 riwayat CRUD + report/export/profile/auth)
 
 ---
 
 ## 13. Membuat Views (Blade + Tailwind)
 
-### 10.1 Struktur View
+### 13.1 Struktur View
 
 ```
 resources/views/
 ├── layouts/
-│   └── app.blade.php          # Layout utama (sidebar + content area)
+│   └── app.blade.php          # Layout utama (responsive sidebar + content area)
 ├── auth/
 │   └── login.blade.php        # Halaman login (standalone, tanpa layout)
 ├── dashboard/
 │   └── index.blade.php        # Dashboard + Chart.js
 ├── pegawai/
 │   ├── index.blade.php        # Tabel + pagination + search (AJAX)
-│   ├── show.blade.php         # Detail + 7 tab riwayat
+│   ├── show.blade.php         # Detail + 7 tab riwayat + delete modal
 │   ├── create.blade.php       # Form tambah
 │   ├── edit.blade.php         # Form edit
 │   └── _form.blade.php        # Partial form (shared create/edit)
@@ -1172,7 +1270,7 @@ resources/views/
 │   ├── edit-pangkat.blade.php
 │   ├── create-jabatan.blade.php
 │   ├── edit-jabatan.blade.php
-│   ├── create-kgb.blade.php
+│   ├── create-kgb.blade.php   # Auto-kalkulasi gaji baru dari PP 15/2019
 │   ├── edit-kgb.blade.php
 │   ├── create-hukuman.blade.php
 │   ├── edit-hukuman.blade.php
@@ -1183,25 +1281,39 @@ resources/views/
 │   ├── create-skp.blade.php
 │   └── edit-skp.blade.php
 ├── kgb/
-│   └── index.blade.php
+│   └── index.blade.php        # + search/filter/pagination + export PDF/Excel
 ├── kenaikan-pangkat/
-│   └── index.blade.php
+│   └── index.blade.php        # + search/filter/pagination + export
 ├── pensiun/
-│   └── index.blade.php
+│   └── index.blade.php        # + search/pagination + export
 ├── duk/
-│   └── index.blade.php
-└── satyalencana/
-    └── index.blade.php
+│   └── index.blade.php        # + search/pagination + export
+├── satyalencana/
+│   └── index.blade.php        # + search/filter milestone + export
+├── exports/
+│   ├── duk-pdf.blade.php      # Template PDF untuk DUK
+│   ├── kgb-pdf.blade.php      # Template PDF untuk KGB
+│   ├── pensiun-pdf.blade.php  # Template PDF untuk Pensiun
+│   ├── kenaikan-pangkat-pdf.blade.php
+│   └── satyalencana-pdf.blade.php
+├── activity-log/
+│   └── index.blade.php        # Riwayat perubahan data (tabel + pagination)
+└── profile/
+    └── index.blade.php        # Profil user + form ganti password
 ```
 
-### 10.2 Layout Utama (`layouts/app.blade.php`)
+### 13.2 Layout Utama (`layouts/app.blade.php`)
 
 Komponen utama:
-- **Sidebar** (fixed, 256px) — gradient gelap, navigation links dengan icon SVG, active state highlight, user info + logout
-- **Main Content** — sticky header dengan backdrop blur, flash messages, `@yield('content')`
+- **Responsive Sidebar** (fixed, 256px) — gradient gelap, navigation links dengan icon SVG, active state highlight, user info + logout, toggle mobile/desktop via JavaScript `style.transform`
+- **Mobile Overlay** — semi-transparent backdrop saat sidebar terbuka di mobile
+- **Main Content** — sticky header dengan backdrop blur, breadcrumb, flash messages (auto-dismiss), `@yield('content')`
+- **Delete Confirmation Modal** — shared modal yang dipanggil via `confirmDelete(url, message)` dari seluruh halaman
 - Gunakan `@stack('scripts')` dan `@stack('styles')` untuk per-halaman JS/CSS
 
-### 10.3 Tips Design Tailwind
+> **Catatan Tailwind v4:** Untuk elemen yang dibuat secara dinamis via JavaScript (misalnya pagination buttons), gunakan inline styles (`element.style.cssText`) bukan Tailwind classes, karena JIT compiler tidak meng-scan JS-generated class names.
+
+### 13.3 Tips Design Tailwind
 
 ```
 Warna utama: slate-900 (sidebar), blue-600 (accent), slate-50 (background)
@@ -1212,7 +1324,7 @@ Glassmorphism: bg-white/80 backdrop-blur-lg (header)
 Badge/pill: px-2 py-1 text-xs rounded-full
 ```
 
-### 10.4 Dashboard Charts
+### 13.4 Dashboard Charts
 
 Gunakan Chart.js 4 via CDN:
 ```html
@@ -1223,11 +1335,11 @@ Pass data chart dari controller sebagai JSON ke JavaScript, lalu render 4 canvas
 - Bar chart: Distribusi Golongan, Distribusi Usia
 - Doughnut chart: Gender, Unit Kerja
 
-### 10.5 Pegawai Index — Server-Side Pagination
+### 13.5 Pegawai Index — Server-Side Pagination
 
-Gunakan fetch API ke endpoint `/pegawai-data?page=X&limit=10&search=keyword` dan render tabel secara dinamis dengan JavaScript.
+Gunakan fetch API ke endpoint `/pegawai-data?page=X&limit=10&search=keyword` dan render tabel secara dinamis dengan JavaScript. Setiap baris memiliki 3 tombol aksi: **Detail**, **Edit**, **Hapus**.
 
-### 10.6 Pegawai Show — Tab System
+### 13.6 Pegawai Show — Tab System + Delete Modal
 
 Gunakan JavaScript sederhana untuk show/hide tab content:
 ```js
@@ -1238,7 +1350,13 @@ function showTab(name) {
 }
 ```
 
-### 10.7 Tombol Aksi dalam Tabel
+Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
+```html
+<button type="button" onclick="confirmDelete('/riwayat/pangkat/1', 'Hapus data riwayat pangkat ini?')"
+    class="... bg-red-50 text-red-600 ...">Hapus</button>
+```
+
+### 13.7 Tombol Aksi dalam Tabel
 
 **Penting:** Jangan gunakan `flex` langsung pada `<td>`. Bungkus dengan `<div>`:
 
@@ -1246,17 +1364,132 @@ function showTab(name) {
 <td class="px-3 py-2">
     <div class="flex items-center gap-2">
         <a href="..." class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md">Edit</a>
-        <form method="POST" action="..." class="inline">
-            @csrf @method('DELETE')
-            <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 text-xs rounded-md">Hapus</button>
-        </form>
+        <button type="button" onclick="confirmDelete('...', 'Hapus data ini?')"
+            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 text-xs rounded-md">Hapus</button>
     </div>
 </td>
 ```
 
+### 13.8 Report Views — Search, Filter, Pagination, Export
+
+Semua 5 halaman report (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) memiliki fitur:
+- **Search**: Filter data berdasarkan NIP/nama menggunakan client-side JavaScript
+- **Client-side Pagination**: Data di-render dari Blade, lalu dipaginasi via JS (15 per halaman)
+- **Export**: Link ke `/export/{type}/pdf` dan `/export/{type}/excel`
+- Beberapa halaman memiliki tab filter (KGB: Semua/H-60/Eligible, Satyalencana: per milestone)
+
+### 13.9 Export PDF Templates
+
+5 template PDF di `resources/views/exports/` menggunakan HTML/CSS inline (tanpa Tailwind) karena DomPDF tidak mendukung Tailwind. Format tabel standar dengan header, border, dan logo.
+
 ---
 
-## 14. Build & Menjalankan Aplikasi
+---
+
+## 14. Menambahkan Export PDF & Excel
+
+### 14.1 Install Package
+
+```bash
+composer require barryvdh/laravel-dompdf
+composer require maatwebsite/excel
+```
+
+### 14.2 Membuat Export Classes
+
+Buat folder `app/Exports/` dan buat 5 export class (satu per jenis laporan):
+
+| File | Untuk |
+|---|---|
+| `KGBExport.php` | Export monitoring KGB |
+| `PensiunExport.php` | Export alert pensiun |
+| `DUKExport.php` | Export DUK |
+| `KenaikanPangkatExport.php` | Export kenaikan pangkat |
+| `SatyalencanaExport.php` | Export Satyalencana |
+
+Setiap export class mengimplementasikan `FromCollection`, `WithHeadings`, `WithMapping`, dan `WithStyles` dari Maatwebsite/Excel.
+
+### 14.3 Membuat ExportController
+
+```php
+// app/Http/Controllers/ExportController.php
+// Method export($type, $format) yang menerima tipe laporan dan format (pdf/excel)
+// Untuk PDF: gunakan Barryvdh\DomPDF\Facade\Pdf::loadView() dengan template dari views/exports/
+// Untuk Excel: gunakan Maatwebsite\Excel\Facades\Excel::download() dengan export class
+```
+
+### 14.4 Membuat Template PDF
+
+Buat 5 template PDF di `resources/views/exports/`:
+- `kgb-pdf.blade.php`
+- `pensiun-pdf.blade.php`
+- `duk-pdf.blade.php`
+- `kenaikan-pangkat-pdf.blade.php`
+- `satyalencana-pdf.blade.php`
+
+> **Tips:** Template PDF menggunakan CSS inline (bukan Tailwind) karena DomPDF memiliki keterbatasan CSS. Gunakan `<style>` tag di dalam template.
+
+### 14.5 Menambahkan Tombol Export di View
+
+Tambahkan link export di setiap halaman report:
+```html
+<a href="{{ route('export', ['type' => 'kgb', 'format' => 'pdf']) }}"
+   class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg">PDF</a>
+<a href="{{ route('export', ['type' => 'kgb', 'format' => 'excel']) }}"
+   class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg">Excel</a>
+```
+
+---
+
+## 15. Menambahkan Activity Log
+
+### 15.1 Install Spatie Activity Log
+
+```bash
+composer require spatie/laravel-activitylog
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations"
+php artisan migrate
+```
+
+### 15.2 Menambahkan Trait ke Model
+
+Tambahkan `LogsActivity` trait dan konfigurasi ke model yang ingin di-track:
+
+```php
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
+class Pegawai extends Model
+{
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Pegawai di-{$eventName}");
+    }
+}
+```
+
+Tambahkan ke model-model berikut: `Pegawai`, `RiwayatPangkat`, `RiwayatJabatan`, `RiwayatKgb`, `RiwayatHukumanDisiplin`, `RiwayatPendidikan`.
+
+### 15.3 Membuat ActivityLogController
+
+```php
+// app/Http/Controllers/ActivityLogController.php
+// Method index() mengambil data dari Spatie\Activitylog\Models\Activity
+// Tampilkan: waktu, user, deskripsi, subject, perubahan (properties)
+```
+
+### 15.4 Membuat View Activity Log
+
+Buat `resources/views/activity-log/index.blade.php` yang menampilkan tabel riwayat aktivitas dengan kolom waktu, user, aksi, dan detail perubahan.
+
+---
+
+## 16. Build & Menjalankan Aplikasi
 
 ### Build Assets
 
@@ -1319,7 +1552,7 @@ Request → Route → FormRequest (validasi) → Controller (orkestrasi)
 | **Enum** | Tipe data konstan dengan label display |
 | **Seeder** | Data awal untuk testing |
 
-### Struktur Folder Baru
+### Struktur Folder Lengkap
 
 ```
 app/
@@ -1333,31 +1566,49 @@ app/
 │       ├── RiwayatPendidikanDTO.php
 │       ├── RiwayatLatihanJabatanDTO.php
 │       └── PenilaianKinerjaDTO.php
-├── Enums/
+├── Enums/                      # 7 enum class
+├── Exports/
+│   ├── DUKExport.php
+│   ├── KGBExport.php
+│   ├── PensiunExport.php
+│   ├── KenaikanPangkatExport.php
+│   └── SatyalencanaExport.php
 ├── Http/
-│   ├── Controllers/
+│   ├── Controllers/            # 13 controller
 │   ├── Requests/
 │   │   ├── StorePegawaiRequest.php
 │   │   ├── UpdatePegawaiRequest.php
+│   │   ├── UpdatePasswordRequest.php
 │   │   ├── Auth/
 │   │   │   └── LoginRequest.php
 │   │   └── Riwayat/
 │   │       ├── StorePangkatRequest.php
 │   │       ├── UpdatePangkatRequest.php
-│   │       └── ... (14 file total)
+│   │       └── ... (16 file total)
 │   └── Resources/
 │       └── PegawaiResource.php
-├── Models/
+├── Models/                     # 12 model (termasuk TabelGaji)
 └── Services/
     ├── PegawaiService.php
     ├── RiwayatService.php
     ├── JabatanService.php
     ├── KGBService.php
+    ├── KGBCalculationService.php
     ├── PensiunService.php
     ├── KenaikanPangkatService.php
     ├── SatyalencanaService.php
     ├── DUKService.php
-    └── DashboardService.php
+    ├── DashboardService.php
+    └── DocumentUploadService.php
+database/
+├── migrations/                 # 11 migration files
+└── seeders/
+    ├── DatabaseSeeder.php
+    ├── UserSeeder.php
+    ├── MasterDataSeeder.php
+    ├── PegawaiSeeder.php
+    └── TabelGajiSeeder.php     # Data tabel gaji PP 15/2019
+resources/views/                # 35 blade view files
 ```
 
 ---
@@ -1365,18 +1616,20 @@ app/
 ## Checklist Pengerjaan
 
 - [ ] Buat project Laravel baru
-- [ ] Konfigurasi SQLite & Tailwind
+- [ ] Konfigurasi SQLite & Tailwind CSS v4
 - [ ] Buat 7 Enum
-- [ ] Buat 4 Migration (11 tabel)
-- [ ] Buat 10 Eloquent Model dengan relationships
-- [ ] Buat 3 Seeder (User, MasterData, Pegawai)
-- [ ] Buat 17 FormRequest (2 Pegawai + 14 Riwayat + 1 Auth)
+- [ ] Buat 11 Migration (15+ tabel termasuk tabel_gajis & activity_log)
+- [ ] Buat 12 Eloquent Model dengan relationships (termasuk TabelGaji)
+- [ ] Buat 5 Seeder (User, MasterData, Pegawai, TabelGaji, Database)
+- [ ] Buat 19 FormRequest (2 Pegawai + 16 Riwayat + 1 Auth)
 - [ ] Buat 8 DTO (1 Pegawai + 7 Riwayat)
-- [ ] Buat 9 Service class (termasuk RiwayatService & JabatanService)
+- [ ] Buat 11 Service class (termasuk KGBCalculationService & DocumentUploadService)
 - [ ] Buat 1 API Resource (PegawaiResource)
-- [ ] Buat 9 Controller
-- [ ] Definisikan 59 Routes
-- [ ] Buat 1 Layout + 24 Blade Views
+- [ ] Buat 5 Excel Export class
+- [ ] Buat 13 Controller (termasuk ExportController, ActivityLogController, ProfileController)
+- [ ] Definisikan ~64 Routes
+- [ ] Buat 1 Layout + 35 Blade Views (termasuk 5 PDF template)
+- [ ] Tambahkan Spatie Activity Log ke 6 model
 - [ ] Build + Test
 
-**Estimasi waktu pengerjaan:** 10-14 jam untuk programmer yang sudah familiar dengan Laravel.
+**Estimasi waktu pengerjaan:** 14-20 jam untuk programmer yang sudah familiar dengan Laravel.

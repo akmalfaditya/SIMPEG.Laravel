@@ -4,9 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class RiwayatJabatan extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
+    }
     protected $fillable = [
         'pegawai_id', 'jabatan_id', 'nomor_sk',
         'tmt_jabatan', 'tanggal_sk', 'file_pdf_path', 'google_drive_link',

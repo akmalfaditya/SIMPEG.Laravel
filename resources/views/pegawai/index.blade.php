@@ -58,7 +58,13 @@ function loadData() {
                     <td class="px-4 py-3 text-slate-600">${r.pangkat_terakhir}</td>
                     <td class="px-4 py-3 text-slate-600">${r.jabatan_terakhir}</td>
                     <td class="px-4 py-3 text-slate-600">${r.masa_kerja}</td>
-                    <td class="px-4 py-3"><a href="/pegawai/${r.id}" class="text-blue-600 hover:underline text-xs font-medium">Detail →</a></td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <a href="/pegawai/${r.id}" class="inline-flex items-center px-2 py-1 bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs rounded-md font-medium transition-colors">Detail</a>
+                            <a href="/pegawai/${r.id}/edit" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                            <button type="button" onclick="confirmDelete('/pegawai/${r.id}', 'Yakin ingin menghapus data pegawai ${r.nama_lengkap}?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                        </div>
+                    </td>
                 </tr>`;
             });
             const totalPages = Math.ceil(d.total / limit);
@@ -66,7 +72,18 @@ function loadData() {
             const btns = document.getElementById('paginationBtns');
             btns.innerHTML = '';
             for (let i = 1; i <= totalPages; i++) {
-                btns.innerHTML += `<button onclick="currentPage=${i};loadData()" class="px-3 py-1.5 text-xs rounded-lg transition-all ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${i}</button>`;
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                const pg = i;
+                btn.onclick = () => { currentPage = pg; loadData(); };
+                if (i === currentPage) {
+                    btn.style.cssText = 'padding:0.375rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;background:#2563eb;color:#fff;cursor:default;';
+                } else {
+                    btn.style.cssText = 'padding:0.375rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;background:#f1f5f9;color:#475569;cursor:pointer;';
+                    btn.onmouseenter = function(){ this.style.background='#e2e8f0'; };
+                    btn.onmouseleave = function(){ this.style.background='#f1f5f9'; };
+                }
+                btns.appendChild(btn);
             }
         });
 }

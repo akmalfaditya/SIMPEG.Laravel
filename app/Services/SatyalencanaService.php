@@ -78,4 +78,23 @@ class SatyalencanaService
             fn($c) => $c['milestone'] === $years
         ));
     }
+
+    public function awardCandidate(int $pegawaiId, int $milestone, array $data): \App\Models\RiwayatPenghargaan
+    {
+        $namaPenghargaan = match ($milestone) {
+            10 => 'Satyalencana Karya Satya X Tahun',
+            20 => 'Satyalencana Karya Satya XX Tahun',
+            30 => 'Satyalencana Karya Satya XXX Tahun',
+            default => 'Satyalencana Karya Satya',
+        };
+
+        return \App\Models\RiwayatPenghargaan::create([
+            'pegawai_id' => $pegawaiId,
+            'nama_penghargaan' => $namaPenghargaan,
+            'tahun' => $data['tahun'] ?? date('Y'),
+            'milestone' => $milestone,
+            'nomor_sk' => $data['nomor_sk'] ?? null,
+            'tanggal_sk' => $data['tanggal_sk'] ?? null,
+        ]);
+    }
 }

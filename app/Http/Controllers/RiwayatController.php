@@ -15,6 +15,7 @@ use App\Models\PenilaianKinerja;
 
 use App\Services\RiwayatService;
 use App\Services\JabatanService;
+use App\Services\KGBCalculationService;
 
 use App\Http\Requests\Riwayat\StorePangkatRequest;
 use App\Http\Requests\Riwayat\UpdatePangkatRequest;
@@ -49,6 +50,7 @@ class RiwayatController extends Controller
     public function __construct(
         private RiwayatService $service,
         private JabatanService $jabatanService,
+        private KGBCalculationService $kgbCalculationService,
     ) {}
 
     // --- PANGKAT ---
@@ -131,9 +133,12 @@ class RiwayatController extends Controller
     public function createKGB(int $pegawaiId)
     {
         $peg = Pegawai::findOrFail($pegawaiId);
+        $nextSalary = $this->kgbCalculationService->getNextKGBSalary($peg);
         return view('riwayat.create-kgb', [
             'pegawaiId' => $pegawaiId,
             'gajiPokok' => $peg->gaji_pokok,
+            'calculatedGajiBaru' => $nextSalary['gaji_baru'] ?? null,
+            'calculatedMkgTahun' => $nextSalary['masa_kerja_tahun'] ?? 0,
         ]);
     }
 

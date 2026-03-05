@@ -9,6 +9,9 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\PensiunController;
 use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\SatyalencanaController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -85,4 +88,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/pensiun', [PensiunController::class, 'index'])->name('pensiun.index');
     Route::get('/duk', [DUKController::class, 'index'])->name('duk.index');
     Route::get('/satyalencana', [SatyalencanaController::class, 'index'])->name('satyalencana.index');
+    Route::post('/satyalencana/award', [SatyalencanaController::class, 'award'])->name('satyalencana.award');
+
+    // Export
+    Route::get('/export/{type}/{format}', [ExportController::class, 'export'])->name('export');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // Activity Log
+    Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
