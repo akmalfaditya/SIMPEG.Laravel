@@ -35,7 +35,7 @@
     {{-- Change Password --}}
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Ubah Password</h3>
-        <form method="POST" action="{{ route('profile.password') }}">
+        <form method="POST" action="{{ route('profile.password.update') }}">
             @csrf
             @method('PUT')
             <div class="space-y-4">
