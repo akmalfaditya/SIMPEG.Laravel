@@ -50,7 +50,7 @@
     {{-- Tabs for Riwayat --}}
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
-            @foreach(['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP'] as $key => $label)
+            @foreach(['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
             <button onclick="showTab('{{ $key }}')" class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}" data-tab="{{ $key }}">{{ $label }}</button>
             @endforeach
         </div>
@@ -249,6 +249,40 @@
                                 <button type="button" onclick="confirmDelete('{{ route('riwayat.latihan.destroy', $r) }}', 'Hapus data riwayat latihan ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Penghargaan --}}
+        <div class="tab-content p-5 hidden" id="tab-penghargaan">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Nama Penghargaan</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tahun</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Milestone</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tgl SK</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($pegawai->riwayatPenghargaan->sortByDesc('tahun') as $r)
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2">{{ $r->nama_penghargaan }}</td>
+                        <td class="px-3 py-2">{{ $r->tahun }}</td>
+                        <td class="px-3 py-2">
+                            @if($r->milestone)
+                            <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700">{{ $r->milestone }} Tahun</span>
+                            @else
+                            -
+                            @endif
+                        </td>
+                        <td class="px-3 py-2">{{ $r->nomor_sk ?? '-' }}</td>
+                        <td class="px-3 py-2">{{ $r->tanggal_sk?->format('d/m/Y') ?? '-' }}</td>
                     </tr>
                     @empty
                     <tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>

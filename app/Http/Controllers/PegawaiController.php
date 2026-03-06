@@ -51,7 +51,7 @@ class PegawaiController extends Controller
             'riwayatPangkat', 'riwayatJabatan.jabatan',
             'riwayatKgb', 'riwayatHukumanDisiplin',
             'riwayatPendidikan', 'riwayatLatihanJabatan',
-            'penilaianKinerja',
+            'penilaianKinerja', 'riwayatPenghargaan',
         ]);
         return view('pegawai.show', compact('pegawai'));
     }
