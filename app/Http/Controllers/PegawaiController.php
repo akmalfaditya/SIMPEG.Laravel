@@ -38,7 +38,7 @@ class PegawaiController extends Controller
 
         $total = $pegawaiList->count();
         $pagedModels = $pegawaiList->slice(($page - 1) * $limit, $limit)->values();
-        
+
         // Convert to explicitly structured Resource
         $paged = PegawaiResource::collection($pagedModels);
 
@@ -70,7 +70,7 @@ class PegawaiController extends Controller
     {
         $dto = PegawaiDTO::fromRequest($request->validated());
         $pegawai = $this->service->create($dto);
-        
+
         return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil ditambahkan.');
     }
 
@@ -89,7 +89,7 @@ class PegawaiController extends Controller
     {
         $dto = PegawaiDTO::fromRequest($request->validated());
         $this->service->update($pegawai, $dto);
-        
+
         return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
