@@ -118,6 +118,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tgl SK</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -128,6 +129,17 @@
                                 <td class="px-3 py-2">{{ $r->nomor_sk }}</td>
                                 <td class="px-3 py-2">{{ $r->tmt_pangkat->format('d/m/Y') }}</td>
                                 <td class="px-3 py-2">{{ $r->tanggal_sk->format('d/m/Y') }}</td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'pangkat', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('riwayat.pangkat.edit', $r) }}"
@@ -140,7 +152,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -157,6 +169,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jabatan</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">No SK</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -166,6 +179,17 @@
                                 <td class="px-3 py-2">{{ $r->jabatan->nama_jabatan ?? '-' }}</td>
                                 <td class="px-3 py-2">{{ $r->nomor_sk }}</td>
                                 <td class="px-3 py-2">{{ $r->tmt_jabatan->format('d/m/Y') }}</td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'jabatan', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('riwayat.jabatan.edit', $r) }}"
@@ -178,7 +202,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -196,6 +220,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Gaji Lama</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Gaji Baru</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -206,6 +231,17 @@
                                 <td class="px-3 py-2">{{ $r->tmt_kgb->format('d/m/Y') }}</td>
                                 <td class="px-3 py-2">Rp {{ number_format($r->gaji_lama, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2">Rp {{ number_format($r->gaji_baru, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'kgb', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('riwayat.kgb.edit', $r) }}"
@@ -218,7 +254,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -257,7 +293,7 @@
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($r->file_pdf_path)
-                                        <a href="{{ Storage::disk('documents')->url($r->file_pdf_path) }}"
+                                        <a href="{{ route('dokumen.download', ['type' => 'hukuman', 'id' => $r->id]) }}"
                                             target="_blank" class="text-blue-600 hover:underline text-xs">PDF</a>
                                     @elseif($r->google_drive_link)
                                         <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
@@ -302,6 +338,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Institusi</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jurusan</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Lulus</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -312,6 +349,17 @@
                                 <td class="px-3 py-2">{{ $r->institusi }}</td>
                                 <td class="px-3 py-2">{{ $r->jurusan }}</td>
                                 <td class="px-3 py-2">{{ $r->tahun_lulus }}</td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'pendidikan', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('riwayat.pendidikan.edit', $r) }}"
@@ -324,7 +372,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -342,6 +390,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tahun</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jam</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Penyelenggara</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -352,6 +401,17 @@
                                 <td class="px-3 py-2">{{ $r->tahun_pelaksanaan }}</td>
                                 <td class="px-3 py-2">{{ $r->jumlah_jam }}</td>
                                 <td class="px-3 py-2">{{ $r->penyelenggara }}</td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'latihan', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('riwayat.latihan.edit', $r) }}"
@@ -364,7 +424,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -418,6 +478,7 @@
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tahun</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Nilai SKP</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -428,6 +489,17 @@
                                 <td class="px-3 py-2">
                                     <span
                                         class="px-2 py-0.5 text-xs rounded-full {{ $r->nilai_skp === 'Sangat Baik' ? 'bg-emerald-100 text-emerald-700' : ($r->nilai_skp === 'Baik' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700') }}">{{ $r->nilai_skp }}</span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    @if ($r->file_pdf_path)
+                                        <a href="{{ route('dokumen.download', ['type' => 'skp', 'id' => $r->id]) }}"
+                                            target="_blank" class="text-blue-600 hover:underline text-xs">Lihat PDF</a>
+                                    @elseif($r->google_drive_link)
+                                        <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-blue-600 hover:underline text-xs">Drive</a>
+                                    @else
+                                        <span class="text-slate-400 text-xs italic">Tidak ada</span>
+                                    @endif
                                 </td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center gap-2">
@@ -441,7 +513,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
+                                <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>

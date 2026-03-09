@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentUploadService
 {
-    public function upload(UploadedFile $file, string $subfolder): string
+    public function upload(UploadedFile $file, string $subfolder, ?string $fileName = null): string
     {
+        if ($fileName) {
+            return $file->storeAs($subfolder, $fileName, 'documents');
+        }
+
         return $file->store($subfolder, 'documents');
     }
 

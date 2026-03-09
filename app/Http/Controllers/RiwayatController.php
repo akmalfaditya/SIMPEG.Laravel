@@ -88,7 +88,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat', null, (int) $validated['pegawai_id']);
         }
         $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->storePangkat($dto);
@@ -107,7 +107,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat', $riwayatPangkat->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat', $riwayatPangkat->file_pdf_path, $riwayatPangkat->pegawai_id);
         }
         $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->updatePangkat($riwayatPangkat, $dto);
@@ -134,7 +134,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan', null, (int) $validated['pegawai_id']);
         }
         $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->storeJabatan($dto);
@@ -153,7 +153,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan', $riwayatJabatan->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan', $riwayatJabatan->file_pdf_path, $riwayatJabatan->pegawai_id);
         }
         $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->updateJabatan($riwayatJabatan, $dto);
@@ -196,7 +196,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', null, (int) $validated['pegawai_id']);
         }
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->storeKgb($dto);
@@ -212,7 +212,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', $riwayatKgb->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', $riwayatKgb->file_pdf_path, $riwayatKgb->pegawai_id);
         }
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->updateKgb($riwayatKgb, $dto);
@@ -255,7 +255,7 @@ class RiwayatController extends Controller
         $validated = $request->validated();
 
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'));
+            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'), null, (int) $validated['pegawai_id']);
         }
 
         $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
@@ -313,7 +313,7 @@ class RiwayatController extends Controller
         $validated = $request->validated();
 
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'), $riwayatHukuman->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'), $riwayatHukuman->file_pdf_path, $riwayatHukuman->pegawai_id);
         }
 
         $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
@@ -340,7 +340,7 @@ class RiwayatController extends Controller
 
         $filePath = null;
         if ($request->hasFile('file_sk_pemulihan')) {
-            $filePath = $this->service->uploadSk($request->file('file_sk_pemulihan'), 'sk_pemulihan');
+            $filePath = $this->service->uploadSk($request->file('file_sk_pemulihan'), 'sk_pemulihan', null, $riwayatHukuman->pegawai_id);
         }
 
         $this->service->pulihkanHukuman(
@@ -366,7 +366,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan', null, (int) $validated['pegawai_id']);
         }
         $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->storePendidikan($dto);
@@ -382,7 +382,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan', $riwayatPendidikan->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan', $riwayatPendidikan->file_pdf_path, $riwayatPendidikan->pegawai_id);
         }
         $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->updatePendidikan($riwayatPendidikan, $dto);
@@ -406,7 +406,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan', null, (int) $validated['pegawai_id']);
         }
         $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->storeLatihan($dto);
@@ -422,7 +422,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan', $riwayatLatihan->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan', $riwayatLatihan->file_pdf_path, $riwayatLatihan->pegawai_id);
         }
         $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->updateLatihan($riwayatLatihan, $dto);
@@ -446,7 +446,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp');
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp', null, (int) $validated['pegawai_id']);
         }
         $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->storeSKP($dto);
@@ -462,7 +462,7 @@ class RiwayatController extends Controller
     {
         $validated = $request->validated();
         if ($request->hasFile('file_sk')) {
-            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp', $penilaianKinerja->file_pdf_path);
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp', $penilaianKinerja->file_pdf_path, $penilaianKinerja->pegawai_id);
         }
         $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->updateSKP($penilaianKinerja, $dto);

@@ -16,7 +16,7 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 - **Master Data** — CRUD Jabatan (dengan rumpun jabatan), Tabel Gaji (PP 15/2019), dan referensi Golongan Ruang
 - **Export PDF & Excel** — Semua laporan (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) bisa diekspor ke PDF dan Excel
 - **Activity Log** — Pencatatan otomatis setiap perubahan data pegawai dan riwayat menggunakan Spatie Activity Log
-- **Document Management** — Upload dan manajemen file SK (PDF, maks 5MB) dengan link Google Drive opsional
+- **Document Management** — Upload dan manajemen file SK (PDF, maks 5MB) dengan penamaan bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`), inline PDF preview di browser, link Google Drive opsional
 - **Profil & Ganti Password** — Manajemen profil user dan update password
 - **Autentikasi** — Login/logout dengan role-based access (SuperAdmin, HR)
 
@@ -204,7 +204,7 @@ Semua business logic dipisahkan ke Service class untuk menjaga controller tetap 
 | `DUKService`             | Ranking DUK sesuai hierarki BKN                                                          |
 | `SatyalencanaService`    | Identifikasi kandidat Satyalencana                                                       |
 | `DashboardService`       | Agregasi data dashboard + chart                                                          |
-| `DocumentUploadService`  | Upload dan manajemen file dokumen SK                                                     |
+| `DocumentUploadService`  | Upload dan manajemen file dokumen SK (penamaan bermakna via `storeAs`)                   |
 | `GolonganPangkatService` | CRUD master data golongan/pangkat                                                        |
 
 ## Hukuman Disiplin — Hybrid Logic (PP 94/2021)

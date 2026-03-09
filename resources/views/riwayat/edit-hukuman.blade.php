@@ -79,7 +79,10 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Upload SK Hukdis (PDF, maks 5MB)</label>
                     @if ($riwayat->file_pdf_path)
-                        <p class="text-xs text-emerald-600 mb-1">File saat ini: {{ basename($riwayat->file_pdf_path) }}</p>
+                        <p class="text-xs text-emerald-600 mb-1">File saat ini: {{ basename($riwayat->file_pdf_path) }}
+                            — <a href="{{ route('dokumen.download', ['type' => 'hukuman', 'id' => $riwayat->id]) }}"
+                                target="_blank" class="text-blue-600 hover:underline font-medium">Lihat Dokumen</a>
+                        </p>
                     @endif
                     <input type="file" name="file_sk" accept=".pdf"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-blue-50 file:text-blue-600">

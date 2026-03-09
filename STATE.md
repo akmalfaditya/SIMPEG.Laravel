@@ -22,7 +22,7 @@
 - [x] **Master Data Jabatan** — CRUD + filter rumpun + toggle active (SuperAdmin only)
 - [x] **Master Data Golongan/Pangkat** — CRUD + toggle active (SuperAdmin only) — _refactor dari Enum ke tabel database_
 - [x] **Master Data Tabel Gaji** — CRUD per golongan × masa kerja (SuperAdmin only)
-- [x] **Document Management** — Upload file SK (PDF, maks 5MB) + link Google Drive opsional
+- [x] **Document Management** — Upload file SK (PDF, maks 5MB) + link Google Drive opsional + inline PDF preview di browser + penamaan file bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`) + kolom "Dokumen" di semua tab riwayat (show.blade.php) + link "Lihat Dokumen" di semua form edit
 
 ### Monitoring & Laporan
 

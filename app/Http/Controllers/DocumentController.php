@@ -10,7 +10,7 @@ use App\Models\RiwayatLatihanJabatan;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentController extends Controller
 {
@@ -24,7 +24,7 @@ class DocumentController extends Controller
         'skp' => PenilaianKinerja::class,
     ];
 
-    public function download(string $type, int $id): StreamedResponse
+    public function download(string $type, int $id): BinaryFileResponse
     {
         $modelClass = self::TYPE_MODEL_MAP[$type] ?? null;
 
@@ -38,6 +38,11 @@ class DocumentController extends Controller
             abort(404, 'File tidak ditemukan.');
         }
 
-        return Storage::disk('documents')->download($record->file_pdf_path);
+        $fullPath = Storage::disk('documents')->path($record->file_pdf_path);
+
+        return response()->file($fullPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($record->file_pdf_path) . '"',
+        ]);
     }
 }

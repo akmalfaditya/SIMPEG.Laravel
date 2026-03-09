@@ -34,13 +34,34 @@ class RiwayatService
 
     /**
      * Generic SK file upload with optional old file deletion.
+     * Builds meaningful filename: {NIP}_{Module}_{timestamp}_{OriginalName}.
      */
-    public function uploadSk(UploadedFile $file, string $subfolder, ?string $oldPath = null): string
+    public function uploadSk(UploadedFile $file, string $subfolder, ?string $oldPath = null, ?int $pegawaiId = null): string
     {
         if ($oldPath) {
             $this->uploadService->delete($oldPath);
         }
-        return $this->uploadService->upload($file, $subfolder);
+
+        $fileName = $this->buildFileName($file, $subfolder, $pegawaiId);
+
+        return $this->uploadService->upload($file, $subfolder, $fileName);
+    }
+
+    private function buildFileName(UploadedFile $file, string $subfolder, ?int $pegawaiId): ?string
+    {
+        if (!$pegawaiId) {
+            return null;
+        }
+
+        $pegawai = Pegawai::find($pegawaiId);
+        if (!$pegawai) {
+            return null;
+        }
+
+        $moduleName = ucfirst(str_replace('sk_', '', $subfolder));
+        $originalName = str_replace(' ', '_', $file->getClientOriginalName());
+
+        return $pegawai->nip . '_' . $moduleName . '_' . time() . '_' . $originalName;
     }
 
     // --- PANGKAT ---
@@ -309,9 +330,9 @@ class RiwayatService
         });
     }
 
-    public function uploadHukumanSk(UploadedFile $file, ?string $oldPath = null): string
+    public function uploadHukumanSk(UploadedFile $file, ?string $oldPath = null, ?int $pegawaiId = null): string
     {
-        return $this->uploadSk($file, 'sk_hukuman', $oldPath);
+        return $this->uploadSk($file, 'sk_hukuman', $oldPath, $pegawaiId);
     }
 
     // --- PENDIDIKAN ---

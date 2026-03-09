@@ -1380,7 +1380,8 @@ Buat folder `app/Services/` dan buat 12 service class:
 ```php
 // app/Services/DocumentUploadService.php
 // Menangani upload dan manajemen file dokumen SK, ijazah, dll
-// Berisi: upload(), delete()
+// Berisi: upload($file, $subfolder, $fileName), delete($path), getUrl($path)
+// upload() mendukung storeAs() untuk penamaan file bermakna (NIP_Module_Timestamp_NamaAsli.pdf)
 ```
 
 ---
@@ -1435,7 +1436,7 @@ Buat 16 controller di `app/Http/Controllers/`:
 | `DUKController`             | `index()`                                                                                                                                                     |
 | `SatyalencanaController`    | `index()` dengan filter milestone, `award()` untuk pencatatan penghargaan                                                                                     |
 | `ExportController`          | `export($type, $format)` — export PDF (DomPDF) dan Excel (Maatwebsite) untuk 5 jenis laporan                                                                  |
-| `DocumentController`        | `download($type, $id)` — download file dokumen SK (pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp)                                                  |
+| `DocumentController`        | `download($type, $id)` — inline preview file dokumen SK di browser (pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp)                                 |
 | `JabatanController`         | CRUD master data jabatan (admin) — dengan filter rumpun                                                                                                       |
 | `TabelGajiController`       | CRUD tabel gaji PP 15/2019 (admin) — per golongan dan masa kerja                                                                                              |
 | `GolonganController`        | `index()` — referensi golongan ruang dengan statistik gaji                                                                                                    |
