@@ -1633,9 +1633,9 @@ Pass data chart dari controller sebagai JSON ke JavaScript, lalu render 4 canvas
 
 Gunakan fetch API ke endpoint `/pegawai-data?page=X&limit=10&search=keyword` dan render tabel secara dinamis dengan JavaScript. Setiap baris memiliki 3 tombol aksi: **Detail**, **Edit**, **Hapus**.
 
-### 13.6 Pegawai Show — Tab System + Delete Modal
+### 13.6 Pegawai Show — Tab System + Tab Retention + Delete Modal
 
-Gunakan JavaScript sederhana untuk show/hide tab content:
+Gunakan JavaScript sederhana untuk show/hide tab content, dengan dukungan **tab retention** via URL fragment:
 
 ```js
 function showTab(name) {
@@ -1647,7 +1647,25 @@ function showTab(name) {
     });
     document.getElementById("tab-" + name).classList.remove("hidden");
 }
+
+// Tab retention: restore active tab from URL hash on page load
+document.addEventListener("DOMContentLoaded", function () {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith("#tab-")) {
+        showTab(hash.substring(5));
+    }
+});
 ```
+
+**Tab Retention Pattern:** Setiap redirect dari `RiwayatController` menyertakan URL fragment (`#tab-{type}`) sehingga JavaScript otomatis mengaktifkan tab yang sesuai setelah page reload.
+
+```php
+// Contoh: redirect setelah store Jabatan
+return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-jabatan')
+    ->with('success', 'Riwayat Jabatan baru berhasil ditambahkan.' . $docMsg);
+```
+
+**Flash Messages:** Alert menggunakan format deskriptif dengan icon, judul ("Berhasil!"/"Terjadi Kesalahan!"), pesan detail, dan tombol dismiss. Pesan otomatis mencakup info dokumen jika file diunggah.
 
 Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
 

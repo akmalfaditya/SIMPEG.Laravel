@@ -73,8 +73,8 @@ class RiwayatController extends Controller
 
         if ($activeBlocking->isNotEmpty()) {
             $notes = $activeBlocking->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
-            return redirect()->route('pegawai.show', $pegawaiId)
-                ->with('error', "Tidak dapat menambah Pangkat — pegawai sedang menjalani sanksi: {$notes}.");
+            return redirect(route('pegawai.show', $pegawaiId) . '#tab-pangkat')
+                ->with('error', "Tidak dapat menambah Riwayat Pangkat — pegawai sedang menjalani sanksi aktif: {$notes}.");
         }
 
         return view('riwayat.create-pangkat', [
@@ -92,7 +92,9 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->storePangkat($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pangkat berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-pangkat')
+            ->with('success', 'Riwayat Pangkat baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editPangkat(RiwayatPangkat $riwayatPangkat)
@@ -111,14 +113,17 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->updatePangkat($riwayatPangkat, $dto);
-        return redirect()->route('pegawai.show', $riwayatPangkat->pegawai_id)->with('success', 'Riwayat Pangkat berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatPangkat->pegawai_id) . '#tab-pangkat')
+            ->with('success', 'Data Riwayat Pangkat berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyPangkat(RiwayatPangkat $riwayatPangkat)
     {
         $pegawaiId = $riwayatPangkat->pegawai_id;
         $this->service->deletePangkat($riwayatPangkat);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-pangkat')
+            ->with('success', 'Data Riwayat Pangkat berhasil dihapus.');
     }
 
     // --- JABATAN ---
@@ -138,7 +143,9 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->storeJabatan($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Jabatan berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-jabatan')
+            ->with('success', 'Riwayat Jabatan baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editJabatan(RiwayatJabatan $riwayatJabatan)
@@ -157,14 +164,17 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->updateJabatan($riwayatJabatan, $dto);
-        return redirect()->route('pegawai.show', $riwayatJabatan->pegawai_id)->with('success', 'Riwayat Jabatan berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatJabatan->pegawai_id) . '#tab-jabatan')
+            ->with('success', 'Data Riwayat Jabatan berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyJabatan(RiwayatJabatan $riwayatJabatan)
     {
         $pegawaiId = $riwayatJabatan->pegawai_id;
         $this->service->deleteJabatan($riwayatJabatan);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-jabatan')
+            ->with('success', 'Data Riwayat Jabatan berhasil dihapus.');
     }
 
     // --- KGB ---
@@ -179,8 +189,8 @@ class RiwayatController extends Controller
 
         if ($activeHukdisKgb->isNotEmpty()) {
             $durasi = $activeHukdisKgb->sum(fn($h) => $h->durasi_tahun ?? 1);
-            return redirect()->route('pegawai.show', $pegawaiId)
-                ->with('error', "Tidak dapat menambah KGB — pegawai sedang menjalani sanksi Penundaan KGB selama {$durasi} tahun.");
+            return redirect(route('pegawai.show', $pegawaiId) . '#tab-kgb')
+                ->with('error', "Tidak dapat menambah Riwayat KGB — pegawai sedang menjalani sanksi Penundaan KGB selama {$durasi} tahun.");
         }
 
         $nextSalary = $this->kgbCalculationService->getNextKGBSalary($peg);
@@ -200,7 +210,9 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->storeKgb($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat KGB berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-kgb')
+            ->with('success', 'Riwayat KGB baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editKGB(RiwayatKgb $riwayatKgb)
@@ -216,14 +228,17 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->updateKgb($riwayatKgb, $dto);
-        return redirect()->route('pegawai.show', $riwayatKgb->pegawai_id)->with('success', 'Riwayat KGB berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatKgb->pegawai_id) . '#tab-kgb')
+            ->with('success', 'Data Riwayat KGB berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyKGB(RiwayatKgb $riwayatKgb)
     {
         $pegawaiId = $riwayatKgb->pegawai_id;
         $this->service->deleteKgb($riwayatKgb);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-kgb')
+            ->with('success', 'Data Riwayat KGB berhasil dihapus.');
     }
 
     // --- HUKUMAN DISIPLIN ---
@@ -260,7 +275,9 @@ class RiwayatController extends Controller
 
         $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
         $this->service->storeHukuman($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Hukuman berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-hukuman')
+            ->with('success', 'Riwayat Hukuman Disiplin baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editHukuman(RiwayatHukumanDisiplin $riwayatHukuman)
@@ -318,14 +335,17 @@ class RiwayatController extends Controller
 
         $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
         $this->service->updateHukuman($riwayatHukuman, $dto);
-        return redirect()->route('pegawai.show', $riwayatHukuman->pegawai_id)->with('success', 'Riwayat Hukuman berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatHukuman->pegawai_id) . '#tab-hukuman')
+            ->with('success', 'Data Riwayat Hukuman Disiplin berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyHukuman(RiwayatHukumanDisiplin $riwayatHukuman)
     {
         $pegawaiId = $riwayatHukuman->pegawai_id;
         $this->service->deleteHukuman($riwayatHukuman);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-hukuman')
+            ->with('success', 'Data Riwayat Hukuman Disiplin berhasil dihapus.');
     }
 
     public function pulihkanHukuman(\Illuminate\Http\Request $request, RiwayatHukumanDisiplin $riwayatHukuman)
@@ -352,8 +372,8 @@ class RiwayatController extends Controller
             isset($validated['restoration_jabatan_id']) ? (int) $validated['restoration_jabatan_id'] : null,
         );
 
-        return redirect()->route('pegawai.show', $riwayatHukuman->pegawai_id)
-            ->with('success', 'Hukuman disiplin berhasil dipulihkan.');
+        return redirect(route('pegawai.show', $riwayatHukuman->pegawai_id) . '#tab-hukuman')
+            ->with('success', 'Hukuman Disiplin berhasil dipulihkan dan status telah diperbarui.');
     }
 
     // --- PENDIDIKAN ---
@@ -370,7 +390,9 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->storePendidikan($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pendidikan berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen ijazah turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-pendidikan')
+            ->with('success', 'Riwayat Pendidikan baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editPendidikan(RiwayatPendidikan $riwayatPendidikan)
@@ -386,14 +408,17 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->updatePendidikan($riwayatPendidikan, $dto);
-        return redirect()->route('pegawai.show', $riwayatPendidikan->pegawai_id)->with('success', 'Riwayat Pendidikan berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen ijazah telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatPendidikan->pegawai_id) . '#tab-pendidikan')
+            ->with('success', 'Data Riwayat Pendidikan berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyPendidikan(RiwayatPendidikan $riwayatPendidikan)
     {
         $pegawaiId = $riwayatPendidikan->pegawai_id;
         $this->service->deletePendidikan($riwayatPendidikan);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-pendidikan')
+            ->with('success', 'Data Riwayat Pendidikan berhasil dihapus.');
     }
 
     // --- LATIHAN JABATAN ---
@@ -410,7 +435,9 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->storeLatihan($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Latihan berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen sertifikat turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-latihan')
+            ->with('success', 'Riwayat Latihan Jabatan baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editLatihan(RiwayatLatihanJabatan $riwayatLatihan)
@@ -426,14 +453,17 @@ class RiwayatController extends Controller
         }
         $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->updateLatihan($riwayatLatihan, $dto);
-        return redirect()->route('pegawai.show', $riwayatLatihan->pegawai_id)->with('success', 'Riwayat Latihan berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen sertifikat telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $riwayatLatihan->pegawai_id) . '#tab-latihan')
+            ->with('success', 'Data Riwayat Latihan Jabatan berhasil diperbarui.' . $docMsg);
     }
 
     public function destroyLatihan(RiwayatLatihanJabatan $riwayatLatihan)
     {
         $pegawaiId = $riwayatLatihan->pegawai_id;
         $this->service->deleteLatihan($riwayatLatihan);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-latihan')
+            ->with('success', 'Data Riwayat Latihan Jabatan berhasil dihapus.');
     }
 
     // --- PENILAIAN KINERJA (SKP) ---
@@ -450,7 +480,9 @@ class RiwayatController extends Controller
         }
         $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->storeSKP($dto);
-        return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Penilaian Kinerja berhasil ditambahkan.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SKP turut diunggah.' : '';
+        return redirect(route('pegawai.show', $dto->pegawaiId) . '#tab-skp')
+            ->with('success', 'Penilaian Kinerja (SKP) baru berhasil ditambahkan.' . $docMsg);
     }
 
     public function editSKP(PenilaianKinerja $penilaianKinerja)
@@ -466,13 +498,16 @@ class RiwayatController extends Controller
         }
         $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->updateSKP($penilaianKinerja, $dto);
-        return redirect()->route('pegawai.show', $penilaianKinerja->pegawai_id)->with('success', 'Penilaian Kinerja berhasil diperbarui.');
+        $docMsg = $request->hasFile('file_sk') ? ' Dokumen SKP telah diperbarui.' : '';
+        return redirect(route('pegawai.show', $penilaianKinerja->pegawai_id) . '#tab-skp')
+            ->with('success', 'Data Penilaian Kinerja (SKP) berhasil diperbarui.' . $docMsg);
     }
 
     public function destroySKP(PenilaianKinerja $penilaianKinerja)
     {
         $pegawaiId = $penilaianKinerja->pegawai_id;
         $this->service->deleteSKP($penilaianKinerja);
-        return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+        return redirect(route('pegawai.show', $pegawaiId) . '#tab-skp')
+            ->with('success', 'Data Penilaian Kinerja (SKP) berhasil dihapus.');
     }
 }

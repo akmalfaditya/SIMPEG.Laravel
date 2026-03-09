@@ -56,6 +56,8 @@ Request → Route → Controller → Service → Model → Database
 3. **PHP Enums** — Data master statis (Agama, JenisKelamin, JenisSanksi, dll) menggunakan PHP 8.1 Backed Enum.
 4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji) disimpan di tabel database, dilayani oleh dedicated Service.
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
+6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
+7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
 
 ---
 

@@ -26,6 +26,8 @@
     - Relationship methods: tipe eksplisit (`HasMany`, `BelongsTo`)
     - Trait `LogsActivity` (Spatie) pada semua model yang menyimpan data penting
 - **Controller** — Thin controller. Hanya: validate → call service → return view/redirect. **Tidak ada** business logic di controller.
+- **Redirect Pattern (Riwayat)** — Setelah CRUD riwayat, gunakan `redirect(route('pegawai.show', $id) . '#tab-{type}')` dengan flash message deskriptif. Pesan harus menyebut nama modul + aksi + info dokumen jika file diunggah.
+- **Flash Messages** — Gunakan `->with('success', '...')` atau `->with('error', '...')` dengan pesan lengkap Bahasa Indonesia. Format: `"{Modul} berhasil {aksi}. {info dokumen opsional}."`
 - **Service Layer** — Semua business logic di `app/Services/`. Satu service per domain entity.
 - **DTO Pattern** — Gunakan DTO untuk transfer data dari request ke service. Method: `fromRequest(array)`, `toArray()`.
 - **FormRequest** — Setiap store/update harus memiliki dedicated FormRequest. Penamaan: `Store{Entity}Request`, `Update{Entity}Request`.

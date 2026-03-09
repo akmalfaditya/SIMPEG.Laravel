@@ -17,6 +17,7 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 - **Export PDF & Excel** — Semua laporan (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) bisa diekspor ke PDF dan Excel
 - **Activity Log** — Pencatatan otomatis setiap perubahan data pegawai dan riwayat menggunakan Spatie Activity Log
 - **Document Management** — Upload dan manajemen file SK (PDF, maks 5MB) dengan penamaan bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`), inline PDF preview di browser, link Google Drive opsional
+- **UX: Tab Retention & Flash Messages** — Setelah CRUD riwayat, halaman otomatis kembali ke tab yang aktif; alert deskriptif dengan icon, judul, pesan detail, dan tombol dismiss
 - **Profil & Ganti Password** — Manajemen profil user dan update password
 - **Autentikasi** — Login/logout dengan role-based access (SuperAdmin, HR)
 

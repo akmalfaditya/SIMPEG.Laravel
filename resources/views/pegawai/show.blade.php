@@ -590,10 +590,29 @@
                 el.classList.remove('border-blue-600', 'text-blue-600');
                 el.classList.add('border-transparent', 'text-slate-500');
             });
-            document.getElementById('tab-' + name).classList.remove('hidden');
-            document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('border-blue-600', 'text-blue-600');
-            document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.remove('border-transparent', 'text-slate-500');
+            const panel = document.getElementById('tab-' + name);
+            const btn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+            if (panel && btn) {
+                panel.classList.remove('hidden');
+                btn.classList.add('border-blue-600', 'text-blue-600');
+                btn.classList.remove('border-transparent', 'text-slate-500');
+            }
         }
+
+        // Tab retention: restore active tab from URL hash on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#tab-')) {
+                const tabName = hash.substring(5); // remove '#tab-'
+                showTab(tabName);
+                // Scroll the tab nav into view after switching
+                const tabNav = document.getElementById('tabNav');
+                if (tabNav) tabNav.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }
+        });
 
         function openPulihkanModal(hukumanId, jenisSanksiValue) {
             var modal = document.getElementById('pulihkanModal');
