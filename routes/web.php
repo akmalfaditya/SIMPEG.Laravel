@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/kenaikan-pangkat', [KenaikanPangkatController::class, 'index'])->name('kenaikan-pangkat.index');
     Route::get('/kenaikan-pangkat/eligible', [KenaikanPangkatController::class, 'eligible'])->name('kenaikan-pangkat.eligible');
+    Route::get('/kenaikan-pangkat/ditunda', [KenaikanPangkatController::class, 'ditunda'])->name('kenaikan-pangkat.ditunda');
 
     Route::get('/pensiun', [PensiunController::class, 'index'])->name('pensiun.index');
     Route::get('/duk', [DUKController::class, 'index'])->name('duk.index');

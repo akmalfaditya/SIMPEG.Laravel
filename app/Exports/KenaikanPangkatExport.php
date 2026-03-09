@@ -19,7 +19,7 @@ class KenaikanPangkatExport implements FromArray, WithHeadings, WithMapping, Wit
 
     public function headings(): array
     {
-        return ['NIP', 'Nama Lengkap', 'Golongan Saat Ini', 'Golongan Berikutnya', 'Masa Kerja Gol.', 'MK', 'SKP', 'Latihan', 'Disiplin', 'Status', 'Keterangan'];
+        return ['NIP', 'Nama Lengkap', 'Golongan Saat Ini', 'Golongan Berikutnya', 'Masa Kerja Gol.', 'MK', 'SKP', 'Latihan', 'Disiplin', 'Status', 'Proyeksi Periode', 'Catatan Hukdis', 'Keterangan'];
     }
 
     public function map($row): array
@@ -35,6 +35,8 @@ class KenaikanPangkatExport implements FromArray, WithHeadings, WithMapping, Wit
             $row['syarat_latihan'] ? '✓' : '✗',
             $row['syarat_hukuman'] ? '✓' : '✗',
             $row['is_eligible'] ? 'Eligible' : 'Belum',
+            $row['proyeksi_periode'] ?? '-',
+            $row['hukdis_pangkat_note'] ?? '-',
             $row['alasan_tidak_eligible'] ?? '-',
         ];
     }

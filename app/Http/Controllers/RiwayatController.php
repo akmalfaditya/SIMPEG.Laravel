@@ -57,9 +57,29 @@ class RiwayatController extends Controller
     // --- PANGKAT ---
     public function createPangkat(int $pegawaiId)
     {
+        $pegawai = Pegawai::with(['riwayatPangkat', 'riwayatHukumanDisiplin'])->findOrFail($pegawaiId);
+        $currentPangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
+
+        // Block if active sanctions that prevent pangkat promotion
+        $activeBlocking = $pegawai->riwayatHukumanDisiplin
+            ->filter(fn($h) => in_array($h->jenis_sanksi, [
+                    JenisSanksi::PenundaanPangkat,
+                    JenisSanksi::PenurunanPangkat,
+                    JenisSanksi::PembebasanJabatan,
+                    JenisSanksi::Pemberhentian,
+                ])
+                && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte(today())));
+
+        if ($activeBlocking->isNotEmpty()) {
+            $notes = $activeBlocking->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
+            return redirect()->route('pegawai.show', $pegawaiId)
+                ->with('error', "Tidak dapat menambah Pangkat — pegawai sedang menjalani sanksi: {$notes}.");
+        }
+
         return view('riwayat.create-pangkat', [
             'pegawaiId' => $pegawaiId,
             'golonganOptions' => GolonganRuang::cases(),
+            'currentPangkat' => $currentPangkat,
         ]);
     }
 
