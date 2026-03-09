@@ -22,6 +22,7 @@ Panduan lengkap untuk membuat Sistem Informasi Manajemen Pegawai (SIMPEG) menggu
 14. [Menambahkan Export PDF & Excel](#14-menambahkan-export-pdf--excel)
 15. [Menambahkan Activity Log](#15-menambahkan-activity-log)
 16. [Build & Menjalankan Aplikasi](#16-build--menjalankan-aplikasi)
+17. [Relasi Database (ERD)](#17-relasi-database-erd)
 
 ---
 
@@ -107,7 +108,7 @@ New-Item database/database.sqlite -ItemType File
 
 ## 3. Membuat Enum
 
-SIMPEG memiliki 7 PHP Enum yang merepresentasikan data master. Buat folder `app/Enums/` dan buat file-file berikut:
+SIMPEG memiliki 10 PHP Enum yang merepresentasikan data master. Buat folder `app/Enums/` dan buat file-file berikut:
 
 ### 3.1 JenisKelamin
 
@@ -125,8 +126,8 @@ namespace App\Enums;
 
 enum JenisKelamin: int
 {
-    case LakiLaki = 0;
-    case Perempuan = 1;
+    case LakiLaki = 1;
+    case Perempuan = 2;
 
     public function label(): string
     {
@@ -149,12 +150,12 @@ namespace App\Enums;
 
 enum Agama: int
 {
-    case Islam = 0;
-    case Kristen = 1;
-    case Katolik = 2;
-    case Hindu = 3;
-    case Buddha = 4;
-    case Konghucu = 5;
+    case Islam = 1;
+    case Kristen = 2;
+    case Katolik = 3;
+    case Hindu = 4;
+    case Budha = 5;
+    case Konghucu = 6;
 
     public function label(): string
     {
@@ -174,10 +175,10 @@ namespace App\Enums;
 
 enum GolonganDarah: int
 {
-    case A = 0;
-    case B = 1;
-    case AB = 2;
-    case O = 3;
+    case A = 1;
+    case B = 2;
+    case AB = 3;
+    case O = 4;
 
     public function label(): string
     {
@@ -197,28 +198,45 @@ namespace App\Enums;
 
 enum GolonganRuang: int
 {
-    case I_a = 0;
-    case I_b = 1;
-    case I_c = 2;
-    case I_d = 3;
-    case II_a = 4;
-    case II_b = 5;
-    case II_c = 6;
-    case II_d = 7;
-    case III_a = 8;
-    case III_b = 9;
-    case III_c = 10;
-    case III_d = 11;
-    case IV_a = 12;
-    case IV_b = 13;
-    case IV_c = 14;
-    case IV_d = 15;
-    case IV_e = 16;
+    case I_a = 1;
+    case I_b = 2;
+    case I_c = 3;
+    case I_d = 4;
+    case II_a = 5;
+    case II_b = 6;
+    case II_c = 7;
+    case II_d = 8;
+    case III_a = 9;
+    case III_b = 10;
+    case III_c = 11;
+    case III_d = 12;
+    case IV_a = 13;
+    case IV_b = 14;
+    case IV_c = 15;
+    case IV_d = 16;
+    case IV_e = 17;
 
     public function label(): string
     {
-        $parts = explode('_', $this->name);
-        return $parts[0] . '/' . $parts[1];
+        return match ($this) {
+            self::I_a => 'I/a',
+            self::I_b => 'I/b',
+            self::I_c => 'I/c',
+            self::I_d => 'I/d',
+            self::II_a => 'II/a',
+            self::II_b => 'II/b',
+            self::II_c => 'II/c',
+            self::II_d => 'II/d',
+            self::III_a => 'III/a',
+            self::III_b => 'III/b',
+            self::III_c => 'III/c',
+            self::III_d => 'III/d',
+            self::IV_a => 'IV/a',
+            self::IV_b => 'IV/b',
+            self::IV_c => 'IV/c',
+            self::IV_d => 'IV/d',
+            self::IV_e => 'IV/e',
+        };
     }
 }
 ```
@@ -234,12 +252,12 @@ namespace App\Enums;
 
 enum JenisJabatan: int
 {
-    case PejabatAdministrasi = 0;
-    case FungsionalAhliPertama = 1;
-    case FungsionalAhliMuda = 2;
-    case FungsionalMadya = 3;
-    case FungsionalUtama = 4;
-    case PejabatPimpinanTinggi = 5;
+    case PejabatAdministrasi = 1;
+    case FungsionalAhliPertama = 2;
+    case FungsionalAhliMuda = 3;
+    case PejabatPimpinanTinggi = 4;
+    case FungsionalMadya = 5;
+    case FungsionalUtama = 6;
 
     public function label(): string
     {
@@ -247,9 +265,9 @@ enum JenisJabatan: int
             self::PejabatAdministrasi => 'Pejabat Administrasi',
             self::FungsionalAhliPertama => 'Fungsional Ahli Pertama',
             self::FungsionalAhliMuda => 'Fungsional Ahli Muda',
+            self::PejabatPimpinanTinggi => 'Pejabat Pimpinan Tinggi',
             self::FungsionalMadya => 'Fungsional Madya',
             self::FungsionalUtama => 'Fungsional Utama',
-            self::PejabatPimpinanTinggi => 'Pejabat Pimpinan Tinggi',
         };
     }
 }
@@ -266,10 +284,10 @@ namespace App\Enums;
 
 enum StatusPernikahan: int
 {
-    case BelumMenikah = 0;
-    case Menikah = 1;
-    case CeraiHidup = 2;
-    case CeraiMati = 3;
+    case BelumMenikah = 1;
+    case Menikah = 2;
+    case CeraiHidup = 3;
+    case CeraiMati = 4;
 
     public function label(): string
     {
@@ -294,9 +312,9 @@ namespace App\Enums;
 
 enum TingkatHukuman: int
 {
-    case Ringan = 0;
-    case Sedang = 1;
-    case Berat = 2;
+    case Ringan = 1;
+    case Sedang = 2;
+    case Berat = 3;
 
     public function label(): string
     {
@@ -305,11 +323,113 @@ enum TingkatHukuman: int
 }
 ```
 
+### 3.8 JenisSanksi (PP 94/2021)
+
+Buat file `app/Enums/JenisSanksi.php`:
+
+```php
+<?php
+
+namespace App\Enums;
+
+enum JenisSanksi: int
+{
+    case PenundaanKgb = 1;
+    case PenundaanPangkat = 2;
+    case PenurunanPangkat = 3;
+    case PenurunanJabatan = 4;
+    case PembebasanJabatan = 5;
+    case Pemberhentian = 6;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::PenundaanKgb => 'Penundaan KGB',
+            self::PenundaanPangkat => 'Penundaan Pangkat',
+            self::PenurunanPangkat => 'Penurunan Pangkat',
+            self::PenurunanJabatan => 'Penurunan Jabatan',
+            self::PembebasanJabatan => 'Pembebasan Jabatan',
+            self::Pemberhentian => 'Pemberhentian',
+        };
+    }
+}
+```
+
+### 3.9 StatusHukdis
+
+Buat file `app/Enums/StatusHukdis.php`:
+
+```php
+<?php
+
+namespace App\Enums;
+
+enum StatusHukdis: string
+{
+    case Aktif = 'aktif';
+    case Selesai = 'selesai';
+    case Dipulihkan = 'dipulihkan';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Aktif => 'Aktif',
+            self::Selesai => 'Selesai',
+            self::Dipulihkan => 'Dipulihkan',
+        };
+    }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::Aktif => 'bg-red-100 text-red-700',
+            self::Selesai => 'bg-slate-100 text-slate-700',
+            self::Dipulihkan => 'bg-green-100 text-green-700',
+        };
+    }
+}
+```
+
+### 3.10 RumpunJabatan
+
+Buat file `app/Enums/RumpunJabatan.php`:
+
+```php
+<?php
+
+namespace App\Enums;
+
+enum RumpunJabatan: int
+{
+    case Imigrasi = 1;
+    case Pemasyarakatan = 2;
+    case Struktural = 3;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Imigrasi => 'Imigrasi',
+            self::Pemasyarakatan => 'Pemasyarakatan',
+            self::Struktural => 'Struktural',
+        };
+    }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::Imigrasi => 'blue',
+            self::Pemasyarakatan => 'amber',
+            self::Struktural => 'slate',
+        };
+    }
+}
+```
+
 ---
 
 ## 4. Membuat Database Migration
 
-Kita akan membuat 4 file migrasi. Gunakan penamaan dengan prefix tanggal agar urutan eksekusi benar.
+Kita akan membuat 12 file migrasi custom (+ 3 migrasi default Laravel). Gunakan penamaan dengan prefix tanggal agar urutan eksekusi benar.
 
 ### 4.1 Tabel Jabatans
 
@@ -329,8 +449,8 @@ return new class extends Migration
         Schema::create('jabatans', function (Blueprint $table) {
             $table->id();
             $table->string('nama_jabatan');
-            $table->integer('jenis_jabatan');         // JenisJabatan enum
-            $table->integer('bup')->default(58);      // Batas Usia Pensiun
+            $table->tinyInteger('jenis_jabatan');      // JenisJabatan enum
+            $table->integer('bup')->default(58);       // Batas Usia Pensiun
             $table->integer('eselon_level')->default(0);
             $table->integer('kelas_jabatan')->default(1);
             $table->timestamps();
@@ -373,8 +493,9 @@ return new class extends Migration
             // ASN
             $table->date('tmt_cpns');
             $table->date('tmt_pns')->nullable();
-            $table->decimal('gaji_pokok', 15, 2)->default(0);
+            $table->string('foto_path')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->decimal('gaji_pokok', 15, 2)->default(0);
             // Data Tambahan
             $table->integer('agama');
             $table->integer('status_pernikahan');
@@ -415,7 +536,7 @@ return new class extends Migration
         Schema::create('riwayat_pangkats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
-            $table->integer('golongan_ruang');       // GolonganRuang enum
+            $table->tinyInteger('golongan_ruang');    // GolonganRuang enum
             $table->string('nomor_sk')->nullable();
             $table->date('tmt_pangkat');
             $table->date('tanggal_sk');
@@ -456,13 +577,16 @@ return new class extends Migration
         Schema::create('riwayat_hukuman_disiplins', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
-            $table->integer('tingkat_hukuman');       // TingkatHukuman enum
-            $table->string('jenis_hukuman');
+            $table->tinyInteger('tingkat_hukuman');    // TingkatHukuman enum
+            $table->tinyInteger('jenis_sanksi');       // JenisSanksi enum
+            $table->integer('durasi_tahun')->nullable();
             $table->string('nomor_sk')->nullable();
             $table->date('tanggal_sk')->nullable();
             $table->date('tmt_hukuman');
             $table->date('tmt_selesai_hukuman')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->string('file_pdf_path')->nullable();
+            $table->string('google_drive_link')->nullable();
             $table->timestamps();
         });
 
@@ -501,9 +625,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
             $table->string('nama_penghargaan');
+            $table->integer('tahun');
             $table->integer('milestone')->default(0);
-            $table->date('tanggal_penghargaan')->nullable();
-            $table->string('instansi_pemberi')->nullable();
+            $table->string('nomor_sk')->nullable();
+            $table->date('tanggal_sk')->nullable();
             $table->string('file_pdf_path')->nullable();
             $table->string('google_drive_link')->nullable();
             $table->timestamps();
@@ -515,6 +640,8 @@ return new class extends Migration
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
             $table->integer('tahun');
             $table->string('nilai_skp');
+            $table->string('file_pdf_path')->nullable();
+            $table->string('google_drive_link')->nullable();
             $table->timestamps();
         });
     }
@@ -579,12 +706,12 @@ return new class extends Migration
     {
         Schema::create('tabel_gajis', function (Blueprint $table) {
             $table->id();
-            $table->string('golongan');           // e.g. "I/a", "III/b"
-            $table->integer('masa_kerja_tahun');   // 0, 2, 4, 6, ...
+            $table->tinyInteger('golongan_ruang');     // GolonganRuang enum
+            $table->integer('masa_kerja_tahun');       // 0, 2, 4, 6, ...
             $table->decimal('gaji_pokok', 15, 2);
             $table->timestamps();
 
-            $table->unique(['golongan', 'masa_kerja_tahun']);
+            $table->unique(['golongan_ruang', 'masa_kerja_tahun']);
         });
     }
 
@@ -596,6 +723,118 @@ return new class extends Migration
 ```
 
 > **Catatan:** Tabel ini digunakan oleh `KGBCalculationService` untuk lookup gaji baru berdasarkan golongan dan masa kerja saat membuat riwayat KGB. Data di-seed melalui `TabelGajiSeeder`.
+
+### 4.6 Tambah Rumpun ke Jabatans
+
+Buat file `database/migrations/2024_01_01_000011_add_rumpun_to_jabatans.php`:
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('jabatans', function (Blueprint $table) {
+            $table->tinyInteger('rumpun')->default(3)->after('kelas_jabatan'); // RumpunJabatan enum
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('jabatans', function (Blueprint $table) {
+            $table->dropColumn('rumpun');
+        });
+    }
+};
+```
+
+### 4.7 Tambah Status & Pemulihan ke Hukuman Disiplin
+
+Buat file `database/migrations/2024_01_01_000012_add_hukdis_status_and_pemulihan_fields.php`:
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('riwayat_hukuman_disiplins', function (Blueprint $table) {
+            $table->string('status')->default('aktif')->after('google_drive_link');
+            $table->string('nomor_sk_pemulihan')->nullable()->after('status');
+            $table->date('tanggal_pemulihan')->nullable()->after('nomor_sk_pemulihan');
+            $table->string('file_sk_pemulihan_path')->nullable()->after('tanggal_pemulihan');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('riwayat_hukuman_disiplins', function (Blueprint $table) {
+            $table->dropColumn(['status', 'nomor_sk_pemulihan', 'tanggal_pemulihan', 'file_sk_pemulihan_path']);
+        });
+    }
+};
+```
+
+### 4.8 Tambah Flag Demotion ke Riwayat Pangkat & Jabatan
+
+Buat file `database/migrations/2024_01_01_000013_add_is_hukdis_demotion_to_riwayat_tables.php`:
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('riwayat_pangkats', function (Blueprint $table) {
+            $table->boolean('is_hukdis_demotion')->default(false)->after('google_drive_link');
+        });
+
+        Schema::table('riwayat_jabatans', function (Blueprint $table) {
+            $table->boolean('is_hukdis_demotion')->default(false)->after('google_drive_link');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('riwayat_pangkats', function (Blueprint $table) {
+            $table->dropColumn('is_hukdis_demotion');
+        });
+        Schema::table('riwayat_jabatans', function (Blueprint $table) {
+            $table->dropColumn('is_hukdis_demotion');
+        });
+    }
+};
+```
+
+> **Catatan:** Flag `is_hukdis_demotion` digunakan oleh `RiwayatService` untuk menandai record pangkat/jabatan yang dibuat karena hukuman disiplin (Type 2: Penurunan Pangkat/Jabatan/Pembebasan). Saat pemulihan atau penghapusan hukuman, record dengan flag ini akan dihapus dan digantikan record pemulihan.
+
+### 4.9 Migrasi Activity Log (Spatie)
+
+```bash
+composer require spatie/laravel-activitylog
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations"
+php artisan migrate
+```
+
+Ini akan membuat 3 migrasi otomatis:
+- `create_activity_log_table` — Tabel utama activity log
+- `add_event_column_to_activity_log_table` — Kolom event
+- `add_batch_uuid_column_to_activity_log_table` — Kolom batch UUID
 
 ---
 
@@ -624,15 +863,19 @@ Buat file `app/Models/Jabatan.php`:
 namespace App\Models;
 
 use App\Enums\JenisJabatan;
+use App\Enums\RumpunJabatan;
 use Illuminate\Database\Eloquent\Model;
 
 class Jabatan extends Model
 {
-    protected $fillable = ['nama_jabatan', 'jenis_jabatan', 'bup', 'eselon_level', 'kelas_jabatan'];
+    protected $fillable = ['nama_jabatan', 'jenis_jabatan', 'bup', 'eselon_level', 'kelas_jabatan', 'rumpun'];
 
     protected function casts(): array
     {
-        return ['jenis_jabatan' => JenisJabatan::class];
+        return [
+            'jenis_jabatan' => JenisJabatan::class,
+            'rumpun' => RumpunJabatan::class,
+        ];
     }
 
     public function riwayatJabatan()
@@ -665,7 +908,7 @@ class Pegawai extends Model
     protected $fillable = [
         'nip', 'nama_lengkap', 'tempat_lahir', 'tanggal_lahir',
         'jenis_kelamin', 'alamat', 'no_telepon', 'email',
-        'tmt_cpns', 'tmt_pns', 'gaji_pokok', 'is_active',
+        'tmt_cpns', 'tmt_pns', 'foto_path', 'is_active', 'gaji_pokok',
         'agama', 'status_pernikahan', 'golongan_darah',
         'npwp', 'no_karpeg', 'no_taspen', 'unit_kerja',
     ];
@@ -733,7 +976,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RiwayatPangkat extends Model
 {
-    protected $fillable = ['pegawai_id', 'golongan_ruang', 'nomor_sk', 'tmt_pangkat', 'tanggal_sk', 'file_pdf_path', 'google_drive_link'];
+    protected $fillable = ['pegawai_id', 'golongan_ruang', 'nomor_sk', 'tmt_pangkat', 'tanggal_sk', 'file_pdf_path', 'google_drive_link', 'is_hukdis_demotion'];
 
     protected function casts(): array
     {
@@ -741,6 +984,7 @@ class RiwayatPangkat extends Model
             'golongan_ruang' => GolonganRuang::class,
             'tmt_pangkat' => 'date',
             'tanggal_sk' => 'date',
+            'is_hukdis_demotion' => 'boolean',
         ];
     }
 
@@ -754,7 +998,11 @@ class RiwayatPangkat extends Model
 > - `$fillable` sesuai kolom di migration
 > - `casts()` untuk date dan enum
 > - `belongsTo(Pegawai::class)` relationship
-> - `RiwayatJabatan` juga punya `belongsTo(Jabatan::class)`
+> - `RiwayatJabatan` juga punya `belongsTo(Jabatan::class)` dan cast `is_hukdis_demotion` (boolean)
+> - `RiwayatHukumanDisiplin` harus cast `jenis_sanksi` → `JenisSanksi`, `status` → `StatusHukdis`, dan memiliki method:
+>   - `isAktif(): bool` — `status === StatusHukdis::Aktif && (tmt_selesai_hukuman === null || tmt_selesai_hukuman >= today())`
+>   - `isType2(): bool` — `jenis_sanksi` adalah PenurunanPangkat/PenurunanJabatan/PembebasanJabatan
+> - Semua model riwayat + Pegawai menggunakan trait `Spatie\Activitylog\Traits\LogsActivity`
 
 ### 5.5 Model TabelGaji
 
@@ -765,15 +1013,19 @@ Buat file `app/Models/TabelGaji.php`:
 
 namespace App\Models;
 
+use App\Enums\GolonganRuang;
 use Illuminate\Database\Eloquent\Model;
 
 class TabelGaji extends Model
 {
-    protected $fillable = ['golongan', 'masa_kerja_tahun', 'gaji_pokok'];
+    protected $fillable = ['golongan_ruang', 'masa_kerja_tahun', 'gaji_pokok'];
 
     protected function casts(): array
     {
-        return ['gaji_pokok' => 'decimal:2'];
+        return [
+            'golongan_ruang' => GolonganRuang::class,
+            'gaji_pokok' => 'decimal:2',
+        ];
     }
 }
 ```
@@ -804,15 +1056,15 @@ class UserSeeder extends Seeder
         if (User::count() > 0) return;
 
         User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@simpeg.go.id',
+            'name' => 'Super Admin Kemenipas',
+            'email' => 'superadmin@kemenipas.go.id',
             'password' => Hash::make('password'),
             'role' => 'SuperAdmin',
         ]);
 
         User::create([
-            'name' => 'HR Staff',
-            'email' => 'hr@simpeg.go.id',
+            'name' => 'Staf Kepegawaian Kemenipas',
+            'email' => 'hr@kemenipas.go.id',
             'password' => Hash::make('password'),
             'role' => 'HR',
         ]);
@@ -822,7 +1074,12 @@ class UserSeeder extends Seeder
 
 ### 6.2 MasterDataSeeder
 
-Buat file `database/seeders/MasterDataSeeder.php` yang berisi daftar jabatan beserta jenis, BUP, eselon, dan kelas jabatan. Isi dengan data jabatan ASN standar (25+ record).
+Buat file `database/seeders/MasterDataSeeder.php` yang berisi daftar jabatan beserta jenis, BUP, eselon, kelas jabatan, dan **rumpun jabatan** (`RumpunJabatan` enum). Isi dengan data jabatan ASN Kemenipas dari 3 rumpun:
+- **Struktural** (25 jabatan): Pejabat Administrasi, Fungsional Ahli Pertama/Muda/Madya/Utama, Pejabat Pimpinan Tinggi
+- **Imigrasi** (6 jabatan): Pemeriksa Keimigrasian, Analis Keimigrasian, Teknisi Keimigrasian, Kepala Kantor Imigrasi
+- **Pemasyarakatan** (6 jabatan): Pembimbing Kemasyarakatan, Penjaga Tahanan, Pengamat Pemasyarakatan, Kepala Lembaga Pemasyarakatan
+
+Total: **37 jabatan** master data.
 
 ### 6.3 PegawaiSeeder
 
@@ -1011,7 +1268,7 @@ Setiap DTO memiliki:
 
 ## 9. Membuat Service Layer (Business Logic)
 
-Buat folder `app/Services/` dan buat 9 service class:
+Buat folder `app/Services/` dan buat 12 service class:
 
 ### 9.1 PegawaiService
 
@@ -1029,28 +1286,45 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Menerima DTO per tipe riwayat
 // Semua operasi dibungkus DB::transaction()
 // storeKgb() juga mengupdate gaji_pokok Pegawai dalam satu transaksi
-// Berisi: store/update/delete untuk setiap tipe riwayat
+// Hukdis Hybrid Logic:
+//   - Type 2 (Penurunan Pangkat/Jabatan/Pembebasan): insert record demotion
+//     ke riwayat_pangkats/jabatans dengan is_hukdis_demotion=true
+//   - Pemulihan (pulihkanHukuman): set status=Dipulihkan, insert record
+//     pemulihan pangkat/jabatan, rekalkulasi gaji otomatis
+//   - Delete hukuman: revert demotion records + rekalkulasi gaji
+// Inject: KGBCalculationService (untuk rekalkulasi gaji pada demotion/pemulihan)
+// Berisi: store/update/delete untuk setiap tipe riwayat + pulihkanHukuman()
 ```
 
 ### 9.3 JabatanService
 
 ```php
 // app/Services/JabatanService.php
-// Menghilangkan direct Eloquent call di Controller
-// Berisi: getAllOrderedByName()
+// CRUD master data jabatan dengan filter rumpun
+// Berisi: getAll(), getAllOrderedByName(), create(), update(), delete()
 ```
 
-### 9.4 KGBService
+### 9.4 TabelGajiService
+
+```php
+// app/Services/TabelGajiService.php
+// CRUD tabel gaji PP 15/2019
+// Mengelola data gaji per golongan dan masa kerja
+// Berisi: getByGolongan(), store(), update(), delete()
+```
+
+### 9.5 KGBService
 
 ```php
 // app/Services/KGBService.php
 // Business logic:
 // - KGB jatuh tempo setiap 2 tahun dari TMT KGB terakhir
 // - Status: 'Eligible' (jatuh tempo ≤ 0 hari), 'H-60' (≤ 60 hari), 'Mendekati' (lainnya)
-// Berisi: getAllKGBStatus(), getUpcomingKGB(), getEligiblePegawai()
+// - Integrasi hukdis: pegawai dengan hukuman aktif PenundaanKGB ($h->isAktif()) masuk tab 'Ditunda'
+// Berisi: getAllKGBStatus(), getUpcomingKGB(), getEligiblePegawai(), getDitundaPegawai()
 ```
 
-### 9.5 KGBCalculationService
+### 9.6 KGBCalculationService
 
 ```php
 // app/Services/KGBCalculationService.php
@@ -1059,7 +1333,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getNextKGBSalary(Pegawai) → ['gaji_lama', 'gaji_baru', 'golongan', 'masa_kerja_tahun', 'masa_kerja_total_tahun']
 ```
 
-### 9.6 PensiunService
+### 9.7 PensiunService
 
 ```php
 // app/Services/PensiunService.php
@@ -1069,7 +1343,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getPensiunAlerts()
 ```
 
-### 9.7 KenaikanPangkatService
+### 9.8 KenaikanPangkatService
 
 ```php
 // app/Services/KenaikanPangkatService.php
@@ -1077,11 +1351,11 @@ Buat folder `app/Services/` dan buat 9 service class:
 // 1. Masa kerja golongan ≥ 48 bulan (4 tahun)
 // 2. SKP 2 tahun terakhir minimal "Baik"
 // 3. Memiliki riwayat latihan jabatan
-// 4. Tidak sedang menjalani hukuman disiplin aktif
-// Berisi: getEligiblePegawai()
+// 4. Tidak sedang menjalani hukuman disiplin aktif ($h->isAktif())
+// Berisi: getEligiblePegawai(), getAll() + filter ditunda
 ```
 
-### 9.8 SatyalencanaService
+### 9.9 SatyalencanaService
 
 ```php
 // app/Services/SatyalencanaService.php
@@ -1092,7 +1366,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getEligibleCandidates(), getCandidatesByMilestone()
 ```
 
-### 9.9 DUKService
+### 9.10 DUKService
 
 ```php
 // app/Services/DUKService.php
@@ -1106,7 +1380,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getDUK()
 ```
 
-### 9.10 DashboardService
+### 9.11 DashboardService
 
 ```php
 // app/Services/DashboardService.php
@@ -1115,7 +1389,7 @@ Buat folder `app/Services/` dan buat 9 service class:
 // Berisi: getDashboardData()
 ```
 
-### 9.11 DocumentUploadService
+### 9.12 DocumentUploadService
 
 ```php
 // app/Services/DocumentUploadService.php
@@ -1161,20 +1435,24 @@ Digunakan di `PegawaiController@getPaginated` untuk menggantikan mapping array m
 
 ## 11. Membuat Controller
 
-Buat 13 controller di `app/Http/Controllers/`:
+Buat 16 controller di `app/Http/Controllers/`:
 
 | Controller | Fungsi |
 |---|---|
 | `AuthController` | `showLogin()`, `login(LoginRequest)`, `logout()` |
-| `DashboardController` | `index()` — inject `DashboardService` |
+| `DashboardController` | `index()`, `exportPdf()` — inject `DashboardService` |
 | `PegawaiController` | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource` |
-| `RiwayatController` | CRUD untuk 7 jenis riwayat — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
-| `KGBController` | `index()`, `upcoming()`, `eligible()` |
-| `KenaikanPangkatController` | `index()`, `eligible()` |
+| `RiwayatController` | CRUD untuk 7 jenis riwayat + `pulihkanHukuman()` — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
+| `KGBController` | `index()`, `upcoming()`, `eligible()`, `ditunda()` |
+| `KenaikanPangkatController` | `index()`, `eligible()`, `ditunda()` |
 | `PensiunController` | `index()` |
 | `DUKController` | `index()` |
 | `SatyalencanaController` | `index()` dengan filter milestone, `award()` untuk pencatatan penghargaan |
 | `ExportController` | `export($type, $format)` — export PDF (DomPDF) dan Excel (Maatwebsite) untuk 5 jenis laporan |
+| `DocumentController` | `download($type, $id)` — download file dokumen SK (pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp) |
+| `JabatanController` | CRUD master data jabatan (admin) — dengan filter rumpun |
+| `TabelGajiController` | CRUD tabel gaji PP 15/2019 (admin) — per golongan dan masa kerja |
+| `GolonganController` | `index()` — referensi golongan ruang dengan statistik gaji |
 | `ActivityLogController` | `index()` — menampilkan riwayat aktivitas dari Spatie Activity Log |
 | `ProfileController` | `show()`, `updatePassword()` — profil user dan ganti password |
 
@@ -1211,6 +1489,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Semua route lain di dalam middleware('auth')
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', ...)->name('dashboard');
+    Route::get('/dashboard/export-pdf', ...)->name('dashboard.export-pdf');
 
     // Pegawai CRUD (resource route)
     Route::resource('pegawai', PegawaiController::class);
@@ -1219,13 +1498,16 @@ Route::middleware('auth')->group(function () {
     // Riwayat CRUD (manual routes per tipe)
     // Pattern: GET create/{pegawaiId}, POST store, GET edit/{model}, PUT update/{model}, DELETE destroy/{model}
     // Untuk: pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp
+    // Khusus hukuman: POST /riwayat/hukuman/{id}/pulihkan (pemulihan hukdis)
 
     // Report pages
     Route::get('/kgb', ...)->name('kgb.index');
     Route::get('/kgb/upcoming', ...)->name('kgb.upcoming');
     Route::get('/kgb/eligible', ...)->name('kgb.eligible');
+    Route::get('/kgb/ditunda', ...)->name('kgb.ditunda');
     Route::get('/kenaikan-pangkat', ...)->name('kenaikan-pangkat.index');
     Route::get('/kenaikan-pangkat/eligible', ...)->name('kenaikan-pangkat.eligible');
+    Route::get('/kenaikan-pangkat/ditunda', ...)->name('kenaikan-pangkat.ditunda');
     Route::get('/pensiun', ...)->name('pensiun.index');
     Route::get('/duk', ...)->name('duk.index');
     Route::get('/satyalencana', ...)->name('satyalencana.index');
@@ -1233,6 +1515,17 @@ Route::middleware('auth')->group(function () {
 
     // Export PDF & Excel
     Route::get('/export/{type}/{format}', [ExportController::class, 'export'])->name('export');
+
+    // Document Download
+    Route::get('/dokumen/{type}/{id}', [DocumentController::class, 'download'])->name('dokumen.download');
+
+    // Admin — Master Data
+    Route::resource('jabatan', JabatanController::class)->except(['show']);
+    Route::prefix('admin')->group(function () {
+        Route::get('/tabel-gaji', ...)->name('admin.tabel-gaji.index');
+        // CRUD tabel gaji (store, update, destroy)
+        Route::get('/golongan', ...)->name('admin.golongan.index');
+    });
 
     // Profile & Password
     Route::get('/profile', ...)->name('profile.show');
@@ -1243,7 +1536,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-> **Total route:** ~64 route (7 resource pegawai + 35 riwayat CRUD + report/export/profile/auth)
+> **Total route:** ~75+ route (7 resource pegawai + 35 riwayat CRUD + report/export/admin/document/profile/auth)
 
 ---
 
@@ -1261,7 +1554,7 @@ resources/views/
 │   └── index.blade.php        # Dashboard + Chart.js
 ├── pegawai/
 │   ├── index.blade.php        # Tabel + pagination + search (AJAX)
-│   ├── show.blade.php         # Detail + 7 tab riwayat + delete modal
+│   ├── show.blade.php         # Detail + 8 tab riwayat + hukdis pemulihan modal + delete modal
 │   ├── create.blade.php       # Form tambah
 │   ├── edit.blade.php         # Form edit
 │   └── _form.blade.php        # Partial form (shared create/edit)
@@ -1272,8 +1565,8 @@ resources/views/
 │   ├── edit-jabatan.blade.php
 │   ├── create-kgb.blade.php   # Auto-kalkulasi gaji baru dari PP 15/2019
 │   ├── edit-kgb.blade.php
-│   ├── create-hukuman.blade.php
-│   ├── edit-hukuman.blade.php
+│   ├── create-hukuman.blade.php  # Form hukdis dengan field demotion dinamis
+│   ├── edit-hukuman.blade.php    # Edit hukdis + toggle demotion sections
 │   ├── create-pendidikan.blade.php
 │   ├── edit-pendidikan.blade.php
 │   ├── create-latihan.blade.php
@@ -1281,16 +1574,26 @@ resources/views/
 │   ├── create-skp.blade.php
 │   └── edit-skp.blade.php
 ├── kgb/
-│   └── index.blade.php        # + search/filter/pagination + export PDF/Excel
+│   └── index.blade.php        # + search/filter/pagination + tab Ditunda + export PDF/Excel
 ├── kenaikan-pangkat/
-│   └── index.blade.php        # + search/filter/pagination + export
+│   └── index.blade.php        # + search/filter/pagination + tab Ditunda + export
 ├── pensiun/
 │   └── index.blade.php        # + search/pagination + export
 ├── duk/
 │   └── index.blade.php        # + search/pagination + export
 ├── satyalencana/
 │   └── index.blade.php        # + search/filter milestone + export
+├── admin/                         # [ADMIN MASTER DATA]
+│   ├── jabatan/
+│   │   ├── index.blade.php    # Tabel jabatan + filter rumpun + CRUD
+│   │   └── form.blade.php     # Form create/edit jabatan
+│   ├── tabel-gaji/
+│   │   ├── index.blade.php    # Daftar golongan → tabel gaji
+│   │   └── show.blade.php     # Detail tabel gaji per golongan (CRUD entries)
+│   └── golongan/
+│       └── index.blade.php    # Referensi golongan ruang + statistik gaji
 ├── exports/
+│   ├── dashboard-pdf.blade.php # Template PDF dashboard summary
 │   ├── duk-pdf.blade.php      # Template PDF untuk DUK
 │   ├── kgb-pdf.blade.php      # Template PDF untuk KGB
 │   ├── pensiun-pdf.blade.php  # Template PDF untuk Pensiun
@@ -1372,17 +1675,15 @@ Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
 
 ### 13.8 Report Views — Search, Filter, Pagination, Export
 
-Semua 5 halaman report (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) memiliki fitur:
+Semua halaman report (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) memiliki fitur:
 - **Search**: Filter data berdasarkan NIP/nama menggunakan client-side JavaScript
 - **Client-side Pagination**: Data di-render dari Blade, lalu dipaginasi via JS (15 per halaman)
 - **Export**: Link ke `/export/{type}/pdf` dan `/export/{type}/excel`
-- Beberapa halaman memiliki tab filter (KGB: Semua/H-60/Eligible, Satyalencana: per milestone)
+- **Tab Filter**: KGB dan Kenaikan Pangkat punya tab Ditunda (pegawai dengan hukdis aktif), Satyalencana punya filter per milestone
 
 ### 13.9 Export PDF Templates
 
-5 template PDF di `resources/views/exports/` menggunakan HTML/CSS inline (tanpa Tailwind) karena DomPDF tidak mendukung Tailwind. Format tabel standar dengan header, border, dan logo.
-
----
+6 template PDF di `resources/views/exports/` menggunakan HTML/CSS inline (tanpa Tailwind) karena DomPDF tidak mendukung Tailwind. Format tabel standar dengan header, border, dan logo.
 
 ---
 
@@ -1420,7 +1721,8 @@ Setiap export class mengimplementasikan `FromCollection`, `WithHeadings`, `WithM
 
 ### 14.4 Membuat Template PDF
 
-Buat 5 template PDF di `resources/views/exports/`:
+Buat 6 template PDF di `resources/views/exports/`:
+- `dashboard-pdf.blade.php`
 - `kgb-pdf.blade.php`
 - `pensiun-pdf.blade.php`
 - `duk-pdf.blade.php`
@@ -1473,7 +1775,7 @@ class Pegawai extends Model
 }
 ```
 
-Tambahkan ke model-model berikut: `Pegawai`, `RiwayatPangkat`, `RiwayatJabatan`, `RiwayatKgb`, `RiwayatHukumanDisiplin`, `RiwayatPendidikan`.
+Tambahkan ke model-model berikut: `Pegawai`, `RiwayatPangkat`, `RiwayatJabatan`, `RiwayatKgb`, `RiwayatHukumanDisiplin`, `RiwayatPendidikan`, `RiwayatLatihanJabatan`, `RiwayatPenghargaan`, `PenilaianKinerja`.
 
 ### 15.3 Membuat ActivityLogController
 
@@ -1518,7 +1820,7 @@ php artisan serve
 ### Akses Aplikasi
 
 Buka browser ke **http://localhost:8000** dan login dengan:
-- Email: `admin@simpeg.go.id`
+- Email: `superadmin@kemenipas.go.id`
 - Password: `password`
 
 ---
@@ -1566,7 +1868,7 @@ app/
 │       ├── RiwayatPendidikanDTO.php
 │       ├── RiwayatLatihanJabatanDTO.php
 │       └── PenilaianKinerjaDTO.php
-├── Enums/                      # 7 enum class
+├── Enums/                      # 10 enum class
 ├── Exports/
 │   ├── DUKExport.php
 │   ├── KGBExport.php
@@ -1574,7 +1876,7 @@ app/
 │   ├── KenaikanPangkatExport.php
 │   └── SatyalencanaExport.php
 ├── Http/
-│   ├── Controllers/            # 13 controller
+│   ├── Controllers/            # 16 controller
 │   ├── Requests/
 │   │   ├── StorePegawaiRequest.php
 │   │   ├── UpdatePegawaiRequest.php
@@ -1599,16 +1901,17 @@ app/
     ├── SatyalencanaService.php
     ├── DUKService.php
     ├── DashboardService.php
-    └── DocumentUploadService.php
+    ├── DocumentUploadService.php
+    └── TabelGajiService.php
 database/
-├── migrations/                 # 11 migration files
+├── migrations/                 # 15 migration files
 └── seeders/
     ├── DatabaseSeeder.php
     ├── UserSeeder.php
     ├── MasterDataSeeder.php
     ├── PegawaiSeeder.php
     └── TabelGajiSeeder.php     # Data tabel gaji PP 15/2019
-resources/views/                # 35 blade view files
+resources/views/                # 42 blade view files
 ```
 
 ---
@@ -1617,19 +1920,256 @@ resources/views/                # 35 blade view files
 
 - [ ] Buat project Laravel baru
 - [ ] Konfigurasi SQLite & Tailwind CSS v4
-- [ ] Buat 7 Enum
-- [ ] Buat 11 Migration (15+ tabel termasuk tabel_gajis & activity_log)
-- [ ] Buat 12 Eloquent Model dengan relationships (termasuk TabelGaji)
-- [ ] Buat 5 Seeder (User, MasterData, Pegawai, TabelGaji, Database)
+- [ ] Buat 10 Enum (termasuk JenisSanksi, StatusHukdis, RumpunJabatan)
+- [ ] Buat 15 Migration (12 custom + 3 Spatie Activity Log)
+- [ ] Buat 12 Eloquent Model dengan relationships (termasuk TabelGaji, isAktif/isType2 di Hukdis)
+- [ ] Buat 5 Seeder (User, MasterData 37 jabatan, Pegawai 100, TabelGaji, Database)
 - [ ] Buat 19 FormRequest (2 Pegawai + 16 Riwayat + 1 Auth)
 - [ ] Buat 8 DTO (1 Pegawai + 7 Riwayat)
-- [ ] Buat 11 Service class (termasuk KGBCalculationService & DocumentUploadService)
+- [ ] Buat 12 Service class (termasuk TabelGajiService, KGBCalculationService, DocumentUploadService)
 - [ ] Buat 1 API Resource (PegawaiResource)
 - [ ] Buat 5 Excel Export class
-- [ ] Buat 13 Controller (termasuk ExportController, ActivityLogController, ProfileController)
-- [ ] Definisikan ~64 Routes
-- [ ] Buat 1 Layout + 35 Blade Views (termasuk 5 PDF template)
-- [ ] Tambahkan Spatie Activity Log ke 6 model
+- [ ] Buat 16 Controller (termasuk Admin Jabatan, TabelGaji, Golongan, DocumentController)
+- [ ] Definisikan ~75+ Routes (termasuk admin, document download)
+- [ ] Buat 1 Layout + 42 Blade Views (termasuk 6 PDF template + 4 admin views)
+- [ ] Tambahkan Spatie Activity Log ke 9 model
+- [ ] Implementasi Hukdis Hybrid Logic (PP 94/2021) — Type 1/2/3 + Pemulihan
 - [ ] Build + Test
 
 **Estimasi waktu pengerjaan:** 14-20 jam untuk programmer yang sudah familiar dengan Laravel.
+
+---
+
+## 17. Relasi Database (ERD)
+
+Berikut adalah Entity Relationship Diagram (ERD) dari seluruh tabel dalam aplikasi SIMPEG:
+
+```mermaid
+erDiagram
+    users {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        string role "SuperAdmin | HR"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    jabatans {
+        bigint id PK
+        string nama_jabatan
+        tinyint jenis_jabatan "FK Enum JenisJabatan"
+        int bup "Batas Usia Pensiun"
+        int eselon_level
+        int kelas_jabatan
+        tinyint rumpun "FK Enum RumpunJabatan"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    pegawais {
+        bigint id PK
+        string nip UK
+        string nama_lengkap
+        string tempat_lahir
+        date tanggal_lahir
+        int jenis_kelamin "FK Enum JenisKelamin"
+        text alamat
+        string no_telepon
+        string email
+        date tmt_cpns
+        date tmt_pns
+        string foto_path
+        boolean is_active
+        decimal gaji_pokok "15,2"
+        int agama "FK Enum Agama"
+        int status_pernikahan "FK Enum StatusPernikahan"
+        int golongan_darah "FK Enum GolonganDarah"
+        string npwp
+        string no_karpeg
+        string no_taspen
+        string unit_kerja
+        timestamp deleted_at "Soft Delete"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_pangkats {
+        bigint id PK
+        bigint pegawai_id FK
+        tinyint golongan_ruang "FK Enum GolonganRuang"
+        string nomor_sk
+        date tmt_pangkat
+        date tanggal_sk
+        string file_pdf_path
+        string google_drive_link
+        boolean is_hukdis_demotion "Flag demotion hukdis"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_jabatans {
+        bigint id PK
+        bigint pegawai_id FK
+        bigint jabatan_id FK
+        string nomor_sk
+        date tmt_jabatan
+        date tanggal_sk
+        string file_pdf_path
+        string google_drive_link
+        boolean is_hukdis_demotion "Flag demotion hukdis"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_kgbs {
+        bigint id PK
+        bigint pegawai_id FK
+        string nomor_sk
+        date tmt_kgb
+        decimal gaji_lama "15,2"
+        decimal gaji_baru "15,2"
+        int masa_kerja_golongan_tahun
+        int masa_kerja_golongan_bulan
+        string file_pdf_path
+        string google_drive_link
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_hukuman_disiplins {
+        bigint id PK
+        bigint pegawai_id FK
+        tinyint tingkat_hukuman "FK Enum TingkatHukuman"
+        tinyint jenis_sanksi "FK Enum JenisSanksi"
+        int durasi_tahun
+        string nomor_sk
+        date tanggal_sk
+        date tmt_hukuman
+        date tmt_selesai_hukuman
+        text deskripsi
+        string file_pdf_path
+        string google_drive_link
+        string status "Enum StatusHukdis: aktif|selesai|dipulihkan"
+        string nomor_sk_pemulihan
+        date tanggal_pemulihan
+        string file_sk_pemulihan_path
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_pendidikans {
+        bigint id PK
+        bigint pegawai_id FK
+        string tingkat_pendidikan
+        string institusi
+        string jurusan
+        int tahun_lulus
+        string no_ijazah
+        date tanggal_ijazah
+        string file_pdf_path
+        string google_drive_link
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_latihan_jabatans {
+        bigint id PK
+        bigint pegawai_id FK
+        string nama_latihan
+        int tahun_pelaksanaan
+        int jumlah_jam
+        string penyelenggara
+        string tempat_pelaksanaan
+        string no_sertifikat
+        string file_pdf_path
+        string google_drive_link
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    riwayat_penghargaans {
+        bigint id PK
+        bigint pegawai_id FK
+        string nama_penghargaan
+        int tahun
+        int milestone "10|20|30 tahun"
+        string nomor_sk
+        date tanggal_sk
+        string file_pdf_path
+        string google_drive_link
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    penilaian_kinerjas {
+        bigint id PK
+        bigint pegawai_id FK
+        int tahun
+        string nilai_skp
+        string file_pdf_path
+        string google_drive_link
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tabel_gajis {
+        bigint id PK
+        tinyint golongan_ruang "FK Enum GolonganRuang"
+        int masa_kerja_tahun "0, 2, 4, ... 32"
+        decimal gaji_pokok "15,2"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    activity_log {
+        bigint id PK
+        string log_name
+        text description
+        string subject_type
+        bigint subject_id
+        string causer_type
+        bigint causer_id
+        json properties
+        string event
+        string batch_uuid
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% === RELATIONSHIPS ===
+
+    pegawais ||--o{ riwayat_pangkats : "has many"
+    pegawais ||--o{ riwayat_jabatans : "has many"
+    pegawais ||--o{ riwayat_kgbs : "has many"
+    pegawais ||--o{ riwayat_hukuman_disiplins : "has many"
+    pegawais ||--o{ riwayat_pendidikans : "has many"
+    pegawais ||--o{ riwayat_latihan_jabatans : "has many"
+    pegawais ||--o{ riwayat_penghargaans : "has many"
+    pegawais ||--o{ penilaian_kinerjas : "has many"
+    jabatans ||--o{ riwayat_jabatans : "has many"
+```
+
+### Penjelasan Relasi
+
+| Relasi | Tipe | Deskripsi |
+|--------|------|-----------|
+| `pegawais` → `riwayat_pangkats` | One-to-Many | Pegawai memiliki banyak riwayat kenaikan pangkat |
+| `pegawais` → `riwayat_jabatans` | One-to-Many | Pegawai memiliki banyak riwayat penempatan jabatan |
+| `pegawais` → `riwayat_kgbs` | One-to-Many | Pegawai memiliki banyak riwayat KGB |
+| `pegawais` → `riwayat_hukuman_disiplins` | One-to-Many | Pegawai memiliki banyak riwayat hukuman disiplin |
+| `pegawais` → `riwayat_pendidikans` | One-to-Many | Pegawai memiliki banyak riwayat pendidikan |
+| `pegawais` → `riwayat_latihan_jabatans` | One-to-Many | Pegawai memiliki banyak riwayat diklat |
+| `pegawais` → `riwayat_penghargaans` | One-to-Many | Pegawai memiliki banyak riwayat penghargaan |
+| `pegawais` → `penilaian_kinerjas` | One-to-Many | Pegawai memiliki banyak penilaian kinerja (SKP) |
+| `jabatans` → `riwayat_jabatans` | One-to-Many | Jabatan direferensi oleh banyak riwayat jabatan |
+| `tabel_gajis` | Standalone | Tabel referensi gaji PP 15/2019 (lookup oleh KGBCalculationService) |
+| `activity_log` | Standalone (Spatie) | Audit log otomatis, terhubung polimorfik ke subject & causer |
+
+### Catatan Khusus
+
+- **`is_hukdis_demotion` flag** pada `riwayat_pangkats` dan `riwayat_jabatans`: Menandai record yang dibuat otomatis oleh sistem hukdis (Type 2: Penurunan). Record ini dihapus saat pemulihan atau penghapusan hukuman.
+- **`status` pada `riwayat_hukuman_disiplins`**: Mengontrol apakah hukuman masih memblokir KGB/kenaikan pangkat. Hanya status `aktif` yang memblokir (via method `isAktif()`).
+- **`tabel_gajis`** tidak memiliki foreign key relasi langsung, tetapi digunakan oleh `KGBCalculationService` untuk lookup gaji berdasarkan `golongan_ruang` dan `masa_kerja_tahun`.
+- **`activity_log`** menggunakan relasi polimorfik (`subject_type` + `subject_id`), sehingga dapat mencatat perubahan pada model manapun.
