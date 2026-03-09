@@ -162,8 +162,10 @@
                 <thead class="bg-slate-50">
                     <tr>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Tingkat</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jenis</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jenis Sanksi</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Durasi</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
                     </tr>
                 </thead>
@@ -173,8 +175,18 @@
                         <td class="px-3 py-2">
                             <span class="px-2 py-0.5 text-xs rounded-full {{ $r->tingkat_hukuman == \App\Enums\TingkatHukuman::Berat ? 'bg-red-100 text-red-700' : ($r->tingkat_hukuman == \App\Enums\TingkatHukuman::Sedang ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ $r->tingkat_hukuman->label() }}</span>
                         </td>
-                        <td class="px-3 py-2">{{ $r->jenis_hukuman }}</td>
+                        <td class="px-3 py-2">{{ $r->jenis_sanksi->label() }}</td>
+                        <td class="px-3 py-2">{{ $r->durasi_tahun ? $r->durasi_tahun . ' thn' : '-' }}</td>
                         <td class="px-3 py-2">{{ $r->tmt_hukuman->format('d/m/Y') }}</td>
+                        <td class="px-3 py-2">
+                            @if($r->file_pdf_path)
+                            <a href="{{ Storage::disk('documents')->url($r->file_pdf_path) }}" target="_blank" class="text-blue-600 hover:underline text-xs">PDF</a>
+                            @elseif($r->google_drive_link)
+                            <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline text-xs">Drive</a>
+                            @else
+                            <span class="text-slate-400 text-xs">-</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('riwayat.hukuman.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
@@ -183,7 +195,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    <tr><td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>

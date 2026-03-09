@@ -7,6 +7,7 @@ use App\Enums\GolonganDarah;
 use App\Enums\GolonganRuang;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
+use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
@@ -112,12 +113,14 @@ class PegawaiSeeder extends Seeder
             $this->addRecentKGB($peg, $today, mt_rand(3, 19));
 
             $tingkat = $i < 5 ? TingkatHukuman::Sedang : TingkatHukuman::Berat;
+            $sanksi = $tingkat === TingkatHukuman::Sedang
+                ? JenisSanksi::PenundaanPangkat
+                : JenisSanksi::PembebasanJabatan;
             RiwayatHukumanDisiplin::create([
                 'pegawai_id' => $peg->id,
                 'tingkat_hukuman' => $tingkat,
-                'jenis_hukuman' => $tingkat === TingkatHukuman::Sedang
-                    ? 'Penundaan kenaikan pangkat selama 1 tahun'
-                    : 'Pembebasan dari jabatan',
+                'jenis_sanksi' => $sanksi,
+                'durasi_tahun' => $tingkat === TingkatHukuman::Sedang ? 1 : null,
                 'nomor_sk' => 'SK-HD/' . ($today->year - mt_rand(1, 4)) . '/00' . ($i + 1),
                 'tanggal_sk' => $today->copy()->subYears(mt_rand(1, 4)),
                 'tmt_hukuman' => $today->copy()->subYears(mt_rand(1, 4)),
@@ -144,7 +147,8 @@ class PegawaiSeeder extends Seeder
                 RiwayatHukumanDisiplin::create([
                     'pegawai_id' => $peg->id,
                     'tingkat_hukuman' => TingkatHukuman::Ringan,
-                    'jenis_hukuman' => 'Teguran lisan',
+                    'jenis_sanksi' => JenisSanksi::PenundaanKgb,
+                    'durasi_tahun' => 1,
                     'nomor_sk' => 'SK-HD/' . ($today->year - 1) . '/R' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                     'tanggal_sk' => $today->copy()->subYear(),
                     'tmt_hukuman' => $today->copy()->subYear(),

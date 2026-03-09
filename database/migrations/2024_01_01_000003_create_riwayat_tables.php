@@ -50,12 +50,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
             $table->tinyInteger('tingkat_hukuman');
-            $table->string('jenis_hukuman');
+            $table->tinyInteger('jenis_sanksi');
+            $table->integer('durasi_tahun')->nullable();
             $table->string('nomor_sk')->nullable();
             $table->date('tanggal_sk')->nullable();
             $table->date('tmt_hukuman');
             $table->date('tmt_selesai_hukuman')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->string('file_pdf_path')->nullable();
+            $table->string('google_drive_link')->nullable();
             $table->timestamps();
         });
 

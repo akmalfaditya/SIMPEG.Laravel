@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\GolonganRuang;
+use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
 use App\Models\Pegawai;
 use App\Models\RiwayatHukumanDisiplin;
@@ -174,12 +175,19 @@ class RiwayatController extends Controller
         return view('riwayat.create-hukuman', [
             'pegawaiId' => $pegawaiId,
             'tingkatOptions' => TingkatHukuman::cases(),
+            'sanksiOptions' => JenisSanksi::cases(),
         ]);
     }
 
     public function storeHukuman(StoreHukumanRequest $request)
     {
-        $dto = RiwayatHukumanDisiplinDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'));
+        }
+
+        $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
         $this->service->storeHukuman($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Hukuman berhasil ditambahkan.');
     }
@@ -189,12 +197,19 @@ class RiwayatController extends Controller
         return view('riwayat.edit-hukuman', [
             'riwayat' => $riwayatHukuman,
             'tingkatOptions' => TingkatHukuman::cases(),
+            'sanksiOptions' => JenisSanksi::cases(),
         ]);
     }
 
     public function updateHukuman(UpdateHukumanRequest $request, RiwayatHukumanDisiplin $riwayatHukuman)
     {
-        $dto = RiwayatHukumanDisiplinDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadHukumanSk($request->file('file_sk'), $riwayatHukuman->file_pdf_path);
+        }
+
+        $dto = RiwayatHukumanDisiplinDTO::fromRequest($validated);
         $this->service->updateHukuman($riwayatHukuman, $dto);
         return redirect()->route('pegawai.show', $riwayatHukuman->pegawai_id)->with('success', 'Riwayat Hukuman berhasil diperbarui.');
     }

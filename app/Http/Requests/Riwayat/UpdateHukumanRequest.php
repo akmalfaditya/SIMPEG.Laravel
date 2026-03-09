@@ -15,12 +15,15 @@ class UpdateHukumanRequest extends FormRequest
     {
         return [
             'tingkat_hukuman' => 'required|integer',
-            'jenis_hukuman' => 'required|string',
+            'jenis_sanksi' => 'required|integer',
+            'durasi_tahun' => 'nullable|integer|min:1|max:10',
             'nomor_sk' => 'nullable|string',
             'tanggal_sk' => 'nullable|date',
             'tmt_hukuman' => 'required|date',
             'tmt_selesai_hukuman' => 'nullable|date',
             'deskripsi' => 'nullable|string',
+            'file_sk' => 'nullable|file|mimes:pdf|max:5120',
+            'google_drive_link' => 'nullable|url|max:500',
         ];
     }
 }

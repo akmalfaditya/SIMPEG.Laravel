@@ -19,6 +19,7 @@ use App\DTOs\Riwayat\RiwayatPendidikanDTO;
 use App\DTOs\Riwayat\RiwayatLatihanJabatanDTO;
 use App\DTOs\Riwayat\PenilaianKinerjaDTO;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class RiwayatService
@@ -81,17 +82,43 @@ class RiwayatService
     // --- HUKUMAN DISIPLIN ---
     public function storeHukuman(RiwayatHukumanDisiplinDTO $dto): RiwayatHukumanDisiplin
     {
-        return DB::transaction(fn () => RiwayatHukumanDisiplin::create($dto->toArray()));
+        return DB::transaction(function () use ($dto) {
+            $data = $dto->toArray();
+            if ($dto->filePdfPath) {
+                $data['file_pdf_path'] = $dto->filePdfPath;
+            }
+            return RiwayatHukumanDisiplin::create($data);
+        });
     }
 
     public function updateHukuman(RiwayatHukumanDisiplin $riwayat, RiwayatHukumanDisiplinDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(function () use ($riwayat, $dto) {
+            $data = $dto->toArray();
+            if ($dto->filePdfPath) {
+                $data['file_pdf_path'] = $dto->filePdfPath;
+            }
+            return $riwayat->update($data);
+        });
     }
 
     public function deleteHukuman(RiwayatHukumanDisiplin $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                app(DocumentUploadService::class)->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
+    }
+
+    public function uploadHukumanSk(UploadedFile $file, ?string $oldPath = null): string
+    {
+        $uploadService = app(DocumentUploadService::class);
+        if ($oldPath) {
+            $uploadService->delete($oldPath);
+        }
+        return $uploadService->upload($file, 'sk_hukuman');
     }
 
     // --- PENDIDIKAN ---
