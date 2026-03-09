@@ -21,11 +21,13 @@ class JabatanController extends Controller
                 perPage: 20,
                 search: $request->query('search'),
                 rumpun: $request->query('rumpun') !== null ? (int) $request->query('rumpun') : null,
+                status: $request->query('status'),
             ),
             'jenisJabatanList' => JenisJabatan::cases(),
             'rumpunList' => RumpunJabatan::cases(),
             'filterRumpun' => $request->query('rumpun'),
             'filterSearch' => $request->query('search'),
+            'filterStatus' => $request->query('status'),
         ]);
     }
 
@@ -51,6 +53,7 @@ class JabatanController extends Controller
 
         $validated['eselon_level'] = $validated['eselon_level'] ?? 0;
         $validated['kelas_jabatan'] = $validated['kelas_jabatan'] ?? 1;
+        $validated['is_active'] = true;
 
         $this->service->store($validated);
 
@@ -85,6 +88,15 @@ class JabatanController extends Controller
 
         return redirect()->route('admin.jabatan.index')
             ->with('success', "Jabatan \"{$validated['nama_jabatan']}\" berhasil diperbarui.");
+    }
+
+    public function toggleActive(Jabatan $jabatan)
+    {
+        $this->service->toggleActive($jabatan);
+        $status = $jabatan->fresh()->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return redirect()->route('admin.jabatan.index')
+            ->with('success', "Jabatan \"{$jabatan->nama_jabatan}\" berhasil {$status}.");
     }
 
     public function destroy(Jabatan $jabatan)

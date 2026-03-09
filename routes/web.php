@@ -114,14 +114,23 @@ Route::middleware('auth')->group(function () {
     // Activity Log
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
-    // Admin Setting
-    Route::prefix('admin')->group(function () {
+    // Admin Setting (SuperAdmin only)
+    Route::prefix('admin')->middleware('superadmin')->group(function () {
         Route::get('/tabel-gaji', [TabelGajiController::class, 'index'])->name('admin.tabel-gaji.index');
         Route::post('/tabel-gaji', [TabelGajiController::class, 'store'])->name('admin.tabel-gaji.store');
         Route::get('/tabel-gaji/{golongan}', [TabelGajiController::class, 'show'])->where('golongan', '[0-9]+')->name('admin.tabel-gaji.show');
         Route::put('/tabel-gaji/{tabelGaji}', [TabelGajiController::class, 'update'])->name('admin.tabel-gaji.update');
         Route::delete('/tabel-gaji/{tabelGaji}', [TabelGajiController::class, 'destroy'])->name('admin.tabel-gaji.destroy');
+
         Route::get('/golongan', [GolonganController::class, 'index'])->name('admin.golongan.index');
+        Route::get('/golongan/create', [GolonganController::class, 'create'])->name('admin.golongan.create');
+        Route::post('/golongan', [GolonganController::class, 'store'])->name('admin.golongan.store');
+        Route::get('/golongan/{golonganPangkat}/edit', [GolonganController::class, 'edit'])->name('admin.golongan.edit');
+        Route::put('/golongan/{golonganPangkat}', [GolonganController::class, 'update'])->name('admin.golongan.update');
+        Route::patch('/golongan/{golonganPangkat}/toggle-active', [GolonganController::class, 'toggleActive'])->name('admin.golongan.toggle-active');
+        Route::delete('/golongan/{golonganPangkat}', [GolonganController::class, 'destroy'])->name('admin.golongan.destroy');
+
         Route::resource('jabatan', JabatanController::class)->names('admin.jabatan')->except(['show']);
+        Route::patch('/jabatan/{jabatan}/toggle-active', [JabatanController::class, 'toggleActive'])->name('admin.jabatan.toggle-active');
     });
 });
