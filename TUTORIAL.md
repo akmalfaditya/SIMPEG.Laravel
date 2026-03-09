@@ -31,6 +31,7 @@ Panduan lengkap untuk membuat Sistem Informasi Manajemen Pegawai (SIMPEG) menggu
 ### Prasyarat
 
 Pastikan sudah terinstall:
+
 - **PHP 8.2+** dengan extension `sqlite3`, `mbstring`, `openssl`, `pdo_sqlite`
 - **Composer 2.x**
 - **Node.js 18+** dan **NPM 9+**
@@ -51,14 +52,14 @@ npm install -D @tailwindcss/vite
 Edit `vite.config.js`:
 
 ```js
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from "vite";
+import laravel from "laravel-vite-plugin";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ["resources/css/app.css", "resources/js/app.js"],
             refresh: true,
         }),
         tailwindcss(),
@@ -75,7 +76,7 @@ Edit `resources/css/app.css`:
 @source "../../app/**/*.php";
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 ```
 
@@ -187,59 +188,9 @@ enum GolonganDarah: int
 }
 ```
 
-### 3.4 GolonganRuang
+### ~~3.4 GolonganRuang~~ → Digantikan oleh Tabel `golongan_pangkats`
 
-Buat file `app/Enums/GolonganRuang.php`:
-
-```php
-<?php
-
-namespace App\Enums;
-
-enum GolonganRuang: int
-{
-    case I_a = 1;
-    case I_b = 2;
-    case I_c = 3;
-    case I_d = 4;
-    case II_a = 5;
-    case II_b = 6;
-    case II_c = 7;
-    case II_d = 8;
-    case III_a = 9;
-    case III_b = 10;
-    case III_c = 11;
-    case III_d = 12;
-    case IV_a = 13;
-    case IV_b = 14;
-    case IV_c = 15;
-    case IV_d = 16;
-    case IV_e = 17;
-
-    public function label(): string
-    {
-        return match ($this) {
-            self::I_a => 'I/a',
-            self::I_b => 'I/b',
-            self::I_c => 'I/c',
-            self::I_d => 'I/d',
-            self::II_a => 'II/a',
-            self::II_b => 'II/b',
-            self::II_c => 'II/c',
-            self::II_d => 'II/d',
-            self::III_a => 'III/a',
-            self::III_b => 'III/b',
-            self::III_c => 'III/c',
-            self::III_d => 'III/d',
-            self::IV_a => 'IV/a',
-            self::IV_b => 'IV/b',
-            self::IV_c => 'IV/c',
-            self::IV_d => 'IV/d',
-            self::IV_e => 'IV/e',
-        };
-    }
-}
-```
+> **DEPRECATED:** Enum `GolonganRuang` telah **dihapus** dan digantikan oleh tabel database `golongan_pangkats` (model `GolonganPangkat`). Lihat [Section 4.7](#47-tabel-golongan-pangkats) untuk migration dan [Section 5.6](#56-model-golonganpangkat) untuk model. Semua referensi `golongan_ruang` (tinyInteger) di tabel lain telah diganti menjadi `golongan_id` (foreignId) yang merujuk ke `golongan_pangkats.id`.
 
 ### 3.5 JenisJabatan
 
@@ -536,7 +487,7 @@ return new class extends Migration
         Schema::create('riwayat_pangkats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pegawai_id')->constrained('pegawais')->cascadeOnDelete();
-            $table->tinyInteger('golongan_ruang');    // GolonganRuang enum
+            $table->foreignId('golongan_id')->constrained('golongan_pangkats')->cascadeOnDelete();
             $table->string('nomor_sk')->nullable();
             $table->date('tmt_pangkat');
             $table->date('tanggal_sk');
@@ -706,12 +657,12 @@ return new class extends Migration
     {
         Schema::create('tabel_gajis', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('golongan_ruang');     // GolonganRuang enum
+            $table->foreignId('golongan_id')->constrained('golongan_pangkats')->cascadeOnDelete();
             $table->integer('masa_kerja_tahun');       // 0, 2, 4, 6, ...
             $table->decimal('gaji_pokok', 15, 2);
             $table->timestamps();
 
-            $table->unique(['golongan_ruang', 'masa_kerja_tahun']);
+            $table->unique(['golongan_id', 'masa_kerja_tahun']);
         });
     }
 
@@ -832,6 +783,7 @@ php artisan migrate
 ```
 
 Ini akan membuat 3 migrasi otomatis:
+
 - `create_activity_log_table` — Tabel utama activity log
 - `add_event_column_to_activity_log_table` — Kolom event
 - `add_batch_uuid_column_to_activity_log_table` — Kolom batch UUID
@@ -971,17 +923,15 @@ Buat setiap model riwayat. Berikut contoh pola yang sama untuk semuanya:
 
 namespace App\Models;
 
-use App\Enums\GolonganRuang;
 use Illuminate\Database\Eloquent\Model;
 
 class RiwayatPangkat extends Model
 {
-    protected $fillable = ['pegawai_id', 'golongan_ruang', 'nomor_sk', 'tmt_pangkat', 'tanggal_sk', 'file_pdf_path', 'google_drive_link', 'is_hukdis_demotion'];
+    protected $fillable = ['pegawai_id', 'golongan_id', 'nomor_sk', 'tmt_pangkat', 'tanggal_sk', 'file_pdf_path', 'google_drive_link', 'is_hukdis_demotion'];
 
     protected function casts(): array
     {
         return [
-            'golongan_ruang' => GolonganRuang::class,
             'tmt_pangkat' => 'date',
             'tanggal_sk' => 'date',
             'is_hukdis_demotion' => 'boolean',
@@ -989,19 +939,21 @@ class RiwayatPangkat extends Model
     }
 
     public function pegawai() { return $this->belongsTo(Pegawai::class); }
+    public function golongan() { return $this->belongsTo(GolonganPangkat::class, 'golongan_id'); }
 }
 ```
 
 > **Buat model serupa untuk:** `RiwayatJabatan`, `RiwayatKgb`, `RiwayatHukumanDisiplin`, `RiwayatPendidikan`, `RiwayatLatihanJabatan`, `RiwayatPenghargaan`, `PenilaianKinerja`.
 >
 > Setiap model harus memiliki:
+>
 > - `$fillable` sesuai kolom di migration
 > - `casts()` untuk date dan enum
 > - `belongsTo(Pegawai::class)` relationship
 > - `RiwayatJabatan` juga punya `belongsTo(Jabatan::class)` dan cast `is_hukdis_demotion` (boolean)
 > - `RiwayatHukumanDisiplin` harus cast `jenis_sanksi` → `JenisSanksi`, `status` → `StatusHukdis`, dan memiliki method:
->   - `isAktif(): bool` — `status === StatusHukdis::Aktif && (tmt_selesai_hukuman === null || tmt_selesai_hukuman >= today())`
->   - `isType2(): bool` — `jenis_sanksi` adalah PenurunanPangkat/PenurunanJabatan/PembebasanJabatan
+>     - `isAktif(): bool` — `status === StatusHukdis::Aktif && (tmt_selesai_hukuman === null || tmt_selesai_hukuman >= today())`
+>     - `isType2(): bool` — `jenis_sanksi` adalah PenurunanPangkat/PenurunanJabatan/PembebasanJabatan
 > - Semua model riwayat + Pegawai menggunakan trait `Spatie\Activitylog\Traits\LogsActivity`
 
 ### 5.5 Model TabelGaji
@@ -1013,24 +965,53 @@ Buat file `app/Models/TabelGaji.php`:
 
 namespace App\Models;
 
-use App\Enums\GolonganRuang;
 use Illuminate\Database\Eloquent\Model;
 
 class TabelGaji extends Model
 {
-    protected $fillable = ['golongan_ruang', 'masa_kerja_tahun', 'gaji_pokok'];
+    protected $fillable = ['golongan_id', 'masa_kerja_tahun', 'gaji_pokok'];
 
     protected function casts(): array
     {
         return [
-            'golongan_ruang' => GolonganRuang::class,
             'gaji_pokok' => 'decimal:2',
         ];
     }
+
+    public function golongan() { return $this->belongsTo(GolonganPangkat::class, 'golongan_id'); }
 }
 ```
 
 > Model ini digunakan oleh `KGBCalculationService` untuk lookup gaji berdasarkan golongan dan masa kerja.
+
+### 5.6 Model GolonganPangkat
+
+Buat file `app/Models/GolonganPangkat.php`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class GolonganPangkat extends Model
+{
+    protected $fillable = ['golongan_ruang', 'label', 'pangkat', 'golongan_group', 'min_pendidikan', 'keterangan', 'is_active'];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function riwayatPangkat() { return $this->hasMany(RiwayatPangkat::class, 'golongan_id'); }
+    public function tabelGaji() { return $this->hasMany(TabelGaji::class, 'golongan_id'); }
+}
+```
+
+> Model master data golongan/pangkat. Menggantikan Enum `GolonganRuang` agar data bisa dikelola secara dinamis melalui CRUD.
 
 ---
 
@@ -1075,6 +1056,7 @@ class UserSeeder extends Seeder
 ### 6.2 MasterDataSeeder
 
 Buat file `database/seeders/MasterDataSeeder.php` yang berisi daftar jabatan beserta jenis, BUP, eselon, kelas jabatan, dan **rumpun jabatan** (`RumpunJabatan` enum). Isi dengan data jabatan ASN Kemenipas dari 3 rumpun:
+
 - **Struktural** (25 jabatan): Pejabat Administrasi, Fungsional Ahli Pertama/Muda/Madya/Utama, Pejabat Pimpinan Tinggi
 - **Imigrasi** (6 jabatan): Pemeriksa Keimigrasian, Analis Keimigrasian, Teknisi Keimigrasian, Kepala Kantor Imigrasi
 - **Pemasyarakatan** (6 jabatan): Pembimbing Kemasyarakatan, Penjaga Tahanan, Pengamat Pemasyarakatan, Kepala Lembaga Pemasyarakatan
@@ -1084,6 +1066,7 @@ Total: **37 jabatan** master data.
 ### 6.3 PegawaiSeeder
 
 Buat file `database/seeders/PegawaiSeeder.php` untuk generate ~100 pegawai dengan data random menggunakan Faker (`id_ID` locale). Seeder ini harus membuat:
+
 - Data pegawai (NIP, nama, biodata)
 - Riwayat pangkat (progresi otomatis setiap 4 tahun)
 - Riwayat jabatan
@@ -1160,6 +1143,7 @@ class StorePegawaiRequest extends FormRequest
 ```
 
 **`app/Http/Requests/UpdatePegawaiRequest.php`** — sama tetapi NIP unique rule meng-exclude record saat ini:
+
 ```php
 'nip' => 'required|string|unique:pegawais,nip,' . $this->route('pegawai')->id,
 ```
@@ -1168,21 +1152,22 @@ class StorePegawaiRequest extends FormRequest
 
 Buat Store/Update pair untuk setiap tipe riwayat di `app/Http/Requests/Riwayat/`:
 
-| File | Untuk |
-|---|---|
-| `StorePangkatRequest` / `UpdatePangkatRequest` | Riwayat Pangkat |
-| `StoreJabatanRequest` / `UpdateJabatanRequest` | Riwayat Jabatan |
-| `StoreKGBRequest` / `UpdateKGBRequest` | Riwayat KGB |
-| `StoreHukumanRequest` / `UpdateHukumanRequest` | Riwayat Hukuman Disiplin |
-| `StorePendidikanRequest` / `UpdatePendidikanRequest` | Riwayat Pendidikan |
-| `StoreLatihanRequest` / `UpdateLatihanRequest` | Riwayat Latihan Jabatan |
-| `StoreSKPRequest` / `UpdateSKPRequest` | Penilaian Kinerja (SKP) |
+| File                                                 | Untuk                    |
+| ---------------------------------------------------- | ------------------------ |
+| `StorePangkatRequest` / `UpdatePangkatRequest`       | Riwayat Pangkat          |
+| `StoreJabatanRequest` / `UpdateJabatanRequest`       | Riwayat Jabatan          |
+| `StoreKGBRequest` / `UpdateKGBRequest`               | Riwayat KGB              |
+| `StoreHukumanRequest` / `UpdateHukumanRequest`       | Riwayat Hukuman Disiplin |
+| `StorePendidikanRequest` / `UpdatePendidikanRequest` | Riwayat Pendidikan       |
+| `StoreLatihanRequest` / `UpdateLatihanRequest`       | Riwayat Latihan Jabatan  |
+| `StoreSKPRequest` / `UpdateSKPRequest`               | Penilaian Kinerja (SKP)  |
 
 > **Pola:** Store request memiliki `'pegawai_id' => 'required|exists:pegawais,id'`, Update request tidak karena pegawai_id sudah ada di model.
 
 ### 7.3 Auth FormRequest
 
 **`app/Http/Requests/Auth/LoginRequest.php`**:
+
 ```php
 public function rules(): array
 {
@@ -1249,17 +1234,18 @@ class PegawaiDTO
 
 Buat DTO untuk setiap tipe riwayat di `app/DTOs/Riwayat/`:
 
-| DTO Class | Untuk |
-|---|---|
-| `RiwayatPangkatDTO` | Riwayat Pangkat |
-| `RiwayatJabatanDTO` | Riwayat Jabatan |
-| `RiwayatKgbDTO` | Riwayat KGB |
+| DTO Class                   | Untuk                    |
+| --------------------------- | ------------------------ |
+| `RiwayatPangkatDTO`         | Riwayat Pangkat          |
+| `RiwayatJabatanDTO`         | Riwayat Jabatan          |
+| `RiwayatKgbDTO`             | Riwayat KGB              |
 | `RiwayatHukumanDisiplinDTO` | Riwayat Hukuman Disiplin |
-| `RiwayatPendidikanDTO` | Riwayat Pendidikan |
-| `RiwayatLatihanJabatanDTO` | Riwayat Latihan Jabatan |
-| `PenilaianKinerjaDTO` | Penilaian Kinerja (SKP) |
+| `RiwayatPendidikanDTO`      | Riwayat Pendidikan       |
+| `RiwayatLatihanJabatanDTO`  | Riwayat Latihan Jabatan  |
+| `PenilaianKinerjaDTO`       | Penilaian Kinerja (SKP)  |
 
 Setiap DTO memiliki:
+
 - Constructor dengan `readonly` typed properties
 - `fromRequest(array $validated): self` — factory method
 - `toArray(): array` — convert kembali ke snake_case untuk Eloquent
@@ -1437,24 +1423,24 @@ Digunakan di `PegawaiController@getPaginated` untuk menggantikan mapping array m
 
 Buat 16 controller di `app/Http/Controllers/`:
 
-| Controller | Fungsi |
-|---|---|
-| `AuthController` | `showLogin()`, `login(LoginRequest)`, `logout()` |
-| `DashboardController` | `index()`, `exportPdf()` — inject `DashboardService` |
-| `PegawaiController` | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource` |
-| `RiwayatController` | CRUD untuk 7 jenis riwayat + `pulihkanHukuman()` — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
-| `KGBController` | `index()`, `upcoming()`, `eligible()`, `ditunda()` |
-| `KenaikanPangkatController` | `index()`, `eligible()`, `ditunda()` |
-| `PensiunController` | `index()` |
-| `DUKController` | `index()` |
-| `SatyalencanaController` | `index()` dengan filter milestone, `award()` untuk pencatatan penghargaan |
-| `ExportController` | `export($type, $format)` — export PDF (DomPDF) dan Excel (Maatwebsite) untuk 5 jenis laporan |
-| `DocumentController` | `download($type, $id)` — download file dokumen SK (pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp) |
-| `JabatanController` | CRUD master data jabatan (admin) — dengan filter rumpun |
-| `TabelGajiController` | CRUD tabel gaji PP 15/2019 (admin) — per golongan dan masa kerja |
-| `GolonganController` | `index()` — referensi golongan ruang dengan statistik gaji |
-| `ActivityLogController` | `index()` — menampilkan riwayat aktivitas dari Spatie Activity Log |
-| `ProfileController` | `show()`, `updatePassword()` — profil user dan ganti password |
+| Controller                  | Fungsi                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AuthController`            | `showLogin()`, `login(LoginRequest)`, `logout()`                                                                                                              |
+| `DashboardController`       | `index()`, `exportPdf()` — inject `DashboardService`                                                                                                          |
+| `PegawaiController`         | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource`                                          |
+| `RiwayatController`         | CRUD untuk 7 jenis riwayat + `pulihkanHukuman()` — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
+| `KGBController`             | `index()`, `upcoming()`, `eligible()`, `ditunda()`                                                                                                            |
+| `KenaikanPangkatController` | `index()`, `eligible()`, `ditunda()`                                                                                                                          |
+| `PensiunController`         | `index()`                                                                                                                                                     |
+| `DUKController`             | `index()`                                                                                                                                                     |
+| `SatyalencanaController`    | `index()` dengan filter milestone, `award()` untuk pencatatan penghargaan                                                                                     |
+| `ExportController`          | `export($type, $format)` — export PDF (DomPDF) dan Excel (Maatwebsite) untuk 5 jenis laporan                                                                  |
+| `DocumentController`        | `download($type, $id)` — download file dokumen SK (pangkat, jabatan, kgb, hukuman, pendidikan, latihan, skp)                                                  |
+| `JabatanController`         | CRUD master data jabatan (admin) — dengan filter rumpun                                                                                                       |
+| `TabelGajiController`       | CRUD tabel gaji PP 15/2019 (admin) — per golongan dan masa kerja                                                                                              |
+| `GolonganController`        | `index()` — referensi golongan ruang dengan statistik gaji                                                                                                    |
+| `ActivityLogController`     | `index()` — menampilkan riwayat aktivitas dari Spatie Activity Log                                                                                            |
+| `ProfileController`         | `show()`, `updatePassword()` — profil user dan ganti password                                                                                                 |
 
 **Pola Controller (setelah refactor):**
 
@@ -1467,6 +1453,7 @@ Request masuk → FormRequest (validasi otomatis)
 ```
 
 **Aturan ketat:**
+
 - Controller **TIDAK BOLEH** mengandung `$request->validate([...])`
 - Controller **TIDAK BOLEH** memanggil Eloquent secara langsung (kecuali route model binding)
 - Magic number (page default, limit) dipindah ke `private const`
@@ -1608,6 +1595,7 @@ resources/views/
 ### 13.2 Layout Utama (`layouts/app.blade.php`)
 
 Komponen utama:
+
 - **Responsive Sidebar** (fixed, 256px) — gradient gelap, navigation links dengan icon SVG, active state highlight, user info + logout, toggle mobile/desktop via JavaScript `style.transform`
 - **Mobile Overlay** — semi-transparent backdrop saat sidebar terbuka di mobile
 - **Main Content** — sticky header dengan backdrop blur, breadcrumb, flash messages (auto-dismiss), `@yield('content')`
@@ -1630,11 +1618,13 @@ Badge/pill: px-2 py-1 text-xs rounded-full
 ### 13.4 Dashboard Charts
 
 Gunakan Chart.js 4 via CDN:
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 ```
 
 Pass data chart dari controller sebagai JSON ke JavaScript, lalu render 4 canvas:
+
 - Bar chart: Distribusi Golongan, Distribusi Usia
 - Doughnut chart: Gender, Unit Kerja
 
@@ -1645,18 +1635,29 @@ Gunakan fetch API ke endpoint `/pegawai-data?page=X&limit=10&search=keyword` dan
 ### 13.6 Pegawai Show — Tab System + Delete Modal
 
 Gunakan JavaScript sederhana untuk show/hide tab content:
+
 ```js
 function showTab(name) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(el => { /* toggle classes */ });
-    document.getElementById('tab-' + name).classList.remove('hidden');
+    document
+        .querySelectorAll(".tab-content")
+        .forEach((el) => el.classList.add("hidden"));
+    document.querySelectorAll(".tab-btn").forEach((el) => {
+        /* toggle classes */
+    });
+    document.getElementById("tab-" + name).classList.remove("hidden");
 }
 ```
 
 Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
+
 ```html
-<button type="button" onclick="confirmDelete('/riwayat/pangkat/1', 'Hapus data riwayat pangkat ini?')"
-    class="... bg-red-50 text-red-600 ...">Hapus</button>
+<button
+    type="button"
+    onclick="confirmDelete('/riwayat/pangkat/1', 'Hapus data riwayat pangkat ini?')"
+    class="... bg-red-50 text-red-600 ..."
+>
+    Hapus
+</button>
 ```
 
 ### 13.7 Tombol Aksi dalam Tabel
@@ -1666,9 +1667,18 @@ Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
 ```html
 <td class="px-3 py-2">
     <div class="flex items-center gap-2">
-        <a href="..." class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md">Edit</a>
-        <button type="button" onclick="confirmDelete('...', 'Hapus data ini?')"
-            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 text-xs rounded-md">Hapus</button>
+        <a
+            href="..."
+            class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md"
+            >Edit</a
+        >
+        <button
+            type="button"
+            onclick="confirmDelete('...', 'Hapus data ini?')"
+            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 text-xs rounded-md"
+        >
+            Hapus
+        </button>
     </div>
 </td>
 ```
@@ -1676,6 +1686,7 @@ Semua tombol hapus di 7 tab riwayat menggunakan shared delete modal dari layout:
 ### 13.8 Report Views — Search, Filter, Pagination, Export
 
 Semua halaman report (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) memiliki fitur:
+
 - **Search**: Filter data berdasarkan NIP/nama menggunakan client-side JavaScript
 - **Client-side Pagination**: Data di-render dari Blade, lalu dipaginasi via JS (15 per halaman)
 - **Export**: Link ke `/export/{type}/pdf` dan `/export/{type}/excel`
@@ -1700,13 +1711,13 @@ composer require maatwebsite/excel
 
 Buat folder `app/Exports/` dan buat 5 export class (satu per jenis laporan):
 
-| File | Untuk |
-|---|---|
-| `KGBExport.php` | Export monitoring KGB |
-| `PensiunExport.php` | Export alert pensiun |
-| `DUKExport.php` | Export DUK |
+| File                        | Untuk                   |
+| --------------------------- | ----------------------- |
+| `KGBExport.php`             | Export monitoring KGB   |
+| `PensiunExport.php`         | Export alert pensiun    |
+| `DUKExport.php`             | Export DUK              |
 | `KenaikanPangkatExport.php` | Export kenaikan pangkat |
-| `SatyalencanaExport.php` | Export Satyalencana |
+| `SatyalencanaExport.php`    | Export Satyalencana     |
 
 Setiap export class mengimplementasikan `FromCollection`, `WithHeadings`, `WithMapping`, dan `WithStyles` dari Maatwebsite/Excel.
 
@@ -1722,6 +1733,7 @@ Setiap export class mengimplementasikan `FromCollection`, `WithHeadings`, `WithM
 ### 14.4 Membuat Template PDF
 
 Buat 6 template PDF di `resources/views/exports/`:
+
 - `dashboard-pdf.blade.php`
 - `kgb-pdf.blade.php`
 - `pensiun-pdf.blade.php`
@@ -1734,11 +1746,18 @@ Buat 6 template PDF di `resources/views/exports/`:
 ### 14.5 Menambahkan Tombol Export di View
 
 Tambahkan link export di setiap halaman report:
+
 ```html
-<a href="{{ route('export', ['type' => 'kgb', 'format' => 'pdf']) }}"
-   class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg">PDF</a>
-<a href="{{ route('export', ['type' => 'kgb', 'format' => 'excel']) }}"
-   class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg">Excel</a>
+<a
+    href="{{ route('export', ['type' => 'kgb', 'format' => 'pdf']) }}"
+    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg"
+    >PDF</a
+>
+<a
+    href="{{ route('export', ['type' => 'kgb', 'format' => 'excel']) }}"
+    class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg"
+    >Excel</a
+>
 ```
 
 ---
@@ -1820,6 +1839,7 @@ php artisan serve
 ### Akses Aplikasi
 
 Buka browser ke **http://localhost:8000** dan login dengan:
+
 - Email: `superadmin@kemenipas.go.id`
 - Password: `password`
 
@@ -1841,18 +1861,18 @@ Request → Route → FormRequest (validasi) → Controller (orkestrasi)
                                         Response (HTML/JSON)
 ```
 
-| Layer | Tanggung Jawab |
-|---|---|
-| **Route** | URL mapping ke controller |
-| **FormRequest** | Validasi input & otorisasi (controller **tidak** boleh validate) |
-| **Controller** | Orkestrasi saja: menerima FormRequest, membuat DTO, memanggil Service |
-| **DTO** | Strongly-typed data contract antara Controller ↔ Service |
-| **Service** | Business logic murni, semua DML dibungkus `DB::transaction()` |
-| **Model** | Data access, relationships, computed attributes |
-| **API Resource** | Transformasi model → JSON/array response yang eksplisit |
-| **View** | Presentasi HTML dengan Tailwind CSS |
-| **Enum** | Tipe data konstan dengan label display |
-| **Seeder** | Data awal untuk testing |
+| Layer            | Tanggung Jawab                                                        |
+| ---------------- | --------------------------------------------------------------------- |
+| **Route**        | URL mapping ke controller                                             |
+| **FormRequest**  | Validasi input & otorisasi (controller **tidak** boleh validate)      |
+| **Controller**   | Orkestrasi saja: menerima FormRequest, membuat DTO, memanggil Service |
+| **DTO**          | Strongly-typed data contract antara Controller ↔ Service              |
+| **Service**      | Business logic murni, semua DML dibungkus `DB::transaction()`         |
+| **Model**        | Data access, relationships, computed attributes                       |
+| **API Resource** | Transformasi model → JSON/array response yang eksplisit               |
+| **View**         | Presentasi HTML dengan Tailwind CSS                                   |
+| **Enum**         | Tipe data konstan dengan label display                                |
+| **Seeder**       | Data awal untuk testing                                               |
 
 ### Struktur Folder Lengkap
 
@@ -1956,6 +1976,19 @@ erDiagram
         timestamp updated_at
     }
 
+    golongan_pangkats {
+        bigint id PK
+        tinyint golongan_ruang UK "1-17 level numerik"
+        string label "I/a s.d IV/e"
+        string pangkat "Nama pangkat resmi"
+        string golongan_group "I, II, III, IV"
+        string min_pendidikan
+        text keterangan
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
     jabatans {
         bigint id PK
         string nama_jabatan
@@ -1964,6 +1997,7 @@ erDiagram
         int eselon_level
         int kelas_jabatan
         tinyint rumpun "FK Enum RumpunJabatan"
+        boolean is_active
         timestamp created_at
         timestamp updated_at
     }
@@ -1998,7 +2032,7 @@ erDiagram
     riwayat_pangkats {
         bigint id PK
         bigint pegawai_id FK
-        tinyint golongan_ruang "FK Enum GolonganRuang"
+        bigint golongan_id FK "FK golongan_pangkats"
         string nomor_sk
         date tmt_pangkat
         date tanggal_sk
@@ -2116,7 +2150,7 @@ erDiagram
 
     tabel_gajis {
         bigint id PK
-        tinyint golongan_ruang "FK Enum GolonganRuang"
+        bigint golongan_id FK "FK golongan_pangkats"
         int masa_kerja_tahun "0, 2, 4, ... 32"
         decimal gaji_pokok "15,2"
         timestamp created_at
@@ -2140,6 +2174,8 @@ erDiagram
 
     %% === RELATIONSHIPS ===
 
+    golongan_pangkats ||--o{ riwayat_pangkats : "has many"
+    golongan_pangkats ||--o{ tabel_gajis : "has many"
     pegawais ||--o{ riwayat_pangkats : "has many"
     pegawais ||--o{ riwayat_jabatans : "has many"
     pegawais ||--o{ riwayat_kgbs : "has many"
@@ -2153,23 +2189,25 @@ erDiagram
 
 ### Penjelasan Relasi
 
-| Relasi | Tipe | Deskripsi |
-|--------|------|-----------|
-| `pegawais` → `riwayat_pangkats` | One-to-Many | Pegawai memiliki banyak riwayat kenaikan pangkat |
-| `pegawais` → `riwayat_jabatans` | One-to-Many | Pegawai memiliki banyak riwayat penempatan jabatan |
-| `pegawais` → `riwayat_kgbs` | One-to-Many | Pegawai memiliki banyak riwayat KGB |
-| `pegawais` → `riwayat_hukuman_disiplins` | One-to-Many | Pegawai memiliki banyak riwayat hukuman disiplin |
-| `pegawais` → `riwayat_pendidikans` | One-to-Many | Pegawai memiliki banyak riwayat pendidikan |
-| `pegawais` → `riwayat_latihan_jabatans` | One-to-Many | Pegawai memiliki banyak riwayat diklat |
-| `pegawais` → `riwayat_penghargaans` | One-to-Many | Pegawai memiliki banyak riwayat penghargaan |
-| `pegawais` → `penilaian_kinerjas` | One-to-Many | Pegawai memiliki banyak penilaian kinerja (SKP) |
-| `jabatans` → `riwayat_jabatans` | One-to-Many | Jabatan direferensi oleh banyak riwayat jabatan |
-| `tabel_gajis` | Standalone | Tabel referensi gaji PP 15/2019 (lookup oleh KGBCalculationService) |
-| `activity_log` | Standalone (Spatie) | Audit log otomatis, terhubung polimorfik ke subject & causer |
+| Relasi                                   | Tipe                | Deskripsi                                                            |
+| ---------------------------------------- | ------------------- | -------------------------------------------------------------------- |
+| `golongan_pangkats` → `riwayat_pangkats` | One-to-Many         | Golongan direferensi oleh banyak riwayat pangkat (via `golongan_id`) |
+| `golongan_pangkats` → `tabel_gajis`      | One-to-Many         | Golongan memiliki banyak record tabel gaji (via `golongan_id`)       |
+| `pegawais` → `riwayat_pangkats`          | One-to-Many         | Pegawai memiliki banyak riwayat kenaikan pangkat                     |
+| `pegawais` → `riwayat_jabatans`          | One-to-Many         | Pegawai memiliki banyak riwayat penempatan jabatan                   |
+| `pegawais` → `riwayat_kgbs`              | One-to-Many         | Pegawai memiliki banyak riwayat KGB                                  |
+| `pegawais` → `riwayat_hukuman_disiplins` | One-to-Many         | Pegawai memiliki banyak riwayat hukuman disiplin                     |
+| `pegawais` → `riwayat_pendidikans`       | One-to-Many         | Pegawai memiliki banyak riwayat pendidikan                           |
+| `pegawais` → `riwayat_latihan_jabatans`  | One-to-Many         | Pegawai memiliki banyak riwayat diklat                               |
+| `pegawais` → `riwayat_penghargaans`      | One-to-Many         | Pegawai memiliki banyak riwayat penghargaan                          |
+| `pegawais` → `penilaian_kinerjas`        | One-to-Many         | Pegawai memiliki banyak penilaian kinerja (SKP)                      |
+| `jabatans` → `riwayat_jabatans`          | One-to-Many         | Jabatan direferensi oleh banyak riwayat jabatan                      |
+| `activity_log`                           | Standalone (Spatie) | Audit log otomatis, terhubung polimorfik ke subject & causer         |
 
 ### Catatan Khusus
 
+- **`golongan_pangkats`** menggantikan Enum `GolonganRuang` sejak refactoring ke tabel dinamis. Semua FK `golongan_ruang` (tinyInteger) di `riwayat_pangkats` dan `tabel_gajis` telah di-migrasi menjadi `golongan_id` (foreignId).
 - **`is_hukdis_demotion` flag** pada `riwayat_pangkats` dan `riwayat_jabatans`: Menandai record yang dibuat otomatis oleh sistem hukdis (Type 2: Penurunan). Record ini dihapus saat pemulihan atau penghapusan hukuman.
 - **`status` pada `riwayat_hukuman_disiplins`**: Mengontrol apakah hukuman masih memblokir KGB/kenaikan pangkat. Hanya status `aktif` yang memblokir (via method `isAktif()`).
-- **`tabel_gajis`** tidak memiliki foreign key relasi langsung, tetapi digunakan oleh `KGBCalculationService` untuk lookup gaji berdasarkan `golongan_ruang` dan `masa_kerja_tahun`.
+- **`tabel_gajis`** terhubung ke `golongan_pangkats` via `golongan_id` FK, digunakan oleh `KGBCalculationService` untuk lookup gaji berdasarkan golongan dan masa kerja.
 - **`activity_log`** menggunakan relasi polimorfik (`subject_type` + `subject_id`), sehingga dapat mencatat perubahan pada model manapun.

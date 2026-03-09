@@ -23,11 +23,11 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 ## Persyaratan Sistem
 
 | Komponen | Versi Minimum |
-|---|---|
-| PHP | 8.2+ |
-| Composer | 2.x |
-| Node.js | 18+ |
-| NPM | 9+ |
+| -------- | ------------- |
+| PHP      | 8.2+          |
+| Composer | 2.x           |
+| Node.js  | 18+           |
+| NPM      | 9+            |
 
 ## Instalasi & Setup
 
@@ -78,7 +78,9 @@ php artisan migrate --seed
 ```
 
 Ini akan membuat semua tabel dan mengisi data sampel:
+
 - 2 user (superadmin@kemenipas.go.id / password)
+- 17 golongan/pangkat (I/a s.d IV/e)
 - 37 jabatan master data (3 rumpun: Struktural, Imigrasi, Pemasyarakatan)
 - 100 pegawai dengan riwayat lengkap
 - Tabel gaji PP 15/2019 (untuk kalkulasi KGB otomatis)
@@ -98,6 +100,7 @@ php artisan serve
 Akses di: **http://localhost:8000**
 
 **Login sebagai admin:**
+
 - Email: `superadmin@kemenipas.go.id`
 - Password: `password`
 
@@ -106,15 +109,15 @@ Akses di: **http://localhost:8000**
 ```
 app/
 ├── DTOs/               # 8 DTO class (PegawaiDTO + 7 Riwayat DTO)
-├── Enums/              # 10 PHP Enum (JenisKelamin, Agama, GolonganRuang, JenisSanksi, StatusHukdis, dll)
+├── Enums/              # 9 PHP Enum (JenisKelamin, Agama, JenisSanksi, StatusHukdis, RumpunJabatan, dll)
 ├── Exports/            # 5 Excel Export class (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana)
 ├── Http/
 │   ├── Controllers/    # 16 Controller (Auth, Dashboard, Pegawai, Riwayat, Export, Jabatan, TabelGaji, dll)
 │   ├── Requests/       # 19 FormRequest (Store/Update untuk setiap entitas)
 │   └── Resources/      # 1 API Resource (PegawaiResource)
-├── Models/             # 12 Eloquent Model (Pegawai, Jabatan, TabelGaji, dll)
+├── Models/             # 13 Eloquent Model (Pegawai, GolonganPangkat, Jabatan, TabelGaji, dll)
 ├── Providers/          # AppServiceProvider
-└── Services/           # 12 Service Class (business logic layer)
+└── Services/           # 13 Service Class (business logic layer)
 database/
 ├── migrations/         # 15 migration files
 ├── seeders/            # 5 seeder (User, MasterData, Pegawai, TabelGaji, Database)
@@ -137,87 +140,94 @@ resources/views/
 
 ## Teknologi
 
-| Kategori | Teknologi |
-|---|---|
-| **Backend** | Laravel 12 (PHP 8.2+) |
-| **Database** | SQLite |
-| **Frontend** | Blade Templates + Tailwind CSS 4.x |
-| **Build Tool** | Vite |
-| **Charts** | Chart.js 4 (CDN) |
-| **Font** | Inter (Google Fonts) |
-| **PDF Export** | barryvdh/laravel-dompdf 3.x |
-| **Excel Export** | maatwebsite/excel 3.x |
-| **Activity Log** | spatie/laravel-activitylog 4.x |
+| Kategori         | Teknologi                          |
+| ---------------- | ---------------------------------- |
+| **Backend**      | Laravel 12 (PHP 8.2+)              |
+| **Database**     | SQLite                             |
+| **Frontend**     | Blade Templates + Tailwind CSS 4.x |
+| **Build Tool**   | Vite                               |
+| **Charts**       | Chart.js 4 (CDN)                   |
+| **Font**         | Inter (Google Fonts)               |
+| **PDF Export**   | barryvdh/laravel-dompdf 3.x        |
+| **Excel Export** | maatwebsite/excel 3.x              |
+| **Activity Log** | spatie/laravel-activitylog 4.x     |
 
 ## Skema Database
 
-| Tabel | Deskripsi |
-|---|---|
-| `users` | Data user login dengan role (SuperAdmin, HR) |
-| `jabatans` | Master data jabatan (nama, jenis, BUP, eselon, kelas, rumpun) |
-| `pegawais` | Data utama pegawai (NIP, biodata, ASN, gaji pokok) |
-| `riwayat_pangkats` | Riwayat kenaikan pangkat (dengan flag `is_hukdis_demotion`) |
-| `riwayat_jabatans` | Riwayat penempatan jabatan (dengan flag `is_hukdis_demotion`) |
-| `riwayat_kgbs` | Riwayat KGB (gaji lama/baru, masa kerja golongan) |
-| `riwayat_hukuman_disiplins` | Riwayat hukuman disiplin (status aktif/selesai/dipulihkan, data pemulihan) |
-| `riwayat_pendidikans` | Riwayat pendidikan formal |
-| `riwayat_latihan_jabatans` | Riwayat diklat/pelatihan |
-| `riwayat_penghargaans` | Riwayat penghargaan (Satyalencana, dll) |
-| `penilaian_kinerjas` | Penilaian kinerja (SKP) dengan dokumen |
-| `tabel_gajis` | Tabel gaji PNS PP 15/2019 (golongan × masa kerja) |
-| `activity_log` | Log aktivitas perubahan data (Spatie) |
+| Tabel                       | Deskripsi                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `users`                     | Data user login dengan role (SuperAdmin, HR)                                    |
+| `golongan_pangkats`         | Master data golongan/pangkat (label, pangkat, group, min_pendidikan, is_active) |
+| `jabatans`                  | Master data jabatan (nama, jenis, BUP, eselon, kelas, rumpun, is_active)        |
+| `pegawais`                  | Data utama pegawai (NIP, biodata, ASN, gaji pokok)                              |
+| `riwayat_pangkats`          | Riwayat kenaikan pangkat (FK ke `golongan_pangkats`, flag `is_hukdis_demotion`) |
+| `riwayat_jabatans`          | Riwayat penempatan jabatan (dengan flag `is_hukdis_demotion`)                   |
+| `riwayat_kgbs`              | Riwayat KGB (gaji lama/baru, masa kerja golongan)                               |
+| `riwayat_hukuman_disiplins` | Riwayat hukuman disiplin (status aktif/selesai/dipulihkan, data pemulihan)      |
+| `riwayat_pendidikans`       | Riwayat pendidikan formal                                                       |
+| `riwayat_latihan_jabatans`  | Riwayat diklat/pelatihan                                                        |
+| `riwayat_penghargaans`      | Riwayat penghargaan (Satyalencana, dll)                                         |
+| `penilaian_kinerjas`        | Penilaian kinerja (SKP) dengan dokumen                                          |
+| `tabel_gajis`               | Tabel gaji PNS PP 15/2019 (FK ke `golongan_pangkats` × masa kerja)              |
+| `activity_log`              | Log aktivitas perubahan data (Spatie)                                           |
 
 ## Enum
 
-| Enum | Deskripsi |
-|---|---|
-| `Agama` | 6 agama yang diakui |
-| `GolonganDarah` | A, B, AB, O |
-| `GolonganRuang` | I/a s.d IV/e (17 level) |
-| `JenisJabatan` | Pejabat Administrasi, Fungsional, Pimpinan Tinggi |
-| `JenisKelamin` | Laki-laki, Perempuan |
-| `JenisSanksi` | 6 jenis: Penundaan KGB, Penundaan Pangkat, Penurunan Pangkat, Penurunan Jabatan, Pembebasan Jabatan, Pemberhentian |
-| `RumpunJabatan` | Kategorisasi rumpun jabatan fungsional |
-| `StatusHukdis` | Aktif, Selesai, Dipulihkan |
-| `StatusPernikahan` | Belum Menikah, Menikah, Cerai Hidup, Cerai Mati |
-| `TingkatHukuman` | Ringan, Sedang, Berat |
+| Enum               | Deskripsi                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `Agama`            | 6 agama yang diakui                                                                                                |
+| `GolonganDarah`    | A, B, AB, O                                                                                                        |
+| `JenisJabatan`     | Pejabat Administrasi, Fungsional, Pimpinan Tinggi                                                                  |
+| `JenisKelamin`     | Laki-laki, Perempuan                                                                                               |
+| `JenisSanksi`      | 6 jenis: Penundaan KGB, Penundaan Pangkat, Penurunan Pangkat, Penurunan Jabatan, Pembebasan Jabatan, Pemberhentian |
+| `RumpunJabatan`    | Imigrasi, Pemasyarakatan, Struktural                                                                               |
+| `StatusHukdis`     | Aktif, Selesai, Dipulihkan                                                                                         |
+| `StatusPernikahan` | Belum Menikah, Menikah, Cerai Hidup, Cerai Mati                                                                    |
+| `TingkatHukuman`   | Ringan, Sedang, Berat                                                                                              |
+
+> **Catatan:** `GolonganRuang` (I/a s.d IV/e) telah dimigrasi dari Enum ke tabel database `golongan_pangkats` (model `GolonganPangkat`) untuk mendukung CRUD dinamis.
 
 ## Service Layer
 
 Semua business logic dipisahkan ke Service class untuk menjaga controller tetap tipis:
 
-| Service | Tanggung Jawab |
-|---|---|
-| `PegawaiService` | CRUD pegawai, pencarian, paginasi |
-| `RiwayatService` | CRUD 7 jenis riwayat, hukdis hybrid logic (Type 2 demotion, pemulihan, rekalkulasi gaji) |
-| `JabatanService` | CRUD master data jabatan |
-| `TabelGajiService` | CRUD tabel gaji PP 15/2019 |
-| `KGBService` | Monitoring status KGB, jatuh tempo, eligibilitas (dengan integrasi hukdis) |
-| `KGBCalculationService` | Kalkulasi gaji baru berdasarkan tabel gaji PP 15/2019 |
-| `KenaikanPangkatService` | Analisis syarat kenaikan pangkat (dengan integrasi hukdis) |
-| `PensiunService` | Alert pensiun berdasarkan BUP |
-| `DUKService` | Ranking DUK sesuai hierarki BKN |
-| `SatyalencanaService` | Identifikasi kandidat Satyalencana |
-| `DashboardService` | Agregasi data dashboard + chart |
-| `DocumentUploadService` | Upload dan manajemen file dokumen SK |
+| Service                  | Tanggung Jawab                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `PegawaiService`         | CRUD pegawai, pencarian, paginasi                                                        |
+| `RiwayatService`         | CRUD 7 jenis riwayat, hukdis hybrid logic (Type 2 demotion, pemulihan, rekalkulasi gaji) |
+| `JabatanService`         | CRUD master data jabatan                                                                 |
+| `TabelGajiService`       | CRUD tabel gaji PP 15/2019                                                               |
+| `KGBService`             | Monitoring status KGB, jatuh tempo, eligibilitas (dengan integrasi hukdis)               |
+| `KGBCalculationService`  | Kalkulasi gaji baru berdasarkan tabel gaji PP 15/2019                                    |
+| `KenaikanPangkatService` | Analisis syarat kenaikan pangkat (dengan integrasi hukdis)                               |
+| `PensiunService`         | Alert pensiun berdasarkan BUP                                                            |
+| `DUKService`             | Ranking DUK sesuai hierarki BKN                                                          |
+| `SatyalencanaService`    | Identifikasi kandidat Satyalencana                                                       |
+| `DashboardService`       | Agregasi data dashboard + chart                                                          |
+| `DocumentUploadService`  | Upload dan manajemen file dokumen SK                                                     |
+| `GolonganPangkatService` | CRUD master data golongan/pangkat                                                        |
 
 ## Hukuman Disiplin — Hybrid Logic (PP 94/2021)
 
 Sistem hukuman disiplin mendukung 3 kategori sanksi dengan mekanisme berbeda:
 
 ### Type 1 — Penundaan (Soft-block)
+
 - **Penundaan KGB**: Menunda jatuh tempo KGB sesuai durasi hukuman
 - **Penundaan Pangkat**: Menambah syarat masa kerja kenaikan pangkat
 
 ### Type 2 — Penurunan (Hard-update)
+
 - **Penurunan Pangkat**: Insert record baru di `riwayat_pangkats` dengan `is_hukdis_demotion=true`, pangkat target harus lebih rendah dari saat ini, gaji otomatis dihitung ulang
 - **Penurunan Jabatan**: Insert record baru di `riwayat_jabatans` dengan `is_hukdis_demotion=true`
 - **Pembebasan Jabatan**: Membebaskan dari jabatan, memblokir kenaikan pangkat
 
 ### Type 3 — Terminal
+
 - **Pemberhentian**: Memblokir semua proses kepegawaian
 
 ### Pemulihan (Dipulihkan)
+
 - Mengubah status hukuman menjadi `Dipulihkan`
 - Untuk penurunan pangkat: insert record pemulihan pangkat + rekalkulasi gaji otomatis
 - Untuk penurunan/pembebasan jabatan: insert record pemulihan jabatan
@@ -225,10 +235,10 @@ Sistem hukuman disiplin mendukung 3 kategori sanksi dengan mekanisme berbeda:
 
 ## Akun Default
 
-| Role | Email | Password |
-|---|---|---|
+| Role       | Email                      | Password |
+| ---------- | -------------------------- | -------- |
 | SuperAdmin | superadmin@kemenipas.go.id | password |
-| HR | hr@kemenipas.go.id | password |
+| HR         | hr@kemenipas.go.id         | password |
 
 ## Pengembangan
 
