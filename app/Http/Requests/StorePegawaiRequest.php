@@ -14,7 +14,7 @@ class StorePegawaiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nip' => 'required|string|unique:pegawais,nip',
+            'nip' => ['required', 'string', 'digits:18', 'unique:pegawais,nip'],
             'nama_lengkap' => 'required|string|max:255',
             'tempat_lahir' => 'nullable|string',
             'tanggal_lahir' => 'required|date',

@@ -16,7 +16,7 @@ class UpdatePegawaiRequest extends FormRequest
         $pegawaiId = $this->route('pegawai')->id ?? $this->route('pegawai');
 
         return [
-            'nip' => 'required|string|unique:pegawais,nip,' . $pegawaiId,
+            'nip' => ['required', 'string', 'digits:18', 'unique:pegawais,nip,' . $pegawaiId],
             'nama_lengkap' => 'required|string|max:255',
             'tempat_lahir' => 'nullable|string',
             'tanggal_lahir' => 'required|date',
