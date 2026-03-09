@@ -40,8 +40,6 @@ class KenaikanPangkatService
             $hukdisPangkatFlag = false;
             $hukdisPangkatNote = null;
             $penundaanBulan = 0;
-            $isBlocked = false;
-            $blockedNote = null;
 
             // GAP-11: Penurunan Pangkat — lower golongan, reset TMT
             $penurunanPangkat = $activeHukuman->filter(fn($h) => $h->jenis_sanksi === JenisSanksi::PenurunanPangkat);
@@ -71,14 +69,6 @@ class KenaikanPangkatService
                     : $noteText;
             }
 
-            // Blocking sanctions (PembebasanJabatan, Pemberhentian)
-            $blockingSanctions = $activeHukuman->filter(fn($h) =>
-            in_array($h->jenis_sanksi, [JenisSanksi::PembebasanJabatan, JenisSanksi::Pemberhentian]));
-            if ($blockingSanctions->isNotEmpty()) {
-                $isBlocked = true;
-                $blockedNote = $blockingSanctions->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
-            }
-
             if ($golLevel >= $maxGolonganRuang) continue;
 
             $golBerikutnya = $golonganMap->get($golLevel + 1);
@@ -98,7 +88,7 @@ class KenaikanPangkatService
 
             $syaratLatihan = $pegawai->riwayatLatihanJabatan->isNotEmpty();
 
-            $syaratHukuman = !$isBlocked;
+            $syaratHukuman = $activeHukuman->isEmpty();
 
             $isEligible = $syaratMasaKerja && $syaratSKP && $syaratLatihan && $syaratHukuman;
 
@@ -108,7 +98,10 @@ class KenaikanPangkatService
             }
             if (!$syaratSKP) $alasan[] = 'SKP 2 tahun terakhir belum memenuhi syarat (min Baik)';
             if (!$syaratLatihan) $alasan[] = 'Belum memiliki riwayat latihan jabatan';
-            if ($isBlocked) $alasan[] = 'Terkena sanksi: ' . $blockedNote;
+            if (!$syaratHukuman) {
+                $activeNotes = $activeHukuman->map(fn($h) => $h->jenis_sanksi->label())->unique()->implode(', ');
+                $alasan[] = 'Terkena hukuman disiplin aktif: ' . $activeNotes;
+            }
 
             // GAP-12: Proyeksi Periode April/Oktober
             $tanggalEligible = $tmtPangkat->copy()->addMonths($requiredBulan);
