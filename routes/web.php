@@ -13,6 +13,9 @@ use App\Http\Controllers\SatyalencanaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\GolonganController;
+use App\Http\Controllers\JabatanController;
+use App\Http\Controllers\TabelGajiController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -109,4 +112,15 @@ Route::middleware('auth')->group(function () {
 
     // Activity Log
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+
+    // Admin Setting
+    Route::prefix('admin')->group(function () {
+        Route::get('/tabel-gaji', [TabelGajiController::class, 'index'])->name('admin.tabel-gaji.index');
+        Route::post('/tabel-gaji', [TabelGajiController::class, 'store'])->name('admin.tabel-gaji.store');
+        Route::get('/tabel-gaji/{golongan}', [TabelGajiController::class, 'show'])->where('golongan', '[0-9]+')->name('admin.tabel-gaji.show');
+        Route::put('/tabel-gaji/{tabelGaji}', [TabelGajiController::class, 'update'])->name('admin.tabel-gaji.update');
+        Route::delete('/tabel-gaji/{tabelGaji}', [TabelGajiController::class, 'destroy'])->name('admin.tabel-gaji.destroy');
+        Route::get('/golongan', [GolonganController::class, 'index'])->name('admin.golongan.index');
+        Route::resource('jabatan', JabatanController::class)->names('admin.jabatan')->except(['show']);
+    });
 });

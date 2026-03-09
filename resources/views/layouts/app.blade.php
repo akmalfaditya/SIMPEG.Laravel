@@ -59,6 +59,21 @@
                     Satyalencana
                 </a>
 
+                <div class="pt-3 pb-1 px-3"><p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Admin Setting</p></div>
+
+                <a href="{{ route('admin.tabel-gaji.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.tabel-gaji.*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Tabel Gaji
+                </a>
+                <a href="{{ route('admin.golongan.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.golongan.*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Referensi Golongan
+                </a>
+                <a href="{{ route('admin.jabatan.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.jabatan.*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.193 23.193 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Master Jabatan
+                </a>
+
                 <div class="pt-3 pb-1 px-3"><p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Lainnya</p></div>
 
                 <a href="{{ route('activity-log.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('activity-log.*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
