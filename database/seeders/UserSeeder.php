@@ -13,15 +13,15 @@ class UserSeeder extends Seeder
         if (User::count() > 0) return;
 
         User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@simpeg.go.id',
+            'name' => 'Super Admin Kemenipas',
+            'email' => 'superadmin@kemenipas.go.id',
             'password' => Hash::make('password'),
             'role' => 'SuperAdmin',
         ]);
 
         User::create([
-            'name' => 'HR Staff',
-            'email' => 'hr@simpeg.go.id',
+            'name' => 'Staf Kepegawaian Kemenipas',
+            'email' => 'hr@kemenipas.go.id',
             'password' => Hash::make('password'),
             'role' => 'HR',
         ]);

@@ -41,7 +41,7 @@
                 </button>
             </form>
         </div>
-        <p class="text-center text-slate-500 text-xs mt-6">Admin: admin@simpeg.go.id / password</p>
+        <p class="text-center text-slate-500 text-xs mt-6">Admin: superadmin@kemenipas.go.id / password</p>
     </div>
 </body>
 </html>

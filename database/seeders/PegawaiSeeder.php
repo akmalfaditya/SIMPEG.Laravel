@@ -176,17 +176,46 @@ class PegawaiSeeder extends Seeder
         $nip = "{$nipBirth}{$nipTmt}{$nipGender}{$nipSeq}";
         $this->nipCounter++;
 
-        $unitKerjaList = ['Biro SDM', 'Biro Keuangan', 'Dinas Pendidikan', 'Dinas Kesehatan', 'Biro Hukum', 'Inspektorat', 'Biro Perencanaan'];
+        $unitKerjaList = [
+            // Sekretariat Jenderal
+            'Sekretariat Jenderal',
+            'Biro Kepegawaian dan Organisasi',
+            'Biro Perencanaan dan Keuangan',
+            'Biro Hukum dan Hubungan Masyarakat',
+            'Biro Umum dan Pengadaan',
+            // Inspektorat Jenderal
+            'Inspektorat Jenderal',
+            // Ditjen Imigrasi
+            'Direktorat Jenderal Imigrasi',
+            'Kantor Imigrasi Kelas I TPI Jakarta',
+            'Kantor Imigrasi Kelas I TPI Surabaya',
+            'Kantor Imigrasi Kelas II TPI Semarang',
+            'Kantor Imigrasi Kelas II TPI Medan',
+            'Kantor Imigrasi Kelas III Non-TPI Cirebon',
+            'Rumah Detensi Imigrasi Jakarta',
+            // Ditjen Pemasyarakatan
+            'Direktorat Jenderal Pemasyarakatan',
+            'Lembaga Pemasyarakatan Kelas I Cipinang',
+            'Lembaga Pemasyarakatan Kelas II A Tangerang',
+            'Lembaga Pemasyarakatan Kelas II B Bogor',
+            'Rumah Tahanan Negara Kelas I Jakarta Pusat',
+            'Rumah Tahanan Negara Kelas II B Bekasi',
+            'Balai Pemasyarakatan Kelas I Jakarta Selatan',
+            'Balai Pemasyarakatan Kelas II Bandung',
+        ];
+
+        $namaLengkap = $this->faker->name($gender === JenisKelamin::LakiLaki ? 'male' : 'female');
+        $emailName = strtolower(str_replace([' ', '.', ',', "'"], '', $namaLengkap)) . $this->nipCounter;
 
         return Pegawai::create([
             'nip' => $nip,
-            'nama_lengkap' => $this->faker->name($gender === JenisKelamin::LakiLaki ? 'male' : 'female'),
+            'nama_lengkap' => $namaLengkap,
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $birthDate,
             'jenis_kelamin' => $gender,
             'alamat' => $this->faker->address(),
             'no_telepon' => '08' . $this->faker->numerify('##########'),
-            'email' => $this->faker->unique()->safeEmail(),
+            'email' => $emailName . '@kemenipas.go.id',
             'tmt_cpns' => $tmtCpns,
             'tmt_pns' => $tmtCpns->copy()->addYear(),
             'gaji_pokok' => 0,
@@ -283,7 +312,11 @@ class PegawaiSeeder extends Seeder
     private function addRiwayatPendidikan(Pegawai $peg): void
     {
         $tingkat = ['S1', 'D3', 'SMA', 'S2'];
-        $jurusan = ['Ilmu Pemerintahan', 'Manajemen', 'Akuntansi', 'Hukum', 'Teknik Informatika', 'Administrasi Publik'];
+        $jurusan = [
+            'Ilmu Hukum', 'Hukum Pidana', 'Kriminologi', 'Ilmu Pemerintahan',
+            'Administrasi Publik', 'Manajemen', 'Akuntansi', 'Teknik Informatika',
+            'Hukum Internasional', 'Ilmu Sosial', 'Psikologi', 'Kesejahteraan Sosial',
+        ];
         $tp = $tingkat[mt_rand(0, 3)];
         $tahunLulus = now()->year - mt_rand(5, 14);
 
@@ -300,15 +333,35 @@ class PegawaiSeeder extends Seeder
 
     private function addRiwayatLatihanJabatan(Pegawai $peg): void
     {
-        $latihan = ['Diklat Kepemimpinan Tk. IV', 'Prajabatan Golongan III', 'Bimbingan Teknis IT', 'Diklat Manajemen Proyek', 'Pelatihan Pelayanan Publik'];
-        $penyelenggara = ['BKN', 'LAN', 'BPSDM', 'Kemenpan RB', 'Pusdiklat'];
+        $latihan = [
+            'Diklat Kepemimpinan Tk. IV',
+            'Diklat Kepemimpinan Tk. III',
+            'Prajabatan Golongan III',
+            'Diklat Teknis Keimigrasian',
+            'Diklat Teknis Pemasyarakatan',
+            'Bimbingan Teknis Penyidikan Imigrasi',
+            'Pelatihan Pengelolaan Rumah Tahanan',
+            'Pelatihan Pelayanan Paspor',
+            'Diklat Pengawasan Orang Asing',
+            'Pelatihan Pembinaan Warga Binaan',
+            'Bimbingan Teknis Sistem Informasi Keimigrasian',
+            'Diklat Manajemen Pemasyarakatan',
+        ];
+        $penyelenggara = [
+            'BPSDM Hukum dan HAM',
+            'Pusdiklat Kemenipas',
+            'Politeknik Imigrasi',
+            'Politeknik Pemasyarakatan',
+            'BKN',
+            'LAN',
+        ];
 
         RiwayatLatihanJabatan::create([
             'pegawai_id' => $peg->id,
-            'nama_latihan' => $latihan[mt_rand(0, 4)],
+            'nama_latihan' => $latihan[mt_rand(0, count($latihan) - 1)],
             'tahun_pelaksanaan' => now()->year - mt_rand(1, 4),
             'jumlah_jam' => mt_rand(20, 119),
-            'penyelenggara' => $penyelenggara[mt_rand(0, 4)],
+            'penyelenggara' => $penyelenggara[mt_rand(0, count($penyelenggara) - 1)],
             'tempat_pelaksanaan' => $this->faker->city(),
             'no_sertifikat' => 'SERT/' . (now()->year - mt_rand(1, 4)) . '/' . mt_rand(1000, 9999),
         ]);
