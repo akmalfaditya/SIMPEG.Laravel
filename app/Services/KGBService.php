@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\JenisSanksi;
 use App\Models\Pegawai;
 
 class KGBService
 {
     public function getAllKGBStatus(): array
     {
-        $pegawaiList = Pegawai::with(['riwayatKgb', 'riwayatPangkat'])
+        $pegawaiList = Pegawai::with(['riwayatKgb', 'riwayatPangkat', 'riwayatHukumanDisiplin'])
             ->where('is_active', true)->get();
         $alerts = [];
         $today = today();
@@ -18,11 +19,42 @@ class KGBService
             if (!$lastKGB) continue;
 
             $jatuhTempo = $lastKGB->tmt_kgb->copy()->addYears(2);
-            $hariMenuju = $today->diffInDays($jatuhTempo, false);
             $pangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
 
+            // GAP-08: Check for active Penundaan KGB sanctions
+            $hukdisFlag = false;
+            $hukdisNote = null;
+            $totalPenundaanTahun = 0;
+
+            $activeHukdisKgb = $pegawai->riwayatHukumanDisiplin
+                ->filter(function ($h) use ($today) {
+                    return $h->jenis_sanksi === JenisSanksi::PenundaanKgb
+                        && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte($today));
+                });
+
+            foreach ($activeHukdisKgb as $h) {
+                $durasi = $h->durasi_tahun ?? 1;
+                $totalPenundaanTahun += $durasi;
+            }
+
+            if ($totalPenundaanTahun > 0) {
+                $jatuhTempo = $jatuhTempo->addYears($totalPenundaanTahun);
+                $hukdisFlag = true;
+                $hukdisNote = "Ditunda {$totalPenundaanTahun} Tahun (Hukdis)";
+            }
+
+            $hariMenuju = $today->diffInDays($jatuhTempo, false);
             $isEligible = $hariMenuju <= 0;
-            $status = $isEligible ? 'Eligible' : ($hariMenuju <= 60 ? 'H-60' : 'Mendekati');
+
+            if ($hukdisFlag) {
+                $status = 'Ditunda';
+            } elseif ($isEligible) {
+                $status = 'Eligible';
+            } elseif ($hariMenuju <= 60) {
+                $status = 'H-60';
+            } else {
+                $status = 'Mendekati';
+            }
 
             $alerts[] = [
                 'pegawai_id' => $pegawai->id,
@@ -34,6 +66,8 @@ class KGBService
                 'hari_menuju_jatuh_tempo' => $hariMenuju,
                 'is_eligible' => $isEligible,
                 'status' => $status,
+                'hukdis_flag' => $hukdisFlag,
+                'hukdis_note' => $hukdisNote,
             ];
         }
 
@@ -51,5 +85,11 @@ class KGBService
     {
         $all = $this->getAllKGBStatus();
         return array_values(array_filter($all, fn($a) => $a['is_eligible']));
+    }
+
+    public function getDitundaPegawai(): array
+    {
+        $all = $this->getAllKGBStatus();
+        return array_values(array_filter($all, fn($a) => $a['hukdis_flag']));
     }
 }

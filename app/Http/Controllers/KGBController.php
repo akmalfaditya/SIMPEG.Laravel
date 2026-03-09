@@ -25,4 +25,10 @@ class KGBController extends Controller
         $alerts = $this->service->getEligiblePegawai();
         return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => 'Pegawai Eligible KGB']);
     }
+
+    public function ditunda()
+    {
+        $alerts = $this->service->getDitundaPegawai();
+        return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => 'Pegawai Ditunda KGB (Hukdis)']);
+    }
 }

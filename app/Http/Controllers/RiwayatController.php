@@ -134,6 +134,18 @@ class RiwayatController extends Controller
     public function createKGB(int $pegawaiId)
     {
         $peg = Pegawai::findOrFail($pegawaiId);
+
+        // Block if pegawai has active Penundaan KGB sanction
+        $activeHukdisKgb = $peg->riwayatHukumanDisiplin
+            ->filter(fn($h) => $h->jenis_sanksi === JenisSanksi::PenundaanKgb
+                && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte(today())));
+
+        if ($activeHukdisKgb->isNotEmpty()) {
+            $durasi = $activeHukdisKgb->sum(fn($h) => $h->durasi_tahun ?? 1);
+            return redirect()->route('pegawai.show', $pegawaiId)
+                ->with('error', "Tidak dapat menambah KGB — pegawai sedang menjalani sanksi Penundaan KGB selama {$durasi} tahun.");
+        }
+
         $nextSalary = $this->kgbCalculationService->getNextKGBSalary($peg);
         return view('riwayat.create-kgb', [
             'pegawaiId' => $pegawaiId,

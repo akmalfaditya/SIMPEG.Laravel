@@ -71,12 +71,35 @@ class RiwayatService
 
     public function updateKgb(RiwayatKgb $riwayat, RiwayatKgbDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(function () use ($riwayat, $dto) {
+            $result = $riwayat->update($dto->toArray());
+
+            // Sync gaji_pokok if this is the latest KGB
+            $pegawaiId = $riwayat->pegawai_id;
+            $latestKgb = RiwayatKgb::where('pegawai_id', $pegawaiId)
+                ->orderByDesc('tmt_kgb')->first();
+            if ($latestKgb && $latestKgb->id === $riwayat->id) {
+                Pegawai::where('id', $pegawaiId)->update(['gaji_pokok' => $dto->gajiBaru]);
+            }
+
+            return $result;
+        });
     }
 
     public function deleteKgb(RiwayatKgb $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            $pegawaiId = $riwayat->pegawai_id;
+            $riwayat->delete();
+
+            // Revert gaji_pokok to previous KGB's gaji_baru, or 0 if none left
+            $previousKgb = RiwayatKgb::where('pegawai_id', $pegawaiId)
+                ->orderByDesc('tmt_kgb')->first();
+            $newGaji = $previousKgb ? $previousKgb->gaji_baru : 0;
+            Pegawai::where('id', $pegawaiId)->update(['gaji_pokok' => $newGaji]);
+
+            return true;
+        });
     }
 
     // --- HUKUMAN DISIPLIN ---
