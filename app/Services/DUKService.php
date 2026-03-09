@@ -9,8 +9,10 @@ class DUKService
     public function getDUK(): array
     {
         $pegawaiList = Pegawai::with([
-            'riwayatPangkat', 'riwayatJabatan.jabatan',
-            'riwayatPendidikan', 'riwayatLatihanJabatan',
+            'riwayatPangkat.golongan',
+            'riwayatJabatan.jabatan',
+            'riwayatPendidikan',
+            'riwayatLatihanJabatan',
         ])->where('is_active', true)->get();
 
         $today = today();
@@ -31,8 +33,8 @@ class DUKService
                 'pegawai_id' => $p->id,
                 'nip' => $p->nip,
                 'nama_lengkap' => $p->nama_lengkap,
-                'golongan_ruang' => $pangkat?->golongan_ruang?->label() ?? '-',
-                'golongan_ruang_level' => $pangkat ? $pangkat->golongan_ruang->value : 0,
+                'golongan_ruang' => $pangkat?->golongan?->label ?? '-',
+                'golongan_ruang_level' => $pangkat?->golongan?->golongan_ruang ?? 0,
                 'jabatan_terakhir' => $jabatan?->jabatan?->nama_jabatan ?? '-',
                 'masa_kerja' => "{$years} Tahun {$months} Bulan",
                 'masa_kerja_total_bulan' => $totalMonths,
@@ -73,8 +75,13 @@ class DUKService
     {
         if (!$tingkat) return 0;
         return match (strtoupper($tingkat)) {
-            'S3' => 7, 'S2' => 6, 'S1', 'D4' => 5, 'D3' => 4,
-            'D2' => 3, 'D1' => 2, 'SMA', 'SMK', 'SMU' => 1,
+            'S3' => 7,
+            'S2' => 6,
+            'S1', 'D4' => 5,
+            'D3' => 4,
+            'D2' => 3,
+            'D1' => 2,
+            'SMA', 'SMK', 'SMU' => 1,
             default => 0,
         };
     }

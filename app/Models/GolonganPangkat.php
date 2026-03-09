@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\GolonganRuang;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GolonganPangkat extends Model
 {
@@ -18,7 +18,16 @@ class GolonganPangkat extends Model
     ];
 
     protected $casts = [
-        'golongan_ruang' => GolonganRuang::class,
         'is_active' => 'boolean',
     ];
+
+    public function riwayatPangkat(): HasMany
+    {
+        return $this->hasMany(RiwayatPangkat::class, 'golongan_id');
+    }
+
+    public function tabelGaji(): HasMany
+    {
+        return $this->hasMany(TabelGaji::class, 'golongan_id');
+    }
 }

@@ -6,7 +6,7 @@ class RiwayatPangkatDTO
 {
     public function __construct(
         public readonly ?int $pegawaiId,
-        public readonly int $golonganRuang,
+        public readonly int $golonganId,
         public readonly ?string $nomorSk,
         public readonly string $tmtPangkat,
         public readonly string $tanggalSk,
@@ -18,7 +18,7 @@ class RiwayatPangkatDTO
     {
         return new self(
             pegawaiId: $validated['pegawai_id'] ?? null,
-            golonganRuang: (int) $validated['golongan_ruang'],
+            golonganId: (int) $validated['golongan_id'],
             nomorSk: $validated['nomor_sk'] ?? null,
             tmtPangkat: $validated['tmt_pangkat'],
             tanggalSk: $validated['tanggal_sk'],
@@ -30,7 +30,7 @@ class RiwayatPangkatDTO
     public function toArray(): array
     {
         $data = [
-            'golongan_ruang' => $this->golonganRuang,
+            'golongan_id' => $this->golonganId,
             'nomor_sk' => $this->nomorSk,
             'tmt_pangkat' => $this->tmtPangkat,
             'tanggal_sk' => $this->tanggalSk,

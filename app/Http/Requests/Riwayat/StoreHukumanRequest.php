@@ -27,7 +27,7 @@ class StoreHukumanRequest extends FormRequest
             'deskripsi' => 'nullable|string',
             'file_sk' => 'nullable|file|mimes:pdf|max:5120',
             'google_drive_link' => 'nullable|url|max:500',
-            'demotion_golongan_ruang' => 'nullable|integer',
+            'demotion_golongan_id' => 'nullable|integer|exists:golongan_pangkats,id',
             'demotion_jabatan_id' => 'nullable|integer|exists:jabatans,id',
         ];
     }
@@ -38,14 +38,14 @@ class StoreHukumanRequest extends FormRequest
             $jenis = (int) $this->input('jenis_sanksi');
             $pegawaiId = $this->input('pegawai_id');
 
-            if ($jenis === JenisSanksi::PenurunanPangkat->value && $this->filled('demotion_golongan_ruang')) {
+            if ($jenis === JenisSanksi::PenurunanPangkat->value && $this->filled('demotion_golongan_id')) {
                 $currentPangkat = RiwayatPangkat::where('pegawai_id', $pegawaiId)
                     ->orderByDesc('tmt_pangkat')->first();
-                if ($currentPangkat && (int) $this->input('demotion_golongan_ruang') >= $currentPangkat->golongan_ruang->value) {
-                    $validator->errors()->add('demotion_golongan_ruang', 'Golongan tujuan harus lebih rendah dari golongan saat ini.');
+                $demotionGolongan = \App\Models\GolonganPangkat::find((int) $this->input('demotion_golongan_id'));
+                if ($currentPangkat && $demotionGolongan && $currentPangkat->golongan && $demotionGolongan->golongan_ruang >= $currentPangkat->golongan->golongan_ruang) {
+                    $validator->errors()->add('demotion_golongan_id', 'Golongan tujuan harus lebih rendah dari golongan saat ini.');
                 }
             }
-
         });
     }
 }

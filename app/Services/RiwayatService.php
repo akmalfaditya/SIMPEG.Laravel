@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\GolonganRuang;
 use App\Enums\JenisSanksi;
 use App\Enums\StatusHukdis;
 
@@ -47,12 +46,12 @@ class RiwayatService
     // --- PANGKAT ---
     public function storePangkat(RiwayatPangkatDTO $dto): RiwayatPangkat
     {
-        return DB::transaction(fn () => RiwayatPangkat::create($dto->toArray()));
+        return DB::transaction(fn() => RiwayatPangkat::create($dto->toArray()));
     }
 
     public function updatePangkat(RiwayatPangkat $riwayat, RiwayatPangkatDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deletePangkat(RiwayatPangkat $riwayat): bool
@@ -68,12 +67,12 @@ class RiwayatService
     // --- JABATAN ---
     public function storeJabatan(RiwayatJabatanDTO $dto): RiwayatJabatan
     {
-        return DB::transaction(fn () => RiwayatJabatan::create($dto->toArray()));
+        return DB::transaction(fn() => RiwayatJabatan::create($dto->toArray()));
     }
 
     public function updateJabatan(RiwayatJabatan $riwayat, RiwayatJabatanDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deleteJabatan(RiwayatJabatan $riwayat): bool
@@ -162,10 +161,10 @@ class RiwayatService
     {
         $pegawaiId = $hukuman->pegawai_id;
 
-        if ($jenis === JenisSanksi::PenurunanPangkat && $dto->demotionGolonganRuang !== null) {
+        if ($jenis === JenisSanksi::PenurunanPangkat && $dto->demotionGolonganId !== null) {
             RiwayatPangkat::create([
                 'pegawai_id' => $pegawaiId,
-                'golongan_ruang' => $dto->demotionGolonganRuang,
+                'golongan_id' => $dto->demotionGolonganId,
                 'nomor_sk' => $dto->nomorSk,
                 'tmt_pangkat' => $dto->tmtHukuman,
                 'tanggal_sk' => $dto->tanggalSk ?? $dto->tmtHukuman,
@@ -202,13 +201,13 @@ class RiwayatService
 
         if (!$latestPangkat) return;
 
-        $golongan = $latestPangkat->golongan_ruang;
+        $golonganId = $latestPangkat->golongan_id;
         $tmtPangkat = $latestPangkat->tmt_pangkat;
         $today = today();
         $totalMonths = (($today->year - $tmtPangkat->year) * 12) + $today->month - $tmtPangkat->month;
         $masaKerjaTahun = intdiv($totalMonths, 12);
 
-        $gajiBaru = $this->kgbService->calculateNewSalary($golongan, $masaKerjaTahun);
+        $gajiBaru = $this->kgbService->calculateNewSalary($golonganId, $masaKerjaTahun);
         if ($gajiBaru !== null) {
             $pegawai->update(['gaji_pokok' => $gajiBaru]);
         }
@@ -268,10 +267,10 @@ class RiwayatService
         string $nomorSkPemulihan,
         string $tanggalPemulihan,
         ?string $fileSkPemulihanPath = null,
-        ?int $restorationGolonganRuang = null,
+        ?int $restorationGolonganId = null,
         ?int $restorationJabatanId = null,
     ): bool {
-        return DB::transaction(function () use ($hukuman, $nomorSkPemulihan, $tanggalPemulihan, $fileSkPemulihanPath, $restorationGolonganRuang, $restorationJabatanId) {
+        return DB::transaction(function () use ($hukuman, $nomorSkPemulihan, $tanggalPemulihan, $fileSkPemulihanPath, $restorationGolonganId, $restorationJabatanId) {
             $hukuman->update([
                 'status' => StatusHukdis::Dipulihkan->value,
                 'nomor_sk_pemulihan' => $nomorSkPemulihan,
@@ -283,10 +282,10 @@ class RiwayatService
             $pegawaiId = $hukuman->pegawai_id;
 
             // Type 2 restoration: insert new riwayat record to restore position
-            if ($jenis === JenisSanksi::PenurunanPangkat && $restorationGolonganRuang !== null) {
+            if ($jenis === JenisSanksi::PenurunanPangkat && $restorationGolonganId !== null) {
                 RiwayatPangkat::create([
                     'pegawai_id' => $pegawaiId,
-                    'golongan_ruang' => $restorationGolonganRuang,
+                    'golongan_id' => $restorationGolonganId,
                     'nomor_sk' => $nomorSkPemulihan,
                     'tmt_pangkat' => $tanggalPemulihan,
                     'tanggal_sk' => $tanggalPemulihan,
@@ -318,12 +317,12 @@ class RiwayatService
     // --- PENDIDIKAN ---
     public function storePendidikan(RiwayatPendidikanDTO $dto): RiwayatPendidikan
     {
-        return DB::transaction(fn () => RiwayatPendidikan::create($dto->toArray()));
+        return DB::transaction(fn() => RiwayatPendidikan::create($dto->toArray()));
     }
 
     public function updatePendidikan(RiwayatPendidikan $riwayat, RiwayatPendidikanDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deletePendidikan(RiwayatPendidikan $riwayat): bool
@@ -339,12 +338,12 @@ class RiwayatService
     // --- LATIHAN JABATAN ---
     public function storeLatihan(RiwayatLatihanJabatanDTO $dto): RiwayatLatihanJabatan
     {
-        return DB::transaction(fn () => RiwayatLatihanJabatan::create($dto->toArray()));
+        return DB::transaction(fn() => RiwayatLatihanJabatan::create($dto->toArray()));
     }
 
     public function updateLatihan(RiwayatLatihanJabatan $riwayat, RiwayatLatihanJabatanDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deleteLatihan(RiwayatLatihanJabatan $riwayat): bool
@@ -360,12 +359,12 @@ class RiwayatService
     // --- PENILAIAN KINERJA (SKP) ---
     public function storeSKP(PenilaianKinerjaDTO $dto): PenilaianKinerja
     {
-        return DB::transaction(fn () => PenilaianKinerja::create($dto->toArray()));
+        return DB::transaction(fn() => PenilaianKinerja::create($dto->toArray()));
     }
 
     public function updateSKP(PenilaianKinerja $riwayat, PenilaianKinerjaDTO $dto): bool
     {
-        return DB::transaction(fn () => $riwayat->update($dto->toArray()));
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deleteSKP(PenilaianKinerja $riwayat): bool
@@ -381,11 +380,11 @@ class RiwayatService
     // --- PENGHARGAAN ---
     public function storePenghargaan(array $data): \App\Models\RiwayatPenghargaan
     {
-        return DB::transaction(fn () => \App\Models\RiwayatPenghargaan::create($data));
+        return DB::transaction(fn() => \App\Models\RiwayatPenghargaan::create($data));
     }
 
     public function deletePenghargaan(\App\Models\RiwayatPenghargaan $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(fn() => $riwayat->delete());
     }
 }

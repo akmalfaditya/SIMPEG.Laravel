@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Riwayat;
 
 use App\Enums\JenisSanksi;
+use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -17,7 +18,7 @@ class StorePangkatRequest extends FormRequest
     {
         return [
             'pegawai_id' => 'required|exists:pegawais,id',
-            'golongan_ruang' => 'required|integer',
+            'golongan_id' => 'required|integer|exists:golongan_pangkats,id',
             'nomor_sk' => 'nullable|string',
             'tmt_pangkat' => 'required|date',
             'tanggal_sk' => 'required|date',
@@ -32,18 +33,20 @@ class StorePangkatRequest extends FormRequest
             $pegawaiId = $this->input('pegawai_id');
             if (!$pegawaiId) return;
 
-            $pegawai = Pegawai::with(['riwayatPangkat', 'riwayatHukumanDisiplin'])->find($pegawaiId);
+            $pegawai = Pegawai::with(['riwayatPangkat.golongan', 'riwayatHukumanDisiplin'])->find($pegawaiId);
             if (!$pegawai) return;
 
             // Golongan baru harus lebih tinggi dari saat ini
             $currentPangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
             if ($currentPangkat) {
-                $newGolongan = (int) $this->input('golongan_ruang');
-                $currentGolongan = $currentPangkat->golongan_ruang->value;
+                $newGolongan = GolonganPangkat::find((int) $this->input('golongan_id'));
+                $currentGolonganRuang = $currentPangkat->golongan->golongan_ruang;
 
-                if ($newGolongan <= $currentGolongan) {
-                    $validator->errors()->add('golongan_ruang',
-                        "Golongan baru harus lebih tinggi dari golongan saat ini ({$currentPangkat->golongan_ruang->label()}).");
+                if ($newGolongan && $newGolongan->golongan_ruang <= $currentGolonganRuang) {
+                    $validator->errors()->add(
+                        'golongan_id',
+                        "Golongan baru harus lebih tinggi dari golongan saat ini ({$currentPangkat->golongan->label})."
+                    );
                 }
             }
 
@@ -59,8 +62,10 @@ class StorePangkatRequest extends FormRequest
 
             if ($activeBlocking->isNotEmpty()) {
                 $notes = $activeBlocking->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
-                $validator->errors()->add('pegawai_id',
-                    "Pegawai sedang menjalani sanksi: {$notes}. Kenaikan pangkat tidak dapat ditambahkan.");
+                $validator->errors()->add(
+                    'pegawai_id',
+                    "Pegawai sedang menjalani sanksi: {$notes}. Kenaikan pangkat tidak dapat ditambahkan."
+                );
             }
         });
     }

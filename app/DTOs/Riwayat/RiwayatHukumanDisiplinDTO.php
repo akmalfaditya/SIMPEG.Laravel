@@ -16,7 +16,7 @@ class RiwayatHukumanDisiplinDTO
         public readonly ?string $deskripsi,
         public readonly ?string $filePdfPath = null,
         public readonly ?string $googleDriveLink = null,
-        public readonly ?int $demotionGolonganRuang = null,
+        public readonly ?int $demotionGolonganId = null,
         public readonly ?int $demotionJabatanId = null,
     ) {}
 
@@ -34,7 +34,7 @@ class RiwayatHukumanDisiplinDTO
             deskripsi: $validated['deskripsi'] ?? null,
             filePdfPath: $validated['file_pdf_path'] ?? null,
             googleDriveLink: $validated['google_drive_link'] ?? null,
-            demotionGolonganRuang: isset($validated['demotion_golongan_ruang']) ? (int) $validated['demotion_golongan_ruang'] : null,
+            demotionGolonganId: isset($validated['demotion_golongan_id']) ? (int) $validated['demotion_golongan_id'] : null,
             demotionJabatanId: isset($validated['demotion_jabatan_id']) ? (int) $validated['demotion_jabatan_id'] : null,
         );
     }

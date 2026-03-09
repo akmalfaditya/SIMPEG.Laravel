@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Enums\Agama;
 use App\Enums\GolonganDarah;
-use App\Enums\GolonganRuang;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
 use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
+use App\Models\GolonganPangkat;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\PenilaianKinerja;
@@ -244,25 +244,30 @@ class PegawaiSeeder extends Seeder
     private function addRiwayatPangkatProgression(Pegawai $peg, $tmtCpns, $today): void
     {
         $years = (int) $tmtCpns->diffInDays($today) / 365;
-        $startGol = $years > 25 ? GolonganRuang::II_a : ($years > 15 ? GolonganRuang::II_b : GolonganRuang::II_c);
+        $golonganMap = GolonganPangkat::orderBy('golongan_ruang')->get()->keyBy('golongan_ruang');
+        $maxGolonganRuang = $golonganMap->keys()->max();
 
-        $currentGol = $startGol;
+        // Start golongan_ruang level based on years of service
+        $startLevel = $years > 25 ? 5 : ($years > 15 ? 6 : 7); // II/a=5, II/b=6, II/c=7
+
+        $currentLevel = $startLevel;
         $currentTmt = $tmtCpns->copy();
         $counter = 1;
 
-        while ($currentTmt->lt($today) && $currentGol->value <= GolonganRuang::IV_e->value) {
+        while ($currentTmt->lt($today) && $currentLevel <= $maxGolonganRuang) {
+            $golongan = $golonganMap->get($currentLevel);
+            if (!$golongan) break;
+
             RiwayatPangkat::create([
                 'pegawai_id' => $peg->id,
-                'golongan_ruang' => $currentGol,
+                'golongan_id' => $golongan->id,
                 'nomor_sk' => 'SK-PGK/' . $currentTmt->year . '/' . str_pad($counter, 3, '0', STR_PAD_LEFT),
                 'tmt_pangkat' => $currentTmt->copy(),
                 'tanggal_sk' => $currentTmt->copy()->subDays(30),
             ]);
 
             $currentTmt->addYears(4);
-            $nextVal = $currentGol->value + 1;
-            if ($nextVal > GolonganRuang::IV_e->value) break;
-            $currentGol = GolonganRuang::from($nextVal);
+            $currentLevel++;
             $counter++;
         }
     }
@@ -275,20 +280,20 @@ class PegawaiSeeder extends Seeder
         $latestPangkat = $peg->riwayatPangkat()->orderByDesc('tmt_pangkat')->first();
         if (!$latestPangkat) return;
 
-        $golongan = $latestPangkat->golongan_ruang;
+        $golonganId = $latestPangkat->golongan_id;
         $totalMonths = (($today->year - $peg->tmt_cpns->year) * 12) + $today->month - $peg->tmt_cpns->month;
         $mkgTahun = intdiv($totalMonths, 12);
         $mkgBulan = $totalMonths % 12;
 
         // Look up gaji_baru from TabelGaji (current MKG, capped to highest available)
-        $gajiBaru = TabelGaji::where('golongan_ruang', $golongan->value)
+        $gajiBaru = TabelGaji::where('golongan_id', $golonganId)
             ->where('masa_kerja_tahun', '<=', $mkgTahun)
             ->orderByDesc('masa_kerja_tahun')
             ->value('gaji_pokok');
 
         // Look up gaji_lama (MKG - 2 years, the previous KGB period)
         $mkgLama = max(0, $mkgTahun - 2);
-        $gajiLama = TabelGaji::where('golongan_ruang', $golongan->value)
+        $gajiLama = TabelGaji::where('golongan_id', $golonganId)
             ->where('masa_kerja_tahun', '<=', $mkgLama)
             ->orderByDesc('masa_kerja_tahun')
             ->value('gaji_pokok');

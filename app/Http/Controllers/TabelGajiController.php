@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\GolonganRuang;
+use App\Models\GolonganPangkat;
 use App\Models\TabelGaji;
 use App\Services\TabelGajiService;
 use Illuminate\Http\Request;
@@ -22,15 +22,15 @@ class TabelGajiController extends Controller
 
     public function show(int $golongan)
     {
-        $golonganEnum = GolonganRuang::tryFrom($golongan);
-        if (!$golonganEnum) {
+        $golonganModel = GolonganPangkat::find($golongan);
+        if (!$golonganModel) {
             abort(404, 'Golongan tidak valid.');
         }
 
         return view('admin.tabel-gaji.show', [
-            'golongan' => $golonganEnum,
+            'golongan' => $golonganModel,
             'entries' => $this->service->getByGolongan($golongan),
-            'allGolongan' => GolonganRuang::cases(),
+            'allGolongan' => GolonganPangkat::orderBy('golongan_ruang')->get(),
         ]);
     }
 
@@ -42,19 +42,19 @@ class TabelGajiController extends Controller
 
         $this->service->update($tabelGaji, $validated['gaji_pokok']);
 
-        return redirect()->route('admin.tabel-gaji.show', $tabelGaji->golongan_ruang->value)
+        return redirect()->route('admin.tabel-gaji.show', $tabelGaji->golongan_id)
             ->with('success', "Gaji pokok MKG {$tabelGaji->masa_kerja_tahun} tahun berhasil diperbarui.");
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'golongan_ruang' => 'required|integer|min:1|max:17',
+            'golongan_id' => 'required|integer|exists:golongan_pangkats,id',
             'masa_kerja_tahun' => 'required|integer|min:0|max:40',
             'gaji_pokok' => 'required|integer|min:0',
         ]);
 
-        $exists = TabelGaji::where('golongan_ruang', $validated['golongan_ruang'])
+        $exists = TabelGaji::where('golongan_id', $validated['golongan_id'])
             ->where('masa_kerja_tahun', $validated['masa_kerja_tahun'])
             ->exists();
 
@@ -62,18 +62,18 @@ class TabelGajiController extends Controller
             return back()->withErrors(['masa_kerja_tahun' => 'MKG tersebut sudah ada untuk golongan ini.'])->withInput();
         }
 
-        $this->service->store($validated['golongan_ruang'], $validated['masa_kerja_tahun'], $validated['gaji_pokok']);
+        $this->service->store($validated['golongan_id'], $validated['masa_kerja_tahun'], $validated['gaji_pokok']);
 
-        return redirect()->route('admin.tabel-gaji.show', $validated['golongan_ruang'])
+        return redirect()->route('admin.tabel-gaji.show', $validated['golongan_id'])
             ->with('success', 'Entri gaji pokok baru berhasil ditambahkan.');
     }
 
     public function destroy(TabelGaji $tabelGaji)
     {
-        $golongan = $tabelGaji->golongan_ruang->value;
+        $golonganId = $tabelGaji->golongan_id;
         $this->service->delete($tabelGaji);
 
-        return redirect()->route('admin.tabel-gaji.show', $golongan)
+        return redirect()->route('admin.tabel-gaji.show', $golonganId)
             ->with('success', 'Entri gaji pokok berhasil dihapus.');
     }
 }

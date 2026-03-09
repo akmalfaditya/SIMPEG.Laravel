@@ -26,11 +26,26 @@ class Pegawai extends Model
     }
 
     protected $fillable = [
-        'nip', 'nama_lengkap', 'tempat_lahir', 'tanggal_lahir',
-        'jenis_kelamin', 'alamat', 'no_telepon', 'email',
-        'tmt_cpns', 'tmt_pns', 'foto_path', 'is_active', 'gaji_pokok',
-        'agama', 'status_pernikahan', 'golongan_darah',
-        'npwp', 'no_karpeg', 'no_taspen', 'unit_kerja',
+        'nip',
+        'nama_lengkap',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'alamat',
+        'no_telepon',
+        'email',
+        'tmt_cpns',
+        'tmt_pns',
+        'foto_path',
+        'is_active',
+        'gaji_pokok',
+        'agama',
+        'status_pernikahan',
+        'golongan_darah',
+        'npwp',
+        'no_karpeg',
+        'no_taspen',
+        'unit_kerja',
     ];
 
     protected $casts = [
@@ -101,7 +116,7 @@ class Pegawai extends Model
     public function getPangkatTerakhirAttribute(): ?string
     {
         $pangkat = $this->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
-        return $pangkat?->golongan_ruang?->label();
+        return $pangkat?->golongan?->label;
     }
 
     public function getJabatanTerakhirAttribute(): ?string
@@ -113,13 +128,13 @@ class Pegawai extends Model
     public function getHasActiveHukdisAttribute(): bool
     {
         return $this->riwayatHukumanDisiplin
-            ->filter(fn ($h) => $h->isAktif())
+            ->filter(fn($h) => $h->isAktif())
             ->isNotEmpty();
     }
 
     public function getActiveHukdisAttribute()
     {
         return $this->riwayatHukumanDisiplin
-            ->filter(fn ($h) => $h->isAktif());
+            ->filter(fn($h) => $h->isAktif());
     }
 }

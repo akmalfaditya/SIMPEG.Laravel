@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\GolonganRuang;
 use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
+use App\Models\GolonganPangkat;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\RiwayatHukumanDisiplin;
@@ -79,7 +79,7 @@ class RiwayatController extends Controller
 
         return view('riwayat.create-pangkat', [
             'pegawaiId' => $pegawaiId,
-            'golonganOptions' => GolonganRuang::cases(),
+            'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
             'currentPangkat' => $currentPangkat,
         ]);
     }
@@ -99,7 +99,7 @@ class RiwayatController extends Controller
     {
         return view('riwayat.edit-pangkat', [
             'riwayat' => $riwayatPangkat,
-            'golonganOptions' => GolonganRuang::cases(),
+            'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
         ]);
     }
 
@@ -236,9 +236,10 @@ class RiwayatController extends Controller
             ->where('is_hukdis_demotion', false)
             ->sortByDesc('tmt_pangkat')
             ->first();
-        $golonganOptions = $currentPangkat
-            ? array_filter(GolonganRuang::cases(), fn ($g) => $g->value < $currentPangkat->golongan_ruang->value)
-            : GolonganRuang::cases();
+        $allGolongan = GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get();
+        $golonganOptions = $currentPangkat && $currentPangkat->golongan
+            ? $allGolongan->filter(fn($g) => $g->golongan_ruang < $currentPangkat->golongan->golongan_ruang)
+            : $allGolongan;
 
         return view('riwayat.create-hukuman', [
             'pegawaiId' => $pegawaiId,
@@ -271,9 +272,10 @@ class RiwayatController extends Controller
             ->where('is_hukdis_demotion', false)
             ->sortByDesc('tmt_pangkat')
             ->first();
-        $golonganOptions = $currentPangkat
-            ? array_filter(GolonganRuang::cases(), fn ($g) => $g->value < $currentPangkat->golongan_ruang->value)
-            : GolonganRuang::cases();
+        $allGolongan = GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get();
+        $golonganOptions = $currentPangkat && $currentPangkat->golongan
+            ? $allGolongan->filter(fn($g) => $g->golongan_ruang < $currentPangkat->golongan->golongan_ruang)
+            : $allGolongan;
 
         // Look up existing demotion values from riwayat tables
         $currentDemotionGolongan = null;
@@ -284,7 +286,7 @@ class RiwayatController extends Controller
                 ->where('is_hukdis_demotion', true)
                 ->where('tmt_pangkat', $riwayatHukuman->tmt_hukuman)
                 ->first();
-            $currentDemotionGolongan = $demotionPangkat?->golongan_ruang?->value;
+            $currentDemotionGolongan = $demotionPangkat?->golongan_id;
         }
 
         if (in_array($riwayatHukuman->jenis_sanksi, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan])) {
@@ -332,7 +334,7 @@ class RiwayatController extends Controller
             'nomor_sk_pemulihan' => 'required|string|max:255',
             'tanggal_pemulihan' => 'required|date',
             'file_sk_pemulihan' => 'nullable|file|mimes:pdf|max:5120',
-            'restoration_golongan_ruang' => 'nullable|integer',
+            'restoration_golongan_id' => 'nullable|integer|exists:golongan_pangkats,id',
             'restoration_jabatan_id' => 'nullable|integer|exists:jabatans,id',
         ]);
 
@@ -346,7 +348,7 @@ class RiwayatController extends Controller
             $validated['nomor_sk_pemulihan'],
             $validated['tanggal_pemulihan'],
             $filePath,
-            isset($validated['restoration_golongan_ruang']) ? (int) $validated['restoration_golongan_ruang'] : null,
+            isset($validated['restoration_golongan_id']) ? (int) $validated['restoration_golongan_id'] : null,
             isset($validated['restoration_jabatan_id']) ? (int) $validated['restoration_jabatan_id'] : null,
         );
 

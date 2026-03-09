@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\GolonganRuang;
 use App\Models\TabelGaji;
 use Illuminate\Support\Collection;
 
@@ -10,21 +9,21 @@ class TabelGajiService
 {
     public function getSummaryPerGolongan(): Collection
     {
-        return TabelGaji::selectRaw('golongan_ruang, COUNT(*) as jumlah_mkg, MIN(gaji_pokok) as gaji_min, MAX(gaji_pokok) as gaji_max')
-            ->groupBy('golongan_ruang')
-            ->orderBy('golongan_ruang')
+        return TabelGaji::selectRaw('golongan_id, COUNT(*) as jumlah_mkg, MIN(gaji_pokok) as gaji_min, MAX(gaji_pokok) as gaji_max')
+            ->groupBy('golongan_id')
+            ->orderBy('golongan_id')
             ->get()
-            ->map(fn ($row) => (object) [
-                'golongan' => $row->golongan_ruang,
+            ->map(fn($row) => (object) [
+                'golongan' => $row->golongan,
                 'jumlah_mkg' => $row->jumlah_mkg,
                 'gaji_min' => $row->gaji_min,
                 'gaji_max' => $row->gaji_max,
             ]);
     }
 
-    public function getByGolongan(int $golongan): Collection
+    public function getByGolongan(int $golonganId): Collection
     {
-        return TabelGaji::where('golongan_ruang', $golongan)
+        return TabelGaji::where('golongan_id', $golonganId)
             ->orderBy('masa_kerja_tahun')
             ->get();
     }
@@ -34,10 +33,10 @@ class TabelGajiService
         return $tabelGaji->update(['gaji_pokok' => $gajiPokok]);
     }
 
-    public function store(int $golonganRuang, int $masaKerjaTahun, int $gajiPokok): TabelGaji
+    public function store(int $golonganId, int $masaKerjaTahun, int $gajiPokok): TabelGaji
     {
         return TabelGaji::create([
-            'golongan_ruang' => $golonganRuang,
+            'golongan_id' => $golonganId,
             'masa_kerja_tahun' => $masaKerjaTahun,
             'gaji_pokok' => $gajiPokok,
         ]);

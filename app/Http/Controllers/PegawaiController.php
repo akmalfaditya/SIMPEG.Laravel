@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Agama;
 use App\Enums\GolonganDarah;
-use App\Enums\GolonganRuang;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
+use App\Models\GolonganPangkat;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Services\PegawaiService;
@@ -50,14 +50,18 @@ class PegawaiController extends Controller
     public function show(Pegawai $pegawai)
     {
         $pegawai->load([
-            'riwayatPangkat', 'riwayatJabatan.jabatan',
-            'riwayatKgb', 'riwayatHukumanDisiplin',
-            'riwayatPendidikan', 'riwayatLatihanJabatan',
-            'penilaianKinerja', 'riwayatPenghargaan',
+            'riwayatPangkat',
+            'riwayatJabatan.jabatan',
+            'riwayatKgb',
+            'riwayatHukumanDisiplin',
+            'riwayatPendidikan',
+            'riwayatLatihanJabatan',
+            'penilaianKinerja',
+            'riwayatPenghargaan',
         ]);
         return view('pegawai.show', [
             'pegawai' => $pegawai,
-            'golonganOptions' => GolonganRuang::cases(),
+            'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
             'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
         ]);
     }

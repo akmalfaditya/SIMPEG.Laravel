@@ -14,7 +14,7 @@ class UpdatePangkatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'golongan_ruang' => 'required|integer',
+            'golongan_id' => 'required|integer|exists:golongan_pangkats,id',
             'nomor_sk' => 'nullable|string',
             'tmt_pangkat' => 'required|date',
             'tanggal_sk' => 'required|date',

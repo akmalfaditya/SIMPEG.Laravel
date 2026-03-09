@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
-use App\Enums\GolonganRuang;
 use Illuminate\Support\Carbon;
 
 class DashboardService
@@ -24,8 +24,8 @@ class DashboardService
             ->toArray();
 
         $golonganList = [];
-        foreach (GolonganRuang::cases() as $g) {
-            $golonganList[$g->value] = $g->label();
+        foreach (GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get() as $g) {
+            $golonganList[$g->id] = $g->label;
         }
 
         return [
@@ -37,8 +37,11 @@ class DashboardService
     public function getDashboardData(array $filters = []): array
     {
         $query = Pegawai::with([
-            'riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb',
-            'riwayatPendidikan', 'riwayatLatihanJabatan',
+            'riwayatPangkat.golongan',
+            'riwayatJabatan.jabatan',
+            'riwayatKgb',
+            'riwayatPendidikan',
+            'riwayatLatihanJabatan',
         ])->where('is_active', true);
 
         if (!empty($filters['unit_kerja'])) {
@@ -59,7 +62,7 @@ class DashboardService
             $golFilter = (int) $filters['golongan'];
             $allPegawai = $allPegawai->filter(function ($peg) use ($golFilter) {
                 $pangkat = $peg->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
-                return $pangkat && $pangkat->golongan_ruang->value === $golFilter;
+                return $pangkat && $pangkat->golongan_id === $golFilter;
             })->values();
         }
 
@@ -142,7 +145,7 @@ class DashboardService
         foreach ($allPegawai as $peg) {
             $pangkat = $peg->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
             if ($pangkat) {
-                $label = $pangkat->golongan_ruang->label();
+                $label = $pangkat->golongan?->label ?? 'Tidak Diketahui';
                 $golongan[$label] = ($golongan[$label] ?? 0) + 1;
             }
 
@@ -152,9 +155,14 @@ class DashboardService
             $age = $today->year - $peg->tanggal_lahir->year
                 - ($today->dayOfYear < $peg->tanggal_lahir->dayOfYear ? 1 : 0);
             $bracket = match (true) {
-                $age < 25 => '<25', $age < 30 => '25-29', $age < 35 => '30-34',
-                $age < 40 => '35-39', $age < 45 => '40-44', $age < 50 => '45-49',
-                $age < 55 => '50-54', default => '55+',
+                $age < 25 => '<25',
+                $age < 30 => '25-29',
+                $age < 35 => '30-34',
+                $age < 40 => '35-39',
+                $age < 45 => '40-44',
+                $age < 50 => '45-49',
+                $age < 55 => '50-54',
+                default => '55+',
             };
             $usia[$bracket] = ($usia[$bracket] ?? 0) + 1;
 
@@ -232,8 +240,12 @@ class DashboardService
         foreach ($allPegawai as $peg) {
             $years = $today->year - $peg->tmt_cpns->year;
             $bracket = match (true) {
-                $years < 5 => '<5 Thn', $years < 10 => '5-9 Thn', $years < 15 => '10-14 Thn',
-                $years < 20 => '15-19 Thn', $years < 25 => '20-24 Thn', $years < 30 => '25-29 Thn',
+                $years < 5 => '<5 Thn',
+                $years < 10 => '5-9 Thn',
+                $years < 15 => '10-14 Thn',
+                $years < 20 => '15-19 Thn',
+                $years < 25 => '20-24 Thn',
+                $years < 30 => '25-29 Thn',
                 default => '30+ Thn',
             };
             $mkBrackets[$bracket]++;

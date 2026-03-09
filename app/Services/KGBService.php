@@ -11,7 +11,7 @@ class KGBService
 
     public function getAllKGBStatus(): array
     {
-        $pegawaiList = Pegawai::with(['riwayatKgb', 'riwayatPangkat', 'riwayatHukumanDisiplin'])
+        $pegawaiList = Pegawai::with(['riwayatKgb', 'riwayatPangkat.golongan', 'riwayatHukumanDisiplin'])
             ->where('is_active', true)->get();
         $alerts = [];
         $today = today();
@@ -65,7 +65,7 @@ class KGBService
                 'pegawai_id' => $pegawai->id,
                 'nip' => $pegawai->nip,
                 'nama_lengkap' => $pegawai->nama_lengkap,
-                'pangkat_terakhir' => $pangkat?->golongan_ruang?->label() ?? '-',
+                'pangkat_terakhir' => $pangkat?->golongan?->label ?? '-',
                 'tmt_kgb_terakhir' => $lastKGB->tmt_kgb,
                 'tanggal_jatuh_tempo' => $jatuhTempo,
                 'hari_menuju_jatuh_tempo' => $hariMenuju,

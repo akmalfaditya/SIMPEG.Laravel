@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Enums\GolonganRuang;
 use App\Enums\JenisSanksi;
+use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
 use Carbon\Carbon;
 
@@ -12,19 +12,25 @@ class KenaikanPangkatService
     public function getEligiblePegawai(): array
     {
         $pegawaiList = Pegawai::with([
-            'riwayatPangkat', 'penilaianKinerja',
-            'riwayatLatihanJabatan', 'riwayatHukumanDisiplin',
+            'riwayatPangkat.golongan',
+            'penilaianKinerja',
+            'riwayatLatihanJabatan',
+            'riwayatHukumanDisiplin',
         ])->where('is_active', true)->get();
+
+        // Pre-load golongan lookup for next/prev calculations
+        $golonganMap = GolonganPangkat::orderBy('golongan_ruang')->get()->keyBy('golongan_ruang');
+        $maxGolonganRuang = $golonganMap->keys()->max();
 
         $candidates = [];
         $today = today();
 
         foreach ($pegawaiList as $pegawai) {
             $pangkatTerakhir = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
-            if (!$pangkatTerakhir) continue;
+            if (!$pangkatTerakhir || !$pangkatTerakhir->golongan) continue;
 
-            $golSaatIni = $pangkatTerakhir->golongan_ruang;
-            $golLevel = $golSaatIni->value;
+            $golSaatIni = $pangkatTerakhir->golongan;
+            $golLevel = $golSaatIni->golongan_ruang;
             $tmtPangkat = $pangkatTerakhir->tmt_pangkat;
 
             // --- Hukdis Analysis ---
@@ -42,12 +48,15 @@ class KenaikanPangkatService
             if ($penurunanPangkat->isNotEmpty()) {
                 $hukdisPangkatFlag = true;
                 if ($golLevel > 1) {
-                    $golSaatIni = GolonganRuang::from($golLevel - 1);
-                    $golLevel = $golSaatIni->value;
+                    $prevGolongan = $golonganMap->get($golLevel - 1);
+                    if ($prevGolongan) {
+                        $golSaatIni = $prevGolongan;
+                        $golLevel = $golSaatIni->golongan_ruang;
+                    }
                 }
                 $latestPenurunan = $penurunanPangkat->sortByDesc('tmt_hukuman')->first();
                 $tmtPangkat = $latestPenurunan->tmt_hukuman;
-                $hukdisPangkatNote = "Penurunan Pangkat — efektif " . $golSaatIni->label() . ", hitung ulang dari " . $tmtPangkat->format('d/m/Y');
+                $hukdisPangkatNote = "Penurunan Pangkat — efektif " . $golSaatIni->label . ", hitung ulang dari " . $tmtPangkat->format('d/m/Y');
             }
 
             // GAP-10: Penundaan Pangkat — shift masa kerja requirement
@@ -64,15 +73,16 @@ class KenaikanPangkatService
 
             // Blocking sanctions (PembebasanJabatan, Pemberhentian)
             $blockingSanctions = $activeHukuman->filter(fn($h) =>
-                in_array($h->jenis_sanksi, [JenisSanksi::PembebasanJabatan, JenisSanksi::Pemberhentian]));
+            in_array($h->jenis_sanksi, [JenisSanksi::PembebasanJabatan, JenisSanksi::Pemberhentian]));
             if ($blockingSanctions->isNotEmpty()) {
                 $isBlocked = true;
                 $blockedNote = $blockingSanctions->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
             }
 
-            if ($golLevel >= GolonganRuang::IV_e->value) continue;
+            if ($golLevel >= $maxGolonganRuang) continue;
 
-            $golBerikutnya = GolonganRuang::from($golLevel + 1);
+            $golBerikutnya = $golonganMap->get($golLevel + 1);
+            if (!$golBerikutnya) continue;
 
             // Masa kerja with penundaan shift
             $masaKerjaGolBulan = (($today->year - $tmtPangkat->year) * 12)
@@ -108,9 +118,9 @@ class KenaikanPangkatService
                 'pegawai_id' => $pegawai->id,
                 'nip' => $pegawai->nip,
                 'nama_lengkap' => $pegawai->nama_lengkap,
-                'golongan_saat_ini' => $golSaatIni->label(),
+                'golongan_saat_ini' => $golSaatIni->label,
                 'golongan_level' => $golLevel,
-                'golongan_berikutnya' => $golBerikutnya->label(),
+                'golongan_berikutnya' => $golBerikutnya->label,
                 'tmt_pangkat_terakhir' => $pangkatTerakhir->tmt_pangkat,
                 'tmt_pangkat_efektif' => $tmtPangkat,
                 'masa_kerja_golongan_bulan' => $masaKerjaGolBulan,
