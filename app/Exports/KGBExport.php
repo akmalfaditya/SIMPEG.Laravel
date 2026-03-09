@@ -19,7 +19,7 @@ class KGBExport implements FromArray, WithHeadings, WithMapping, WithTitle, Shou
 
     public function headings(): array
     {
-        return ['NIP', 'Nama Lengkap', 'Pangkat', 'TMT KGB Terakhir', 'Jatuh Tempo', 'Hari Menuju', 'Status'];
+        return ['NIP', 'Nama Lengkap', 'Pangkat', 'TMT KGB Terakhir', 'Jatuh Tempo', 'Hari Menuju', 'Gaji Pokok', 'Est. Gaji Baru', 'Status'];
     }
 
     public function map($row): array
@@ -31,6 +31,8 @@ class KGBExport implements FromArray, WithHeadings, WithMapping, WithTitle, Shou
             $row['tmt_kgb_terakhir']->format('d/m/Y'),
             $row['tanggal_jatuh_tempo']->format('d/m/Y'),
             $row['hari_menuju_jatuh_tempo'],
+            $row['gaji_pokok'] ? number_format($row['gaji_pokok'], 0, ',', '.') : '-',
+            $row['est_gaji_baru'] ? number_format($row['est_gaji_baru'], 0, ',', '.') : '-',
             $row['status'],
         ];
     }

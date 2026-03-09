@@ -21,7 +21,7 @@
     <table>
         <thead>
             <tr>
-                <th>NIP</th><th>Nama</th><th>Pangkat</th><th>TMT KGB Terakhir</th><th>Jatuh Tempo</th><th>Hari Menuju</th><th>Status</th>
+                <th>NIP</th><th>Nama</th><th>Pangkat</th><th>TMT KGB Terakhir</th><th>Jatuh Tempo</th><th>Hari Menuju</th><th>Gaji Pokok</th><th>Est. Gaji Baru</th><th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -33,6 +33,8 @@
                 <td>{{ $a['tmt_kgb_terakhir']->format('d/m/Y') }}</td>
                 <td>{{ $a['tanggal_jatuh_tempo']->format('d/m/Y') }}</td>
                 <td>{{ $a['hari_menuju_jatuh_tempo'] }}</td>
+                <td style="text-align:right">{{ $a['gaji_pokok'] ? number_format($a['gaji_pokok'], 0, ',', '.') : '-' }}</td>
+                <td style="text-align:right">{{ $a['est_gaji_baru'] ? number_format($a['est_gaji_baru'], 0, ',', '.') : '-' }}</td>
                 <td class="{{ $a['is_eligible'] ? 'eligible' : 'upcoming' }}">{{ $a['status'] }}</td>
             </tr>
             @endforeach

@@ -7,7 +7,13 @@
 @section('content')
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
     <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
-        <div class="text-sm font-medium text-slate-700">Total: {{ count($alerts) }} pegawai</div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('pensiun.index') }}" class="px-3 py-1.5 text-xs rounded-lg {{ !($filterLevel ?? null) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
+            <a href="{{ route('pensiun.index', ['level' => 'Hitam']) }}" class="px-3 py-1.5 text-xs rounded-lg {{ ($filterLevel ?? null) === 'Hitam' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Hitam (Lewat)</a>
+            <a href="{{ route('pensiun.index', ['level' => 'Merah']) }}" class="px-3 py-1.5 text-xs rounded-lg {{ ($filterLevel ?? null) === 'Merah' ? 'bg-blue-600 text-white' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Merah (≤6 bln)</a>
+            <a href="{{ route('pensiun.index', ['level' => 'Kuning']) }}" class="px-3 py-1.5 text-xs rounded-lg {{ ($filterLevel ?? null) === 'Kuning' ? 'bg-blue-600 text-white' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' }}">Kuning (≤12 bln)</a>
+            <a href="{{ route('pensiun.index', ['level' => 'Hijau']) }}" class="px-3 py-1.5 text-xs rounded-lg {{ ($filterLevel ?? null) === 'Hijau' ? 'bg-blue-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100' }}">Hijau (≤24 bln)</a>
+        </div>
         <div class="sm:ml-auto flex items-center gap-2">
             <input type="text" id="search-input" placeholder="Cari NIP/Nama..." class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
             <a href="{{ route('export', ['type' => 'pensiun', 'format' => 'pdf']) }}" class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">PDF</a>

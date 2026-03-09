@@ -7,6 +7,8 @@ use App\Models\Pegawai;
 
 class KGBService
 {
+    public function __construct(private KGBCalculationService $calculationService) {}
+
     public function getAllKGBStatus(): array
     {
         $pegawaiList = Pegawai::with(['riwayatKgb', 'riwayatPangkat', 'riwayatHukumanDisiplin'])
@@ -56,6 +58,9 @@ class KGBService
                 $status = 'Mendekati';
             }
 
+            // GAP-30: Estimate next KGB salary from TabelGaji lookup
+            $kgbEstimate = $this->calculationService->getNextKGBSalary($pegawai);
+
             $alerts[] = [
                 'pegawai_id' => $pegawai->id,
                 'nip' => $pegawai->nip,
@@ -68,6 +73,8 @@ class KGBService
                 'status' => $status,
                 'hukdis_flag' => $hukdisFlag,
                 'hukdis_note' => $hukdisNote,
+                'gaji_pokok' => (float) $pegawai->gaji_pokok,
+                'est_gaji_baru' => $kgbEstimate['gaji_baru'],
             ];
         }
 

@@ -21,17 +21,19 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm" id="data-table">
-            <thead class="bg-slate-50"><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">NIP</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Nama</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Pangkat</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">TMT KGB Terakhir</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Jatuh Tempo</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Status</th></tr></thead>
+            <thead class="bg-slate-50"><tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">NIP</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Nama</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Pangkat</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">TMT KGB Terakhir</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Jatuh Tempo</th><th class="px-4 py-3 text-right text-xs font-semibold text-slate-500">Gaji Pokok</th><th class="px-4 py-3 text-right text-xs font-semibold text-slate-500">Est. Gaji Baru</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Status</th></tr></thead>
             <tbody class="divide-y divide-slate-100" id="table-body">
                 @forelse($alerts as $a)
                 <tr class="hover:bg-slate-50 data-row"><td class="px-4 py-2.5 font-mono text-xs">{{ $a['nip'] }}</td><td class="px-4 py-2.5 font-medium text-slate-700"><a href="{{ route('pegawai.show', $a['pegawai_id']) }}" class="hover:text-blue-600">{{ $a['nama_lengkap'] }}</a></td><td class="px-4 py-2.5">{{ $a['pangkat_terakhir'] }}</td><td class="px-4 py-2.5">{{ $a['tmt_kgb_terakhir']->format('d/m/Y') }}</td><td class="px-4 py-2.5">{{ $a['tanggal_jatuh_tempo']->format('d/m/Y') }}</td>
+                <td class="px-4 py-2.5 text-right font-mono text-xs">Rp {{ number_format($a['gaji_pokok'], 0, ',', '.') }}</td>
+                <td class="px-4 py-2.5 text-right font-mono text-xs">{{ $a['est_gaji_baru'] ? 'Rp ' . number_format($a['est_gaji_baru'], 0, ',', '.') : '-' }}</td>
                 <td class="px-4 py-2.5">
                     <span class="px-2 py-1 text-xs rounded-full font-medium {{ $a['status'] === 'Ditunda' ? 'bg-red-100 text-red-700' : ($a['is_eligible'] ? 'bg-red-100 text-red-700' : ($a['hari_menuju_jatuh_tempo'] <= 60 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700')) }}">{{ $a['status'] }}</span>
                     @if($a['hukdis_flag'])
                     <div class="mt-1"><span class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-red-600 text-white">{{ $a['hukdis_note'] }}</span></div>
                     @endif
                 </td></tr>
-                @empty <tr class="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400">Tidak ada data.</td></tr> @endforelse
+                @empty <tr class="empty-row"><td colspan="8" class="px-4 py-8 text-center text-slate-400">Tidak ada data.</td></tr> @endforelse
             </tbody>
         </table>
     </div>
