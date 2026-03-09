@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/riwayat/hukuman/{riwayatHukuman}/edit', [RiwayatController::class, 'editHukuman'])->name('riwayat.hukuman.edit');
     Route::put('/riwayat/hukuman/{riwayatHukuman}', [RiwayatController::class, 'updateHukuman'])->name('riwayat.hukuman.update');
     Route::delete('/riwayat/hukuman/{riwayatHukuman}', [RiwayatController::class, 'destroyHukuman'])->name('riwayat.hukuman.destroy');
+    Route::post('/riwayat/hukuman/{riwayatHukuman}/pulihkan', [RiwayatController::class, 'pulihkanHukuman'])->name('riwayat.hukuman.pulihkan');
 
     // Riwayat Pendidikan
     Route::get('/riwayat/pendidikan/create/{pegawaiId}', [RiwayatController::class, 'createPendidikan'])->name('riwayat.pendidikan.create');

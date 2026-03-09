@@ -29,9 +29,9 @@ class KGBService
             $totalPenundaanTahun = 0;
 
             $activeHukdisKgb = $pegawai->riwayatHukumanDisiplin
-                ->filter(function ($h) use ($today) {
-                    return $h->jenis_sanksi === JenisSanksi::PenundaanKgb
-                        && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte($today));
+                ->filter(function ($h) {
+                    return $h->isAktif()
+                        && $h->jenis_sanksi === JenisSanksi::PenundaanKgb;
                 });
 
             foreach ($activeHukdisKgb as $h) {

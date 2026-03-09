@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\GolonganRuang;
 use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
+use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\RiwayatHukumanDisiplin;
 use App\Models\RiwayatJabatan;
@@ -62,13 +63,13 @@ class RiwayatController extends Controller
 
         // Block if active sanctions that prevent pangkat promotion
         $activeBlocking = $pegawai->riwayatHukumanDisiplin
-            ->filter(fn($h) => in_array($h->jenis_sanksi, [
+            ->filter(fn($h) => $h->isAktif()
+                && in_array($h->jenis_sanksi, [
                     JenisSanksi::PenundaanPangkat,
                     JenisSanksi::PenurunanPangkat,
                     JenisSanksi::PembebasanJabatan,
                     JenisSanksi::Pemberhentian,
-                ])
-                && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte(today())));
+                ]));
 
         if ($activeBlocking->isNotEmpty()) {
             $notes = $activeBlocking->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');
@@ -173,8 +174,8 @@ class RiwayatController extends Controller
 
         // Block if pegawai has active Penundaan KGB sanction
         $activeHukdisKgb = $peg->riwayatHukumanDisiplin
-            ->filter(fn($h) => $h->jenis_sanksi === JenisSanksi::PenundaanKgb
-                && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte(today())));
+            ->filter(fn($h) => $h->isAktif()
+                && $h->jenis_sanksi === JenisSanksi::PenundaanKgb);
 
         if ($activeHukdisKgb->isNotEmpty()) {
             $durasi = $activeHukdisKgb->sum(fn($h) => $h->durasi_tahun ?? 1);
@@ -228,10 +229,23 @@ class RiwayatController extends Controller
     // --- HUKUMAN DISIPLIN ---
     public function createHukuman(int $pegawaiId)
     {
+        $pegawai = Pegawai::with(['riwayatPangkat'])->findOrFail($pegawaiId);
+
+        // Only show golongan lower than current pangkat (exclude demotion records)
+        $currentPangkat = $pegawai->riwayatPangkat
+            ->where('is_hukdis_demotion', false)
+            ->sortByDesc('tmt_pangkat')
+            ->first();
+        $golonganOptions = $currentPangkat
+            ? array_filter(GolonganRuang::cases(), fn ($g) => $g->value < $currentPangkat->golongan_ruang->value)
+            : GolonganRuang::cases();
+
         return view('riwayat.create-hukuman', [
             'pegawaiId' => $pegawaiId,
             'tingkatOptions' => TingkatHukuman::cases(),
             'sanksiOptions' => JenisSanksi::cases(),
+            'golonganOptions' => $golonganOptions,
+            'jabatanOptions' => $this->jabatanService->getAllOrderedByName(),
         ]);
     }
 
@@ -250,10 +264,45 @@ class RiwayatController extends Controller
 
     public function editHukuman(RiwayatHukumanDisiplin $riwayatHukuman)
     {
+        $pegawai = Pegawai::with(['riwayatPangkat'])->findOrFail($riwayatHukuman->pegawai_id);
+
+        // Only show golongan lower than current non-demotion pangkat
+        $currentPangkat = $pegawai->riwayatPangkat
+            ->where('is_hukdis_demotion', false)
+            ->sortByDesc('tmt_pangkat')
+            ->first();
+        $golonganOptions = $currentPangkat
+            ? array_filter(GolonganRuang::cases(), fn ($g) => $g->value < $currentPangkat->golongan_ruang->value)
+            : GolonganRuang::cases();
+
+        // Look up existing demotion values from riwayat tables
+        $currentDemotionGolongan = null;
+        $currentDemotionJabatanId = null;
+
+        if ($riwayatHukuman->jenis_sanksi === JenisSanksi::PenurunanPangkat) {
+            $demotionPangkat = RiwayatPangkat::where('pegawai_id', $riwayatHukuman->pegawai_id)
+                ->where('is_hukdis_demotion', true)
+                ->where('tmt_pangkat', $riwayatHukuman->tmt_hukuman)
+                ->first();
+            $currentDemotionGolongan = $demotionPangkat?->golongan_ruang?->value;
+        }
+
+        if (in_array($riwayatHukuman->jenis_sanksi, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan])) {
+            $demotionJabatan = RiwayatJabatan::where('pegawai_id', $riwayatHukuman->pegawai_id)
+                ->where('is_hukdis_demotion', true)
+                ->where('tmt_jabatan', $riwayatHukuman->tmt_hukuman)
+                ->first();
+            $currentDemotionJabatanId = $demotionJabatan?->jabatan_id;
+        }
+
         return view('riwayat.edit-hukuman', [
             'riwayat' => $riwayatHukuman,
             'tingkatOptions' => TingkatHukuman::cases(),
             'sanksiOptions' => JenisSanksi::cases(),
+            'golonganOptions' => $golonganOptions,
+            'jabatanOptions' => $this->jabatanService->getAllOrderedByName(),
+            'currentDemotionGolongan' => $currentDemotionGolongan,
+            'currentDemotionJabatanId' => $currentDemotionJabatanId,
         ]);
     }
 
@@ -275,6 +324,34 @@ class RiwayatController extends Controller
         $pegawaiId = $riwayatHukuman->pegawai_id;
         $this->service->deleteHukuman($riwayatHukuman);
         return redirect()->route('pegawai.show', $pegawaiId)->with('success', 'Berhasil dihapus.');
+    }
+
+    public function pulihkanHukuman(\Illuminate\Http\Request $request, RiwayatHukumanDisiplin $riwayatHukuman)
+    {
+        $validated = $request->validate([
+            'nomor_sk_pemulihan' => 'required|string|max:255',
+            'tanggal_pemulihan' => 'required|date',
+            'file_sk_pemulihan' => 'nullable|file|mimes:pdf|max:5120',
+            'restoration_golongan_ruang' => 'nullable|integer',
+            'restoration_jabatan_id' => 'nullable|integer|exists:jabatans,id',
+        ]);
+
+        $filePath = null;
+        if ($request->hasFile('file_sk_pemulihan')) {
+            $filePath = $this->service->uploadSk($request->file('file_sk_pemulihan'), 'sk_pemulihan');
+        }
+
+        $this->service->pulihkanHukuman(
+            $riwayatHukuman,
+            $validated['nomor_sk_pemulihan'],
+            $validated['tanggal_pemulihan'],
+            $filePath,
+            isset($validated['restoration_golongan_ruang']) ? (int) $validated['restoration_golongan_ruang'] : null,
+            isset($validated['restoration_jabatan_id']) ? (int) $validated['restoration_jabatan_id'] : null,
+        );
+
+        return redirect()->route('pegawai.show', $riwayatHukuman->pegawai_id)
+            ->with('success', 'Hukuman disiplin berhasil dipulihkan.');
     }
 
     // --- PENDIDIKAN ---

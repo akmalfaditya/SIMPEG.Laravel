@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\GolonganRuang;
+use App\Enums\JenisSanksi;
+use App\Enums\StatusHukdis;
+
 use App\Models\Pegawai;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatJabatan;
@@ -26,6 +30,7 @@ class RiwayatService
 {
     public function __construct(
         private DocumentUploadService $uploadService,
+        private KGBCalculationService $kgbService,
     ) {}
 
     /**
@@ -135,11 +140,78 @@ class RiwayatService
     {
         return DB::transaction(function () use ($dto) {
             $data = $dto->toArray();
+            $data['status'] = StatusHukdis::Aktif->value;
             if ($dto->filePdfPath) {
                 $data['file_pdf_path'] = $dto->filePdfPath;
             }
-            return RiwayatHukumanDisiplin::create($data);
+
+            $hukuman = RiwayatHukumanDisiplin::create($data);
+
+            // Type 2: Hard-update — insert demotion record into riwayat tables
+            $jenisSanksi = JenisSanksi::from($dto->jenisSanksi);
+            $this->applyType2Demotion($jenisSanksi, $hukuman, $dto);
+
+            return $hukuman;
         });
+    }
+
+    /**
+     * Apply Type 2 demotion: insert new riwayat record with is_hukdis_demotion=true
+     */
+    private function applyType2Demotion(JenisSanksi $jenis, RiwayatHukumanDisiplin $hukuman, RiwayatHukumanDisiplinDTO $dto): void
+    {
+        $pegawaiId = $hukuman->pegawai_id;
+
+        if ($jenis === JenisSanksi::PenurunanPangkat && $dto->demotionGolonganRuang !== null) {
+            RiwayatPangkat::create([
+                'pegawai_id' => $pegawaiId,
+                'golongan_ruang' => $dto->demotionGolonganRuang,
+                'nomor_sk' => $dto->nomorSk,
+                'tmt_pangkat' => $dto->tmtHukuman,
+                'tanggal_sk' => $dto->tanggalSk ?? $dto->tmtHukuman,
+                'is_hukdis_demotion' => true,
+            ]);
+
+            // Update gaji_pokok based on the new (lower) pangkat
+            $this->recalculateGajiPokok($pegawaiId);
+        }
+
+        if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan]) && $dto->demotionJabatanId !== null) {
+            RiwayatJabatan::create([
+                'pegawai_id' => $pegawaiId,
+                'jabatan_id' => $dto->demotionJabatanId,
+                'nomor_sk' => $dto->nomorSk,
+                'tmt_jabatan' => $dto->tmtHukuman,
+                'tanggal_sk' => $dto->tanggalSk ?? $dto->tmtHukuman,
+                'is_hukdis_demotion' => true,
+            ]);
+        }
+    }
+
+    /**
+     * Recalculate gaji_pokok based on the latest pangkat record.
+     */
+    private function recalculateGajiPokok(int $pegawaiId): void
+    {
+        $pegawai = Pegawai::find($pegawaiId);
+        if (!$pegawai) return;
+
+        $latestPangkat = RiwayatPangkat::where('pegawai_id', $pegawaiId)
+            ->orderByDesc('tmt_pangkat')
+            ->first();
+
+        if (!$latestPangkat) return;
+
+        $golongan = $latestPangkat->golongan_ruang;
+        $tmtPangkat = $latestPangkat->tmt_pangkat;
+        $today = today();
+        $totalMonths = (($today->year - $tmtPangkat->year) * 12) + $today->month - $tmtPangkat->month;
+        $masaKerjaTahun = intdiv($totalMonths, 12);
+
+        $gajiBaru = $this->kgbService->calculateNewSalary($golongan, $masaKerjaTahun);
+        if ($gajiBaru !== null) {
+            $pegawai->update(['gaji_pokok' => $gajiBaru]);
+        }
     }
 
     public function updateHukuman(RiwayatHukumanDisiplin $riwayat, RiwayatHukumanDisiplinDTO $dto): bool
@@ -156,10 +228,85 @@ class RiwayatService
     public function deleteHukuman(RiwayatHukumanDisiplin $riwayat): bool
     {
         return DB::transaction(function () use ($riwayat) {
+            // Revert Type 2 demotion records
+            $jenis = $riwayat->jenis_sanksi;
+            $pegawaiId = $riwayat->pegawai_id;
+
+            if ($jenis === JenisSanksi::PenurunanPangkat) {
+                RiwayatPangkat::where('pegawai_id', $pegawaiId)
+                    ->where('is_hukdis_demotion', true)
+                    ->where('tmt_pangkat', $riwayat->tmt_hukuman)
+                    ->delete();
+
+                // Recalculate gaji_pokok from the now-latest pangkat
+                $this->recalculateGajiPokok($pegawaiId);
+            }
+
+            if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan])) {
+                RiwayatJabatan::where('pegawai_id', $pegawaiId)
+                    ->where('is_hukdis_demotion', true)
+                    ->where('tmt_jabatan', $riwayat->tmt_hukuman)
+                    ->delete();
+            }
+
             if ($riwayat->file_pdf_path) {
                 $this->uploadService->delete($riwayat->file_pdf_path);
             }
+            if ($riwayat->file_sk_pemulihan_path) {
+                $this->uploadService->delete($riwayat->file_sk_pemulihan_path);
+            }
             return $riwayat->delete();
+        });
+    }
+
+    /**
+     * Restore (Pemulihan) a hukuman disiplin.
+     * For Type 2 sanctions, insert restoration records into riwayat tables.
+     */
+    public function pulihkanHukuman(
+        RiwayatHukumanDisiplin $hukuman,
+        string $nomorSkPemulihan,
+        string $tanggalPemulihan,
+        ?string $fileSkPemulihanPath = null,
+        ?int $restorationGolonganRuang = null,
+        ?int $restorationJabatanId = null,
+    ): bool {
+        return DB::transaction(function () use ($hukuman, $nomorSkPemulihan, $tanggalPemulihan, $fileSkPemulihanPath, $restorationGolonganRuang, $restorationJabatanId) {
+            $hukuman->update([
+                'status' => StatusHukdis::Dipulihkan->value,
+                'nomor_sk_pemulihan' => $nomorSkPemulihan,
+                'tanggal_pemulihan' => $tanggalPemulihan,
+                'file_sk_pemulihan_path' => $fileSkPemulihanPath,
+            ]);
+
+            $jenis = $hukuman->jenis_sanksi;
+            $pegawaiId = $hukuman->pegawai_id;
+
+            // Type 2 restoration: insert new riwayat record to restore position
+            if ($jenis === JenisSanksi::PenurunanPangkat && $restorationGolonganRuang !== null) {
+                RiwayatPangkat::create([
+                    'pegawai_id' => $pegawaiId,
+                    'golongan_ruang' => $restorationGolonganRuang,
+                    'nomor_sk' => $nomorSkPemulihan,
+                    'tmt_pangkat' => $tanggalPemulihan,
+                    'tanggal_sk' => $tanggalPemulihan,
+                ]);
+
+                // Recalculate gaji_pokok based on restored pangkat
+                $this->recalculateGajiPokok($pegawaiId);
+            }
+
+            if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan]) && $restorationJabatanId !== null) {
+                RiwayatJabatan::create([
+                    'pegawai_id' => $pegawaiId,
+                    'jabatan_id' => $restorationJabatanId,
+                    'nomor_sk' => $nomorSkPemulihan,
+                    'tmt_jabatan' => $tanggalPemulihan,
+                    'tanggal_sk' => $tanggalPemulihan,
+                ]);
+            }
+
+            return true;
         });
     }
 

@@ -13,6 +13,7 @@ class PegawaiResource extends JsonResource
             'id' => $this->id,
             'nip' => $this->nip,
             'nama_lengkap' => $this->nama_lengkap,
+            'has_active_hukdis' => $this->has_active_hukdis,
             'pangkat_terakhir' => $this->pangkat_terakhir ?? '-',
             'jabatan_terakhir' => $this->jabatan_terakhir ?? '-',
             'masa_kerja' => $this->masa_kerja ?? '-',

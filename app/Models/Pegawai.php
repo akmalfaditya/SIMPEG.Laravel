@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Agama;
 use App\Enums\GolonganDarah;
 use App\Enums\JenisKelamin;
+use App\Enums\StatusHukdis;
 use App\Enums\StatusPernikahan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -107,5 +108,18 @@ class Pegawai extends Model
     {
         $jabatan = $this->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
         return $jabatan?->jabatan?->nama_jabatan;
+    }
+
+    public function getHasActiveHukdisAttribute(): bool
+    {
+        return $this->riwayatHukumanDisiplin
+            ->filter(fn ($h) => $h->isAktif())
+            ->isNotEmpty();
+    }
+
+    public function getActiveHukdisAttribute()
+    {
+        return $this->riwayatHukumanDisiplin
+            ->filter(fn ($h) => $h->isAktif());
     }
 }

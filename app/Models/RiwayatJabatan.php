@@ -18,11 +18,13 @@ class RiwayatJabatan extends Model
     protected $fillable = [
         'pegawai_id', 'jabatan_id', 'nomor_sk',
         'tmt_jabatan', 'tanggal_sk', 'file_pdf_path', 'google_drive_link',
+        'is_hukdis_demotion',
     ];
 
     protected $casts = [
         'tmt_jabatan' => 'date',
         'tanggal_sk' => 'date',
+        'is_hukdis_demotion' => 'boolean',
     ];
 
     public function pegawai(): BelongsTo

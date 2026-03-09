@@ -54,7 +54,7 @@ function loadData() {
             d.data.forEach(r => {
                 body.innerHTML += `<tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-4 py-3 font-mono text-xs text-slate-600">${r.nip}</td>
-                    <td class="px-4 py-3 font-medium text-slate-800">${r.nama_lengkap}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${r.nama_lengkap}${r.has_active_hukdis ? ' <span class=\"ml-1 inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-red-100 text-red-700\">Hukdis</span>' : ''}</td>
                     <td class="px-4 py-3 text-slate-600">${r.pangkat_terakhir}</td>
                     <td class="px-4 py-3 text-slate-600">${r.jabatan_terakhir}</td>
                     <td class="px-4 py-3 text-slate-600">${r.masa_kerja}</td>

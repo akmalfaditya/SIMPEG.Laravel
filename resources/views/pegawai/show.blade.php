@@ -11,7 +11,12 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <div class="flex items-start justify-between flex-wrap gap-4">
             <div>
-                <h3 class="text-xl font-bold text-slate-800">{{ $pegawai->nama_lengkap }}</h3>
+                <h3 class="text-xl font-bold text-slate-800">
+                    {{ $pegawai->nama_lengkap }}
+                    @if($pegawai->has_active_hukdis)
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">Hukdis Aktif</span>
+                    @endif
+                </h3>
                 <p class="text-sm text-slate-500 font-mono mt-1">NIP: {{ $pegawai->nip }}</p>
                 <div class="flex gap-4 mt-3 text-sm text-slate-600 flex-wrap">
                     <span><strong>Golongan:</strong> {{ $pegawai->pangkat_terakhir ?? '-' }}</span>
@@ -165,8 +170,9 @@
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Jenis Sanksi</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Durasi</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">TMT</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Status</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-slate-500">Dokumen</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-28">Aksi</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 w-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -179,23 +185,29 @@
                         <td class="px-3 py-2">{{ $r->durasi_tahun ? $r->durasi_tahun . ' thn' : '-' }}</td>
                         <td class="px-3 py-2">{{ $r->tmt_hukuman->format('d/m/Y') }}</td>
                         <td class="px-3 py-2">
+                            <span class="px-2 py-0.5 text-xs rounded-full {{ $r->status?->color() ?? 'bg-red-100 text-red-700' }}">{{ $r->status?->label() ?? 'Aktif' }}</span>
+                        </td>
+                        <td class="px-3 py-2">
                             @if($r->file_pdf_path)
                             <a href="{{ Storage::disk('documents')->url($r->file_pdf_path) }}" target="_blank" class="text-blue-600 hover:underline text-xs">PDF</a>
                             @elseif($r->google_drive_link)
                             <a href="{{ $r->google_drive_link }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline text-xs">Drive</a>
                             @else
-                            <span class="text-slate-400 text-xs">-</span>
+                            <span class="text-amber-600 text-xs font-medium">SK Belum Diunggah</span>
                             @endif
                         </td>
                         <td class="px-3 py-2">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1 flex-wrap">
                                 <a href="{{ route('riwayat.hukuman.edit', $r) }}" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
+                                @if($r->isAktif())
+                                <button type="button" onclick="openPulihkanModal({{ $r->id }}, {{ $r->jenis_sanksi->value }})" class="inline-flex items-center px-2 py-1 text-xs rounded-md font-medium transition-colors" style="background-color:#f0fdf4;color:#16a34a;">Pulihkan</button>
+                                @endif
                                 <button type="button" onclick="confirmDelete('{{ route('riwayat.hukuman.destroy', $r) }}', 'Hapus data riwayat hukuman ini?')" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                             </div>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
+                    <tr><td colspan="7" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -336,6 +348,49 @@
         </div>
     </div>
 </div>
+{{-- Pemulihan Modal --}}
+<div id="pulihkanModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.4);">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;max-width:32rem;" class="bg-white rounded-2xl shadow-xl p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Pemulihan Hukuman Disiplin</h3>
+        <form id="pulihkanForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK Pemulihan *</label>
+                    <input type="text" name="nomor_sk_pemulihan" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Pemulihan *</label>
+                    <input type="date" name="tanggal_pemulihan" required value="{{ today()->format('Y-m-d') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Upload SK Pemulihan (PDF)</label>
+                    <input type="file" name="file_sk_pemulihan" accept=".pdf" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-blue-50 file:text-blue-600">
+                </div>
+                {{-- Restoration: Penurunan Pangkat --}}
+                <div id="restorationPangkatSection" style="display:none;" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-xs font-semibold text-green-700 mb-2">Pemulihan Pangkat — Pilih pangkat yang dikembalikan:</p>
+                    <select name="restoration_golongan_ruang" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="">-- Pilih Golongan Ruang --</option>
+                        @foreach($golonganOptions as $g)<option value="{{ $g->value }}">{{ $g->label() }}</option>@endforeach
+                    </select>
+                </div>
+                {{-- Restoration: Penurunan/Pembebasan Jabatan --}}
+                <div id="restorationJabatanSection" style="display:none;" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-xs font-semibold text-green-700 mb-2">Pemulihan Jabatan — Pilih jabatan yang dikembalikan:</p>
+                    <select name="restoration_jabatan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="">-- Pilih Jabatan --</option>
+                        @foreach($jabatanOptions as $j)<option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>@endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-5 pt-4 border-t border-slate-200">
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700">Pulihkan</button>
+                <button type="button" onclick="closePulihkanModal()" class="px-5 py-2 bg-slate-100 text-slate-600 text-sm rounded-xl hover:bg-slate-200">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -346,6 +401,25 @@ function showTab(name) {
     document.getElementById('tab-' + name).classList.remove('hidden');
     document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('border-blue-600', 'text-blue-600');
     document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.remove('border-transparent', 'text-slate-500');
+}
+
+function openPulihkanModal(hukumanId, jenisSanksiValue) {
+    var modal = document.getElementById('pulihkanModal');
+    var form = document.getElementById('pulihkanForm');
+    form.action = '/riwayat/hukuman/' + hukumanId + '/pulihkan';
+
+    // Toggle restoration fields based on jenis_sanksi
+    // 3 = PenurunanPangkat, 4 = PenurunanJabatan, 5 = PembebasanJabatan
+    var pangkatEl = document.getElementById('restorationPangkatSection');
+    var jabatanEl = document.getElementById('restorationJabatanSection');
+    pangkatEl.style.display = (jenisSanksiValue === 3) ? 'block' : 'none';
+    jabatanEl.style.display = (jenisSanksiValue === 4 || jenisSanksiValue === 5) ? 'block' : 'none';
+
+    modal.style.display = 'block';
+}
+
+function closePulihkanModal() {
+    document.getElementById('pulihkanModal').style.display = 'none';
 }
 </script>
 @endpush

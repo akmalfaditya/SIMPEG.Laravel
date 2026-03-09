@@ -29,7 +29,7 @@ class KenaikanPangkatService
 
             // --- Hukdis Analysis ---
             $activeHukuman = $pegawai->riwayatHukumanDisiplin
-                ->filter(fn($h) => !$h->tmt_selesai_hukuman || $h->tmt_selesai_hukuman->gt($today));
+                ->filter(fn($h) => $h->isAktif());
 
             $hukdisPangkatFlag = false;
             $hukdisPangkatNote = null;

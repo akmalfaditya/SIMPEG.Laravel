@@ -48,15 +48,14 @@ class StorePangkatRequest extends FormRequest
             }
 
             // Cek sanksi yang memblokir kenaikan pangkat
-            $today = today();
             $activeBlocking = $pegawai->riwayatHukumanDisiplin
-                ->filter(fn($h) => in_array($h->jenis_sanksi, [
+                ->filter(fn($h) => $h->isAktif()
+                    && in_array($h->jenis_sanksi, [
                         JenisSanksi::PenundaanPangkat,
                         JenisSanksi::PenurunanPangkat,
                         JenisSanksi::PembebasanJabatan,
                         JenisSanksi::Pemberhentian,
-                    ])
-                    && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte($today)));
+                    ]));
 
             if ($activeBlocking->isNotEmpty()) {
                 $notes = $activeBlocking->map(fn($h) => $h->jenis_sanksi->label())->implode(', ');

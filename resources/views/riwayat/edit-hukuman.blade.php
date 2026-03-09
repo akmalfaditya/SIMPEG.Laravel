@@ -7,13 +7,32 @@
         @csrf @method('PUT')
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Tingkat Hukuman *</label><select name="tingkat_hukuman" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">@foreach($tingkatOptions as $t)<option value="{{ $t->value }}" {{ old('tingkat_hukuman', $riwayat->tingkat_hukuman->value) == $t->value ? 'selected' : '' }}>{{ $t->label() }}</option>@endforeach</select></div>
-            <div><label class="block text-sm font-medium text-slate-700 mb-1">Jenis Sanksi *</label><select name="jenis_sanksi" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">@foreach($sanksiOptions as $s)<option value="{{ $s->value }}" {{ old('jenis_sanksi', $riwayat->jenis_sanksi->value) == $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>@endforeach</select></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Jenis Sanksi *</label><select name="jenis_sanksi" id="jenisSanksi" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">@foreach($sanksiOptions as $s)<option value="{{ $s->value }}" {{ old('jenis_sanksi', $riwayat->jenis_sanksi->value) == $s->value ? 'selected' : '' }}>{{ $s->label() }}</option>@endforeach</select></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Durasi Hukuman (Tahun)</label><input type="number" name="durasi_tahun" value="{{ old('durasi_tahun', $riwayat->durasi_tahun) }}" min="1" max="10" placeholder="contoh: 1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK</label><input type="text" name="nomor_sk" value="{{ old('nomor_sk', $riwayat->nomor_sk) }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Tanggal SK</label><input type="date" name="tanggal_sk" value="{{ old('tanggal_sk', $riwayat->tanggal_sk?->format('Y-m-d')) }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Hukuman *</label><input type="date" name="tmt_hukuman" value="{{ old('tmt_hukuman', $riwayat->tmt_hukuman->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Selesai</label><input type="date" name="tmt_selesai_hukuman" value="{{ old('tmt_selesai_hukuman', $riwayat->tmt_selesai_hukuman?->format('Y-m-d')) }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div class="md:col-span-2"><label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi</label><textarea name="deskripsi" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">{{ old('deskripsi', $riwayat->deskripsi) }}</textarea></div>
+
+            {{-- Type 2: Penurunan Pangkat target --}}
+            <div id="demotionPangkatSection" class="md:col-span-2 hidden p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-xs font-semibold text-amber-700 mb-2">Penurunan Pangkat — Pilih pangkat baru setelah demosi:</p>
+                <select name="demotion_golongan_ruang" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option value="">-- Pilih Golongan Ruang --</option>
+                    @foreach($golonganOptions as $g)<option value="{{ $g->value }}" {{ old('demotion_golongan_ruang', $currentDemotionGolongan) == $g->value ? 'selected' : '' }}>{{ $g->label() }}</option>@endforeach
+                </select>
+            </div>
+
+            {{-- Type 2: Penurunan/Pembebasan Jabatan target --}}
+            <div id="demotionJabatanSection" class="md:col-span-2 hidden p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-xs font-semibold text-amber-700 mb-2">Penurunan/Pembebasan Jabatan — Pilih jabatan baru:</p>
+                <select name="demotion_jabatan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option value="">-- Pilih Jabatan --</option>
+                    @foreach($jabatanOptions as $j)<option value="{{ $j->id }}" {{ old('demotion_jabatan_id', $currentDemotionJabatanId) == $j->id ? 'selected' : '' }}>{{ $j->nama_jabatan }}</option>@endforeach
+                </select>
+            </div>
+
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Upload SK Hukdis (PDF, maks 5MB)</label>
                 @if($riwayat->file_pdf_path)
@@ -33,3 +52,22 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSanksi = document.getElementById('jenisSanksi');
+    const pangkatSection = document.getElementById('demotionPangkatSection');
+    const jabatanSection = document.getElementById('demotionJabatanSection');
+
+    function toggleDemotionFields() {
+        const val = parseInt(jenisSanksi.value);
+        pangkatSection.classList.toggle('hidden', val !== 3);
+        jabatanSection.classList.toggle('hidden', val !== 4 && val !== 5);
+    }
+
+    jenisSanksi.addEventListener('change', toggleDemotionFields);
+    toggleDemotionFields();
+});
+</script>
+@endpush

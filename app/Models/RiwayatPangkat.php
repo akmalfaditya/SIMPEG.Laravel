@@ -19,12 +19,14 @@ class RiwayatPangkat extends Model
     protected $fillable = [
         'pegawai_id', 'golongan_ruang', 'nomor_sk',
         'tmt_pangkat', 'tanggal_sk', 'file_pdf_path', 'google_drive_link',
+        'is_hukdis_demotion',
     ];
 
     protected $casts = [
         'golongan_ruang' => GolonganRuang::class,
         'tmt_pangkat' => 'date',
         'tanggal_sk' => 'date',
+        'is_hukdis_demotion' => 'boolean',
     ];
 
     public function pegawai(): BelongsTo

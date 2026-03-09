@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Agama;
 use App\Enums\GolonganDarah;
+use App\Enums\GolonganRuang;
 use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
+use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Services\PegawaiService;
 use App\Http\Requests\StorePegawaiRequest;
@@ -53,7 +55,11 @@ class PegawaiController extends Controller
             'riwayatPendidikan', 'riwayatLatihanJabatan',
             'penilaianKinerja', 'riwayatPenghargaan',
         ]);
-        return view('pegawai.show', compact('pegawai'));
+        return view('pegawai.show', [
+            'pegawai' => $pegawai,
+            'golonganOptions' => GolonganRuang::cases(),
+            'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
+        ]);
     }
 
     public function create()

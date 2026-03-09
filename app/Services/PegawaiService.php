@@ -10,7 +10,7 @@ class PegawaiService
 {
     public function getAll()
     {
-        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb'])
+        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'])
             ->where('is_active', true)
             ->get();
     }
@@ -26,7 +26,7 @@ class PegawaiService
 
     public function search(string $keyword)
     {
-        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb'])
+        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'])
             ->where('is_active', true)
             ->where(function ($q) use ($keyword) {
                 $q->where('nip', 'like', "%{$keyword}%")

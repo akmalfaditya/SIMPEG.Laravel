@@ -37,10 +37,9 @@ class StoreKGBRequest extends FormRequest
             $pegawai = Pegawai::with('riwayatHukumanDisiplin')->find($pegawaiId);
             if (!$pegawai) return;
 
-            $today = today();
             $active = $pegawai->riwayatHukumanDisiplin
-                ->filter(fn($h) => $h->jenis_sanksi === JenisSanksi::PenundaanKgb
-                    && ($h->tmt_selesai_hukuman === null || $h->tmt_selesai_hukuman->gte($today)));
+                ->filter(fn($h) => $h->isAktif()
+                    && $h->jenis_sanksi === JenisSanksi::PenundaanKgb);
 
             if ($active->isNotEmpty()) {
                 $durasi = $active->sum(fn($h) => $h->durasi_tahun ?? 1);
