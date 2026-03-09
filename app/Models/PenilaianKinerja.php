@@ -9,6 +9,7 @@ class PenilaianKinerja extends Model
 {
     protected $fillable = [
         'pegawai_id', 'tahun', 'nilai_skp',
+        'file_pdf_path', 'google_drive_link',
     ];
 
     public function pegawai(): BelongsTo

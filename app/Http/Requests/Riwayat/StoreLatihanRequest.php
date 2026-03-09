@@ -21,8 +21,8 @@ class StoreLatihanRequest extends FormRequest
             'penyelenggara' => 'nullable|string',
             'tempat_pelaksanaan' => 'nullable|string',
             'no_sertifikat' => 'nullable|string',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
+            'file_sk' => 'nullable|file|mimes:pdf|max:5120',
+            'google_drive_link' => 'nullable|url|max:500',
         ];
     }
 }

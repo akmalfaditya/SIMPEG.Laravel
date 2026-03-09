@@ -18,8 +18,8 @@ class UpdatePangkatRequest extends FormRequest
             'nomor_sk' => 'nullable|string',
             'tmt_pangkat' => 'required|date',
             'tanggal_sk' => 'required|date',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
+            'file_sk' => 'nullable|file|mimes:pdf|max:5120',
+            'google_drive_link' => 'nullable|url|max:500',
         ];
     }
 }

@@ -49,7 +49,7 @@ return [
 
         'documents' => [
             'driver' => 'local',
-            'root' => storage_path('app/documents'),
+            'root' => storage_path('app/private/sk_documents'),
             'throw' => false,
             'report' => false,
         ],

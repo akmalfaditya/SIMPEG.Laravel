@@ -85,7 +85,11 @@ class RiwayatController extends Controller
 
     public function storePangkat(StorePangkatRequest $request)
     {
-        $dto = RiwayatPangkatDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat');
+        }
+        $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->storePangkat($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pangkat berhasil ditambahkan.');
     }
@@ -100,7 +104,11 @@ class RiwayatController extends Controller
 
     public function updatePangkat(UpdatePangkatRequest $request, RiwayatPangkat $riwayatPangkat)
     {
-        $dto = RiwayatPangkatDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pangkat', $riwayatPangkat->file_pdf_path);
+        }
+        $dto = RiwayatPangkatDTO::fromRequest($validated);
         $this->service->updatePangkat($riwayatPangkat, $dto);
         return redirect()->route('pegawai.show', $riwayatPangkat->pegawai_id)->with('success', 'Riwayat Pangkat berhasil diperbarui.');
     }
@@ -123,7 +131,11 @@ class RiwayatController extends Controller
 
     public function storeJabatan(StoreJabatanRequest $request)
     {
-        $dto = RiwayatJabatanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan');
+        }
+        $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->storeJabatan($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Jabatan berhasil ditambahkan.');
     }
@@ -138,7 +150,11 @@ class RiwayatController extends Controller
 
     public function updateJabatan(UpdateJabatanRequest $request, RiwayatJabatan $riwayatJabatan)
     {
-        $dto = RiwayatJabatanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_jabatan', $riwayatJabatan->file_pdf_path);
+        }
+        $dto = RiwayatJabatanDTO::fromRequest($validated);
         $this->service->updateJabatan($riwayatJabatan, $dto);
         return redirect()->route('pegawai.show', $riwayatJabatan->pegawai_id)->with('success', 'Riwayat Jabatan berhasil diperbarui.');
     }
@@ -177,7 +193,11 @@ class RiwayatController extends Controller
 
     public function storeKGB(StoreKGBRequest $request)
     {
-        $dto = RiwayatKgbDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb');
+        }
+        $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->storeKgb($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat KGB berhasil ditambahkan.');
     }
@@ -189,7 +209,11 @@ class RiwayatController extends Controller
 
     public function updateKGB(UpdateKGBRequest $request, RiwayatKgb $riwayatKgb)
     {
-        $dto = RiwayatKgbDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', $riwayatKgb->file_pdf_path);
+        }
+        $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->updateKgb($riwayatKgb, $dto);
         return redirect()->route('pegawai.show', $riwayatKgb->pegawai_id)->with('success', 'Riwayat KGB berhasil diperbarui.');
     }
@@ -261,7 +285,11 @@ class RiwayatController extends Controller
 
     public function storePendidikan(StorePendidikanRequest $request)
     {
-        $dto = RiwayatPendidikanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan');
+        }
+        $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->storePendidikan($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Pendidikan berhasil ditambahkan.');
     }
@@ -273,7 +301,11 @@ class RiwayatController extends Controller
 
     public function updatePendidikan(UpdatePendidikanRequest $request, RiwayatPendidikan $riwayatPendidikan)
     {
-        $dto = RiwayatPendidikanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_pendidikan', $riwayatPendidikan->file_pdf_path);
+        }
+        $dto = RiwayatPendidikanDTO::fromRequest($validated);
         $this->service->updatePendidikan($riwayatPendidikan, $dto);
         return redirect()->route('pegawai.show', $riwayatPendidikan->pegawai_id)->with('success', 'Riwayat Pendidikan berhasil diperbarui.');
     }
@@ -293,7 +325,11 @@ class RiwayatController extends Controller
 
     public function storeLatihan(StoreLatihanRequest $request)
     {
-        $dto = RiwayatLatihanJabatanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan');
+        }
+        $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->storeLatihan($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Riwayat Latihan berhasil ditambahkan.');
     }
@@ -305,7 +341,11 @@ class RiwayatController extends Controller
 
     public function updateLatihan(UpdateLatihanRequest $request, RiwayatLatihanJabatan $riwayatLatihan)
     {
-        $dto = RiwayatLatihanJabatanDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_latihan', $riwayatLatihan->file_pdf_path);
+        }
+        $dto = RiwayatLatihanJabatanDTO::fromRequest($validated);
         $this->service->updateLatihan($riwayatLatihan, $dto);
         return redirect()->route('pegawai.show', $riwayatLatihan->pegawai_id)->with('success', 'Riwayat Latihan berhasil diperbarui.');
     }
@@ -325,7 +365,11 @@ class RiwayatController extends Controller
 
     public function storeSKP(StoreSKPRequest $request)
     {
-        $dto = PenilaianKinerjaDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp');
+        }
+        $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->storeSKP($dto);
         return redirect()->route('pegawai.show', $dto->pegawaiId)->with('success', 'Penilaian Kinerja berhasil ditambahkan.');
     }
@@ -337,7 +381,11 @@ class RiwayatController extends Controller
 
     public function updateSKP(UpdateSKPRequest $request, PenilaianKinerja $penilaianKinerja)
     {
-        $dto = PenilaianKinerjaDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+        if ($request->hasFile('file_sk')) {
+            $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_skp', $penilaianKinerja->file_pdf_path);
+        }
+        $dto = PenilaianKinerjaDTO::fromRequest($validated);
         $this->service->updateSKP($penilaianKinerja, $dto);
         return redirect()->route('pegawai.show', $penilaianKinerja->pegawai_id)->with('success', 'Penilaian Kinerja berhasil diperbarui.');
     }

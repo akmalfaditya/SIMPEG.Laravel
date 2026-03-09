@@ -24,6 +24,21 @@ use Illuminate\Support\Facades\DB;
 
 class RiwayatService
 {
+    public function __construct(
+        private DocumentUploadService $uploadService,
+    ) {}
+
+    /**
+     * Generic SK file upload with optional old file deletion.
+     */
+    public function uploadSk(UploadedFile $file, string $subfolder, ?string $oldPath = null): string
+    {
+        if ($oldPath) {
+            $this->uploadService->delete($oldPath);
+        }
+        return $this->uploadService->upload($file, $subfolder);
+    }
+
     // --- PANGKAT ---
     public function storePangkat(RiwayatPangkatDTO $dto): RiwayatPangkat
     {
@@ -37,7 +52,12 @@ class RiwayatService
 
     public function deletePangkat(RiwayatPangkat $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
     }
 
     // --- JABATAN ---
@@ -53,7 +73,12 @@ class RiwayatService
 
     public function deleteJabatan(RiwayatJabatan $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
     }
 
     // --- KGB ---
@@ -90,6 +115,9 @@ class RiwayatService
     {
         return DB::transaction(function () use ($riwayat) {
             $pegawaiId = $riwayat->pegawai_id;
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
             $riwayat->delete();
 
             // Revert gaji_pokok to previous KGB's gaji_baru, or 0 if none left
@@ -129,7 +157,7 @@ class RiwayatService
     {
         return DB::transaction(function () use ($riwayat) {
             if ($riwayat->file_pdf_path) {
-                app(DocumentUploadService::class)->delete($riwayat->file_pdf_path);
+                $this->uploadService->delete($riwayat->file_pdf_path);
             }
             return $riwayat->delete();
         });
@@ -137,11 +165,7 @@ class RiwayatService
 
     public function uploadHukumanSk(UploadedFile $file, ?string $oldPath = null): string
     {
-        $uploadService = app(DocumentUploadService::class);
-        if ($oldPath) {
-            $uploadService->delete($oldPath);
-        }
-        return $uploadService->upload($file, 'sk_hukuman');
+        return $this->uploadSk($file, 'sk_hukuman', $oldPath);
     }
 
     // --- PENDIDIKAN ---
@@ -157,7 +181,12 @@ class RiwayatService
 
     public function deletePendidikan(RiwayatPendidikan $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
     }
 
     // --- LATIHAN JABATAN ---
@@ -173,7 +202,12 @@ class RiwayatService
 
     public function deleteLatihan(RiwayatLatihanJabatan $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
     }
 
     // --- PENILAIAN KINERJA (SKP) ---
@@ -189,7 +223,12 @@ class RiwayatService
 
     public function deleteSKP(PenilaianKinerja $riwayat): bool
     {
-        return DB::transaction(fn () => $riwayat->delete());
+        return DB::transaction(function () use ($riwayat) {
+            if ($riwayat->file_pdf_path) {
+                $this->uploadService->delete($riwayat->file_pdf_path);
+            }
+            return $riwayat->delete();
+        });
     }
 
     // --- PENGHARGAAN ---

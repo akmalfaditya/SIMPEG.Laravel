@@ -20,8 +20,8 @@ class UpdateKGBRequest extends FormRequest
             'gaji_baru' => 'required|numeric',
             'masa_kerja_golongan_tahun' => 'required|integer',
             'masa_kerja_golongan_bulan' => 'required|integer',
-            'file_pdf_path' => 'nullable|string',
-            'google_drive_link' => 'nullable|string',
+            'file_sk' => 'nullable|file|mimes:pdf|max:5120',
+            'google_drive_link' => 'nullable|url|max:500',
         ];
     }
 }

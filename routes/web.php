@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DUKController;
 use App\Http\Controllers\KenaikanPangkatController;
 use App\Http\Controllers\KGBController;
@@ -95,6 +96,12 @@ Route::middleware('auth')->group(function () {
 
     // Export
     Route::get('/export/{type}/{format}', [ExportController::class, 'export'])->name('export');
+
+    // Document Download
+    Route::get('/dokumen/{type}/{id}', [DocumentController::class, 'download'])
+        ->where('type', 'pangkat|jabatan|kgb|hukuman|pendidikan|latihan|skp')
+        ->where('id', '[0-9]+')
+        ->name('dokumen.download');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');

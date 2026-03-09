@@ -17,6 +17,8 @@ class StoreSKPRequest extends FormRequest
             'pegawai_id' => 'required|exists:pegawais,id',
             'tahun' => 'required|integer',
             'nilai_skp' => 'required|string',
+            'file_sk' => 'nullable|file|mimes:pdf|max:5120',
+            'google_drive_link' => 'nullable|url|max:500',
         ];
     }
 }
