@@ -89,6 +89,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/kgb/upcoming', [KGBController::class, 'upcoming'])->name('kgb.upcoming');
     Route::get('/kgb/eligible', [KGBController::class, 'eligible'])->name('kgb.eligible');
     Route::get('/kgb/ditunda', [KGBController::class, 'ditunda'])->name('kgb.ditunda');
+    Route::get('/kgb/process/{pegawai}', [KGBController::class, 'showProcessForm'])->name('kgb.process.form');
+    Route::post('/kgb/process', [KGBController::class, 'process'])->name('kgb.process');
 
     Route::get('/kenaikan-pangkat', [KenaikanPangkatController::class, 'index'])->name('kenaikan-pangkat.index');
     Route::get('/kenaikan-pangkat/eligible', [KenaikanPangkatController::class, 'eligible'])->name('kenaikan-pangkat.eligible');
