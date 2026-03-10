@@ -33,17 +33,11 @@
 
 ## 2. Manajemen Hukuman Disiplin (PRD §3.1)
 
-### 🔴 GAP-05: Field `jenis_sanksi` (Enum Dropdown) Belum Ada — Masih Free-Text
-- **PRD**: `jenis_sanksi` harus berupa **dropdown** dengan opsi fixed: `penundaan_kgb`, `penundaan_pangkat`, `penurunan_pangkat`, `penurunan_jabatan`, `pembebasan_jabatan`, `pemberhentian`.
-- **Aktual**: Field `jenis_hukuman` di migration/model/DTO/form adalah **free-text** (`string`), bukan enum/dropdown.
-- **Dampak**: Service layer tidak bisa melakukan matching sanksi secara programatik untuk kalkulasi KGB/Pangkat.
-- **Aksi**: Buat Enum `JenisSanksi`, ubah migration jadi `tinyInteger`, update DTO, form request, dan Blade view ke dropdown.
+### ~~🔴 GAP-05: Field `jenis_sanksi` (Enum Dropdown) Belum Ada — Masih Free-Text~~ ✅ RESOLVED
+- **Status**: Enum `JenisSanksi` sudah dibuat dengan opsi: PenundaanKgb, PenundaanPangkat, PenurunanPangkat, PenurunanJabatan, PembebasanJabatan, Pemberhentian. Migration, DTO, form request, dan Blade view sudah di-update ke dropdown.
 
-### 🔴 GAP-06: Field `durasi_tahun` (Durasi Hukuman) Tidak Ada di Database
-- **PRD**: Tabel `riwayat_hukuman_disiplin` harus memiliki `durasi_tahun` (integer) untuk kalkulasi penundaan.
-- **Aktual**: Migration hanya punya `tmt_hukuman` dan `tmt_selesai_hukuman`. **Tidak ada** field `durasi_tahun` eksplisit.
-- **Dampak**: Kalkulasi penundaan KGB/Pangkat harus menghitung selisih tanggal secara manual (kurang presisi jika TMT selesai kosong).
-- **Aksi**: Tambah kolom `durasi_tahun` (integer, nullable) pada migration. Update model `$fillable`, DTO, form.
+### ~~🔴 GAP-06: Field `durasi_tahun` (Durasi Hukuman) Tidak Ada di Database~~ ✅ RESOLVED
+- **Status**: Kolom `durasi_tahun` (integer, nullable) sudah ditambahkan di migration. Model `$fillable`, DTO, dan form sudah di-update.
 
 ### 🟡 GAP-07: Upload SK Hukdis Belum Diimplementasikan
 - **PRD**: Form hukdis harus memiliki upload SK opsional (`dokumen_sk_path`).
@@ -54,30 +48,21 @@
 
 ## 3. Kalkulasi Dinamis Hukdis → KGB (PRD §3.2)
 
-### 🔴 GAP-08: KGB Service Tidak Memperhitungkan Intervensi Hukdis (Penundaan KGB)
-- **PRD**: Saat render dasbor KGB, service harus **Left Join** ke `riwayat_hukuman_disiplin` dan jika ada sanksi "Penundaan KGB" aktif, jadwal jatuh tempo otomatis digeser sebesar durasi hukuman. Badge merah "Ditunda X Tahun (Status Hukdis)" ditempelkan.
-- **Aktual**: `KGBService::getAllKGBStatus()` hanya menghitung `tmt_kgb + 2 tahun`. **Tidak ada** pengecekan tabel hukdis sama sekali. Tidak ada badge penundaan.
-- **Dampak**: Pegawai yang terkena sanksi penundaan KGB tetap muncul sebagai "Eligible" — salah secara hukum.
-- **Aksi**: Di `KGBService`, eager-load `riwayatHukumanDisiplin`, cek sanksi aktif bertipe `penundaan_kgb`, geser `jatuhTempo += durasi_tahun`, tambahkan field `hukdis_flag` dan `hukdis_note` di array output. Update view KGB untuk menampilkan badge merah.
+### ~~🔴 GAP-08: KGB Service Tidak Memperhitungkan Intervensi Hukdis (Penundaan KGB)~~ ✅ RESOLVED
+- **Status**: `KGBService::getAllKGBStatus()` sekarang eager-load `riwayatHukumanDisiplin`, cek sanksi aktif bertipe `PenundaanKgb`, geser `jatuhTempo += durasi_tahun`. Output memiliki `hukdis_flag`, `hukdis_note`, dan status `Ditunda`.
 
-### 🟡 GAP-09: Badge Visual "Jadwal Disesuaikan" Belum Ada di View KGB
-- **PRD**: Tabel KGB harus menampilkan badge merah tebal: _"Jadwal disesuaikan: Ditunda X Tahun (Status Hukdis)"_.
-- **Aktual**: View `kgb/index.blade.php` tidak menampilkan informasi hukdis apapun.
-- **Aksi**: Tambahkan conditional badge di kolom Status pada view KGB.
+### ~~🟡 GAP-09: Badge Visual "Jadwal Disesuaikan" Belum Ada di View KGB~~ ✅ RESOLVED
+- **Status**: View KGB sekarang menampilkan status `Ditunda` dengan badge dan `hukdis_note` dari service. Kolom status sudah mencakup informasi hukdis.
 
 ---
 
 ## 4. Kalkulasi Dinamis Hukdis → Kenaikan Pangkat (PRD §3.3)
 
-### 🔴 GAP-10: Penundaan Pangkat — Masa Eligibility Tidak Digeser
-- **PRD**: Jika terkena sanksi "Penundaan Pangkat", masa eligibility bergeser ditambah durasi hukuman (misal +1 tahun) dengan catatan merah di dasbor.
-- **Aktual**: `KenaikanPangkatService` hanya mengecek apakah hukdis aktif ada (`$activeHukuman->isEmpty()`). Jika aktif → langsung tidak eligible. **Tidak ada** logic geser masa kerja berdasarkan durasi hukuman spesifik "penundaan pangkat".
-- **Aksi**: Deteksi tipe sanksi `penundaan_pangkat`, tambahkan durasi ke `masaKerjaGolBulan`, output field `hukdis_pangkat_note`.
+### ~~🔴 GAP-10: Penundaan Pangkat — Masa Eligibility Tidak Digeser~~ ✅ RESOLVED
+- **Status**: `KenaikanPangkatService` sekarang mendeteksi sanksi `PenundaanPangkat`, menghitung total durasi, dan menambahkan `penundaanBulan` ke masa kerja requirement. Output memiliki `hukdis_pangkat_flag` dan `hukdis_pangkat_note`.
 
-### 🔴 GAP-11: Penurunan Pangkat — Reset Perhitungan 4 Tahun Belum Ada
-- **PRD**: Jika terkena sanksi "Penurunan Pangkat", pangkat saat ini turun dan perhitungan 4 tahun dimulai ulang dari masa pemulihan.
-- **Aktual**: Tidak ada logic penurunan pangkat. Service hanya membaca `riwayatPangkat->sortByDesc()` tanpa memperhitungkan penurunan.
-- **Aksi**: Cek `penurunan_pangkat` aktif → turunkan `golSaatIni`, reset `tmt_pangkat` ke `tanggal_mulai` sanksi untuk perhitungan ulang.
+### ~~🔴 GAP-11: Penurunan Pangkat — Reset Perhitungan 4 Tahun Belum Ada~~ ✅ RESOLVED
+- **Status**: `KenaikanPangkatService` sekarang mendeteksi sanksi `PenurunanPangkat`, menurunkan golongan (`golLevel - 1`), reset TMT pangkat ke `tmt_hukuman`, dan menghitung ulang masa kerja dari tanggal tersebut.
 
 ### 🟡 GAP-12: Proyeksi Kenaikan Pangkat Periode April/Oktober Belum Ada
 - **PRD**: Output dasbor ditampilkan sebagai "Proyeksi Kenaikan Pangkat Periode April/Oktober" dengan label status jelas.
@@ -108,20 +93,14 @@
 
 ## 6. Modul Manajemen Master Data / Admin Setting (PRD §3.6)
 
-### 🔴 GAP-16: CRUD Master Jabatan Belum Ada (UI)
-- **PRD**: SuperAdmin bisa menambah, mengedit, dan menonaktifkan nomenklatur jabatan (nama, rumpun, BUP).
-- **Aktual**: `JabatanService` hanya punya `getAllOrderedByName()`. **Tidak ada** controller, route, atau view untuk CRUD Jabatan. Data Jabatan hanya dikelola via seeder.
-- **Aksi**: Buat `JabatanController` (CRUD), route, form Blade, dan method di `JabatanService`.
+### ~~🔴 GAP-16: CRUD Master Jabatan Belum Ada (UI)~~ ✅ RESOLVED
+- **Status**: `JabatanController` dengan full CRUD (index, create, store, edit, update, destroy) sudah tersedia. Route, form Blade, dan view sudah dibuat.
 
-### 🔴 GAP-17: CRUD Master Tabel Gaji Berkala Belum Ada (UI)
-- **PRD**: SuperAdmin bisa memperbarui tabel matriks gaji pokok.
-- **Aktual**: `TabelGaji` hanya dikelola via seeder. **Tidak ada** controller, route, atau view untuk CRUD.
-- **Aksi**: Buat `TabelGajiController`, view matriks (golongan × MKG), route, dan service.
+### ~~🔴 GAP-17: CRUD Master Tabel Gaji Berkala Belum Ada (UI)~~ ✅ RESOLVED
+- **Status**: `TabelGajiController` dengan CRUD sudah tersedia. View matriks gaji dan route sudah dibuat.
 
-### 🔴 GAP-18: CRUD Master Golongan & Pangkat Belum Ada (UI)
-- **PRD**: SuperAdmin bisa mengelola daftar hierarki kepangkatan (I/a hingga IV/e).
-- **Aktual**: Golongan/Pangkat hanya berupa Enum `GolonganRuang` yang di-hardcode di PHP. **Tidak bisa** dikelola dari UI tanpa mengubah kode sumber.
-- **Aksi**: Pertimbangkan apakah golongan tetap enum (karena jarang berubah) atau perlu jadi tabel master. Jika harus CRUD, migrasi ke tabel `master_golongan` dengan seeder dari enum.
+### ~~🔴 GAP-18: CRUD Master Golongan & Pangkat Belum Ada (UI)~~ ✅ RESOLVED
+- **Status**: Golongan/Pangkat sudah dimigrasi dari Enum ke tabel master `golongan_pangkats` (FK-based). `GolonganController` dengan full CRUD sudah tersedia. 8 atribut master data total sudah dinormalisasi.
 
 ### 🟡 GAP-19: Field "Rumpun" pada Jabatan Tidak Ada
 - **PRD**: Jabatan harus memiliki parameter Rumpun (Imigrasi/Pemasyarakatan/Struktural).
@@ -203,10 +182,8 @@
 - **Dampak**: Sesuai PRD (hanya tampilkan alert ≤ 24 bulan). Tapi PRD bilang Hijau = > 1 tahun, sementara service bilang Hijau = 12-24 bulan. Perlu klarifikasi.
 - **Aksi**: Klarifikasi dengan stakeholder apakah Hijau harus mencakup semua pegawai > 12 bulan (termasuk yang > 24 bulan) atau hanya 12-24 bulan.
 
-### 🟡 GAP-30: Dashboard KGB — Kalkulasi Gaji Baru Otomatis Belum Ditampilkan
-- **PRD**: Dasbor KGB harus menampilkan estimasi gaji baru dari lookup `TabelGaji`.
-- **Aktual**: `KGBCalculationService` sudah ada method `getNextKGBSalary()`, tapi **tidak dipanggil** di `KGBController` atau view `kgb/index.blade.php`. Tabel hanya menampilkan TMT dan status tanpa estimasi gaji.
-- **Aksi**: Integrasikan `KGBCalculationService` ke `KGBController`, tambahkan kolom "Est. Gaji Baru" di view.
+### ~~🟡 GAP-30: Dashboard KGB — Kalkulasi Gaji Baru Otomatis Belum Ditampilkan~~ ✅ RESOLVED
+- **Status**: `KGBCalculationService::getNextKGBSalary()` sudah diintegrasikan di `KGBService`. Output array memiliki field `est_gaji_baru`. View KGB menampilkan kolom estimasi gaji baru.
 
 ### ~~🟡 GAP-31: Sidebar Belum Ada Menu "Admin Setting" / Master Data~~ ✅ RESOLVED
 - **Status**: Sidebar sekarang memiliki section "Master Data Pegawai" dengan 8 link dinamis + section "Admin" untuk Jabatan, Golongan, Tabel Gaji.
@@ -218,13 +195,109 @@
 
 ---
 
+## 11. Business Process & UX Gap Analysis
+
+> Hasil analisis mendalam terhadap seluruh Service, Controller, dan View.  
+> Fokus: workflow yang belum komplit sehingga UX terasa terputus — HR harus melakukan workaround manual.
+
+### 🔴 GAP-33: Workflow Proses KGB Tidak Ada — Monitoring Only
+- **Masalah**: KGBController hanya memiliki 4 aksi read-only: `index`, `upcoming`, `eligible`, `ditunda`. Tidak ada method `store`/`process`/`approve`. HR melihat daftar pegawai yang eligible KGB tapi **tidak bisa memproses** dari halaman tersebut.
+- **Dampak UX**: HR harus: (1) catat NIP dari halaman KGB → (2) navigasi ke Pegawai → (3) buka tab Riwayat KGB → (4) klik Tambah → (5) isi manual semua field (gaji baru harus hitung sendiri). Alur ini sangat rentan human error dan membuang waktu.
+- **Aksi**: Tambah `processKGB(Request $request)` di KGBController. Buat form modal/halaman "Proses KGB" yang pre-fill data dari KGBService (gaji_baru dari TabelGaji lookup, TMT KGB baru = jatuh tempo). Saat submit: otomatis buat RiwayatKgb record + update `gaji_pokok` di Pegawai. Tambahkan tombol "Proses" di setiap baris tabel eligible.
+
+### 🔴 GAP-34: Workflow Proses Kenaikan Pangkat Tidak Ada — Eligibility Only
+- **Masalah**: KenaikanPangkatController hanya memiliki `index`, `eligible`, `ditunda` (read-only). Tidak ada method untuk memproses kenaikan pangkat. Halaman hanya menampilkan checklist 4 kriteria (✓/✗) dan proyeksi pangkat berikutnya.
+- **Dampak UX**: HR melihat pegawai eligible beserta proyeksi golongan, tapi harus keluar, cari pegawai, tambah RiwayatPangkat manual. Tidak ada koneksi antara halaman monitoring dan aksi.
+- **Aksi**: Tambah `processKenaikan(Request $request)` di KenaikanPangkatController. Pre-fill: golongan berikutnya (dari proyeksi service), TMT pangkat (April/Oktober), gaji pokok baru (dari TabelGaji lookup). Saat submit: buat RiwayatPangkat + update `gaji_pokok` + update `golongan_id` di Pegawai.
+
+### 🔴 GAP-35: Workflow Proses Pensiun Tidak Ada — Alert Only
+- **Masalah**: PensiunController hanya memiliki `index` dengan filter level alert. Tidak ada method untuk memproses pensiun. Tidak ada mekanisme mengubah `status_kepegawaian` ke "Pensiun" atau menonaktifkan pegawai.
+- **Dampak UX**: HR melihat alert Hitam/Merah (sudah/mendekati BUP) tapi harus: navigasi ke Pegawai → Edit → ubah status_kepegawaian ke Pensiun → set `is_active = false` secara manual. Tidak ada pencatatan tanggal pensiun, SK pensiun, dll.
+- **Aksi**: Tambah `processPensiun(Request $request)` di PensiunController. Form: nomor SK pensiun, tanggal SK, TMT pensiun, catatan. Saat submit: update `status_kepegawaian_id` → Pensiun, set `is_active = false`, simpan record pensiun (pertimbangkan tabel `riwayat_pensiun` baru atau gunakan field di `pegawais`).
+
+### 🔴 GAP-36: Workflow CPNS → PNS Transition Tidak Ada
+- **Masalah**: Form Pegawai memiliki field `tmt_pns` tapi **tidak ada** workflow/state machine untuk transisi CPNS → PNS. Tidak ada validasi bisnis (misal: lulus Prajabatan sebagai syarat pengangkatan PNS). Tidak ada notifikasi atau monitoring untuk CPNS yang mendekati batas waktu pengangkatan.
+- **Dampak UX**: Status kepegawaian diubah manual tanpa enforcement aturan. CPNS bisa "stuck" tanpa ada reminder.
+- **Aksi**: Buat monitoring "CPNS Mendekati Pengangkatan" (misal ≥ 1 tahun masa CPNS). Tambah validasi: `tmt_pns` hanya bisa diisi jika ada riwayat latihan Prajabatan. Buat workflow: saat diproses, auto-set `status_kepegawaian` → PNS, catat `tmt_pns`.
+
+### 🔴 GAP-37: Workflow Off-boarding (Resign/Berhenti/Meninggal) Tidak Ada
+- **Masalah**: Tidak ada proses formal untuk pegawai resign, diberhentikan, atau meninggal dunia. Hanya bisa diubah via Edit Pegawai → toggle `is_active` ke false.
+- **Dampak UX**: Tidak ada pencatatan alasan, tanggal efektif, atau SK pemberhentian. Data bisa diubah tanpa audit trail yang jelas.
+- **Aksi**: Buat `OffboardingController` dengan form: jenis off-boarding (Resign/Diberhentikan/Meninggal/Pensiun), tanggal efektif, nomor SK, alasan. Saat submit: update status, set `is_active = false`, catat di tabel riwayat.
+
+### 🟡 GAP-38: Satyalencana Service Bug — `golongan_ruang?->label()` Error
+- **Masalah**: `SatyalencanaService` baris 57 menggunakan `$pangkat?->golongan_ruang?->label()`. Setelah normalisasi, `golongan_ruang` bukan lagi Enum object — field lama sudah diganti dengan FK `golongan_id`. Kode akan menghasilkan error karena `golongan_ruang` bernilai `null` (field tidak ada) atau integer.
+- **Dampak UX**: Halaman Satyalencana kemungkinan error saat menampilkan kolom "Pangkat Terakhir", atau menampilkan "-" default untuk semua pegawai.
+- **Aksi**: Ubah `$pangkat?->golongan_ruang?->label()` menjadi `$pangkat?->golongan?->label ?? '-'`. Tambahkan `riwayatPangkat.golongan` di eager-load query (baris 13) untuk menghindari N+1.
+
+### 🟡 GAP-39: Satyalencana Hukdis Check Terlalu Luas — Tidak Cek Status Aktif
+- **Masalah**: `SatyalencanaService` baris 36-40 men-disqualify kandidat berdasarkan **seluruh riwayat** hukdis Sedang/Berat, tanpa memfilter `isAktif()`. Pegawai yang hukdisnya sudah selesai (status Selesai) tetap didiskualifikasi permanen.
+- **Dampak UX**: Pegawai yang pernah kena hukdis Sedang 10 tahun lalu (sudah selesai dan dipulihkan) tidak akan pernah muncul di daftar kandidat Satyalencana.
+- **Aksi**: Tambah filter `->filter(fn($h) => $h->isAktif())` sebelum cek tingkat hukuman, atau tambah parameter time-window (misal 5 tahun terakhir) sesuai regulasi.
+
+### 🟡 GAP-40: No "Quick Action" Buttons dari Halaman Monitoring
+- **Masalah**: Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) menampilkan data dalam tabel tapi **tidak ada tombol aksi** (selain Satyalencana yang punya "Berikan Penghargaan"). HR harus meninggalkan halaman untuk melakukan tindak lanjut.
+- **Dampak UX**: Informasi dan aksi terpisah. HR harus bolak-balik antara halaman monitoring dan halaman pegawai.
+- **Aksi**: Setelah GAP-33/34/35 diimplementasikan, tambahkan tombol "Proses" di setiap baris tabel eligible. Tombol bisa membuka modal form atau redirect ke halaman proses dengan data pre-filled.
+
+### 🟡 GAP-41: Client-Side Pagination — Semua Data Di-render ke HTML
+- **Masalah**: Seluruh halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) menggunakan pola: server kirim **semua** data → render semua ke HTML → JavaScript sembunyikan/tampilkan 15 baris per halaman. Juga berlaku untuk `PegawaiService::getAll()` yang load seluruh collection ke PHP memory.
+- **Dampak UX**: Dengan 50 pegawai demo, tidak terasa. Dengan 500+ pegawai produksi: page load lambat, browser lag, memory usage tinggi. Seluruh NIP/nama pegawai terekspos di HTML source.
+- **Aksi**: Implementasi server-side pagination menggunakan Laravel `->paginate(15)`. Update view dengan `{{ $data->links() }}`. Untuk search, gunakan query parameter `?search=` yang dihandler di controller.
+
+### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat
+- **Masalah**: `DashboardService` menjalankan multiple aggregate queries (count by status, chart data, KGB alerts, pensiun alerts) setiap kali halaman di-load. Tidak ada caching.
+- **Dampak UX**: Dashboard load time akan bertambah seiring data bertambah. Semua user yang akses dashboard trigger query yang sama.
+- **Aksi**: Implementasi `Cache::remember('dashboard_stats', 300, fn() => ...)` untuk data yang jarang berubah (distribusi per golongan, per jabatan). Invalidate cache saat Pegawai di-create/update/delete.
+
+### 🟡 GAP-43: Dashboard Tidak Ada Widget "Perlu Tindakan"
+- **Masalah**: Dashboard menampilkan statistik umum (jumlah pegawai, distribusi) dan alert KGB/Pensiun, tapi **tidak ada** ringkasan "Perlu Segera Diproses" yang actionable: berapa KGB jatuh tempo bulan ini, berapa pegawai eligible kenaikan pangkat periode depan, berapa mendekati BUP.
+- **Dampak UX**: HR harus mengecek masing-masing modul monitoring untuk tahu apa yang perlu dikerjakan hari ini. Tidak ada "one-glance" overview.
+- **Aksi**: Tambah section "Perlu Tindakan" di atas dashboard: card KGB (X eligible, Y jatuh tempo ≤30 hari), card Pangkat (X eligible April/Oktober), card Pensiun (X level Hitam/Merah). Setiap card link ke halaman monitoring terkait.
+
+### 🟡 GAP-44: Tidak Ada Bulk/Batch Processing
+- **Masalah**: Semua proses kepegawaian bersifat one-by-one. Tidak ada cara memilih multiple pegawai eligible dan memprosesnya sekaligus (misal: proses KGB 10 pegawai sekaligus dengan 1 SK kolektif).
+- **Dampak UX**: Untuk 50 pegawai yang KGB-nya jatuh tempo bersamaan, HR harus klik "Proses" 50× secara terpisah.
+- **Aksi**: Setelah workflow individual (GAP-33/34/35) tersedia, tambahkan checkbox multi-select + tombol "Proses Semua Terpilih". Buat batch processing method di service.
+
+### 🟠 GAP-45: Form Edit Pegawai Tidak Ada Guidance untuk Field Read-Only Kontekstual
+- **Masalah**: Field `gaji_pokok`, golongan (terakhir), dan jabatan (terakhir) di halaman pegawai hanya bisa diubah melalui penambahan Riwayat (Pangkat, Jabatan, KGB). Namun form edit tidak memberikan penjelasan bahwa field ini dikelola via riwayat, bukan langsung di-edit.
+- **Dampak UX**: HR baru mungkin bingung kenapa tidak bisa mengubah golongan atau gaji di form edit, atau malah mengubah `gaji_pokok` langsung tanpa melalui proses KGB.
+- **Aksi**: Tambahkan tooltip/info text di form: "Golongan dan gaji dikelola otomatis melalui Riwayat Pangkat & KGB". Pertimbangkan membuat field `gaji_pokok` di form edit sebagai read-only.
+
+### 🟠 GAP-46: Tidak Ada Data Completeness Indicator di Profil Pegawai
+- **Masalah**: Halaman show pegawai menampilkan 8 tab riwayat tapi tidak ada indikator apakah data sudah lengkap. Pegawai tanpa riwayat pendidikan, latihan, atau SKP tidak diberi warning.
+- **Dampak UX**: HR tidak tahu pegawai mana yang data-nya belum lengkap. Baru ketahuan saat dibutuhkan (misal: kenaikan pangkat gagal karena belum ada latihan jabatan).
+- **Aksi**: Tambah badge/progress bar "Kelengkapan Data: 6/8 riwayat terisi" di halaman show. Warning icon di tab yang masih kosong.
+
+### 🟠 GAP-47: Tidak Ada Export PDF Profil Individual Pegawai
+- **Masalah**: Export yang tersedia (DUK, KGB, Kenaikan Pangkat, Pensiun, Satyalencana) semuanya bersifat daftar/kolektif. Tidak ada fitur export profil lengkap satu pegawai (biodata + seluruh riwayat) sebagai PDF.
+- **Dampak UX**: Untuk keperluan mutasi, promosi, atau arsip, HR harus screenshot/print manual halaman profil pegawai.
+- **Aksi**: Buat `PegawaiProfileExport` menggunakan DomPDF. Tambahkan tombol "Export PDF" di halaman show pegawai. Template: biodata + tabel ringkas setiap riwayat.
+
+### 🟠 GAP-48: Tidak Ada Career Timeline View
+- **Masalah**: Halaman show pegawai menampilkan riwayat dalam 8 tab terpisah (tabel per jenis). Tidak ada visualisasi kronologis gabungan yang menampilkan seluruh perjalanan karir dalam satu timeline.
+- **Dampak UX**: Untuk memahami perjalanan karir seorang pegawai, HR harus membuka 8 tab secara bergantian dan menyusun kronologi secara mental.
+- **Aksi**: Tambahkan tab "Timeline Karir" yang merge semua riwayat (pangkat, jabatan, KGB, hukdis, pendidikan, latihan, penghargaan, SKP) ke dalam satu timeline kronologis. Tampilkan sebagai vertical timeline card.
+
+### 🟠 GAP-49: Proyeksi Kenaikan Pangkat Belum Grouped per Periode April/Oktober
+- **Masalah**: Halaman kenaikan pangkat menampilkan semua pegawai eligible dalam satu tabel flat. Tidak ada pengelompokan atau filter berdasarkan periode kenaikan (April atau Oktober).
+- **Dampak UX**: HR tidak langsung tahu pegawai mana yang naik pangkat April vs Oktober. Harus menghitung dari TMT pangkat terakhir secara manual.
+- **Aksi**: Tambah filter/tab "Periode April" dan "Periode Oktober". Tambah kolom "Periode Proyeksi" di tabel. Logic: bulan TMT 1-6 → Oktober, bulan TMT 7-12 → April tahun berikutnya (sesuai aturan ASN).
+
+---
+
 ## Ringkasan Prioritas
 
 | Prioritas | Count | ID |
 |-----------|-------|----|
-| 🔴 Kritis | 11 | GAP-01, 02, 03, 05, 06, 08, 10, 11, 13, 16, 17, 18 |
-| 🟡 Sedang | 14 | GAP-04, 07, 09, 12, 14, 15, 19, 20, 21, 22, 23, 25, 26, 29, 30, 31 |
+| 🔴 Kritis | 5 (aktif) + 8 resolved | Aktif: GAP-01, 02, 03, 13, 33, 34, 35, 36, 37 · Resolved: ~~05, 06, 08, 10, 11, 16, 17, 18~~ |
+| 🟡 Sedang | 12 (aktif) + 3 resolved | Aktif: GAP-04, 07, 12, 14, 15, 19, 20, 21, 22, 23, 25, 26, 29, 38, 39, 40, 41, 42, 43, 44 · Resolved: ~~09, 30, 31~~ |
+| 🟠 Menengah | 5 | GAP-45, 46, 47, 48, 49 |
 | 🟢 Rendah | 4 | GAP-24, 27, 28, 32 |
+
+### ✅ Total Resolved: 11 GAP
+> GAP-05, 06, 08, 09, 10, 11, 16, 17, 18, 30, 31
 
 ---
 
@@ -234,31 +307,45 @@
 1. **GAP-01** Spatie Permission setup
 2. **GAP-02** Middleware RBAC di routes
 3. **GAP-03** Policy classes
-4. **GAP-05** Enum `JenisSanksi` + migrasi dropdown
-5. **GAP-06** Kolom `durasi_tahun` di hukdis
+4. ~~**GAP-05** Enum `JenisSanksi`~~ ✅
+5. ~~**GAP-06** Kolom `durasi_tahun`~~ ✅
 
-### Phase 2 — Core Business Logic Fix
-6. **GAP-08** Intervensi Hukdis di KGB Service
-7. **GAP-09** Badge visual hukdis di view KGB
-8. **GAP-10** Penundaan Pangkat shift di KenaikanPangkatService
-9. **GAP-11** Penurunan Pangkat reset
-10. **GAP-13** DocumentController secure download
+### Phase 2 — Core Business Logic Fix ✅ COMPLETED
+> ~~GAP-08, 09, 10, 11~~ — Semua intervensi hukdis di KGBService dan KenaikanPangkatService sudah diimplementasikan.
 
-### Phase 3 — Admin Setting UI
-11. **GAP-16** CRUD Jabatan
-12. **GAP-17** CRUD Tabel Gaji
-13. **GAP-18** CRUD Golongan (evaluasi)
-14. **GAP-19** Field Rumpun di Jabatan
-15. **GAP-31** Sidebar Admin Setting
+### Phase 3 — Admin Setting UI ✅ COMPLETED
+> ~~GAP-16, 17, 18, 31~~ — CRUD Jabatan, Tabel Gaji, Golongan, dan Sidebar Admin Setting sudah tersedia.
+6. **GAP-19** Field Rumpun di Jabatan (belum)
 
-### Phase 4 — Polish & Completeness
-16. **GAP-04** Role Pegawai self-service
-17. **GAP-07** Upload SK Hukdis
-18. **GAP-15** Upload file di semua form riwayat
-19. **GAP-12** Proyeksi April/Oktober
-20. **GAP-30** Estimasi gaji baru di KGB view
-21. **GAP-20, 21, 22** Seeder fixes
-22. **GAP-25** Validasi NIP 18 digit
-23. **GAP-26** Unit & Feature tests
-24. **GAP-27** Audit trail lengkap
-25. Sisanya (GAP-14, 23, 24, 28, 29, 32)
+### Phase 4 — Core Workflow Implementation (NEW — Highest Impact)
+7. **GAP-38** Fix bug SatyalencanaService `golongan_ruang` (quick fix)
+8. **GAP-39** Fix Satyalencana hukdis check (quick fix)
+9. **GAP-33** Workflow Proses KGB (eligible → proses → RiwayatKgb + update gaji)
+10. **GAP-34** Workflow Proses Kenaikan Pangkat (eligible → proses → RiwayatPangkat + update gaji)
+11. **GAP-35** Workflow Proses Pensiun (alert → proses → update status + nonaktif)
+12. **GAP-36** Workflow CPNS → PNS Transition
+13. **GAP-37** Workflow Off-boarding (Resign/Berhenti/Meninggal)
+14. **GAP-40** Quick Action buttons di halaman monitoring
+15. **GAP-13** DocumentController secure download
+
+### Phase 5 — Performance & UX Improvement
+16. **GAP-41** Server-side pagination (semua monitoring + daftar pegawai)
+17. **GAP-42** Dashboard caching
+18. **GAP-43** Widget "Perlu Tindakan" di dashboard
+19. **GAP-44** Bulk/Batch processing
+20. **GAP-49** Proyeksi pangkat grouped per April/Oktober
+
+### Phase 6 — Polish & Completeness
+21. **GAP-04** Role Pegawai self-service
+22. **GAP-07** Upload SK Hukdis
+23. **GAP-15** Upload file di semua form riwayat
+24. ~~**GAP-30** Estimasi gaji baru di KGB view~~ ✅
+25. **GAP-20, 21, 22** Seeder fixes
+26. **GAP-25** Validasi NIP 18 digit
+27. **GAP-26** Unit & Feature tests
+28. **GAP-27** Audit trail lengkap
+29. **GAP-45** Form guidance untuk field read-only kontekstual
+30. **GAP-46** Data completeness indicator
+31. **GAP-47** Export PDF profil individual
+32. **GAP-48** Career timeline view
+33. Sisanya (GAP-12, 14, 23, 24, 28, 29, 32)
