@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
 
 class MasterDataController extends Controller
 {
@@ -24,10 +23,16 @@ class MasterDataController extends Controller
         return self::ENTITIES[$entity];
     }
 
-    public function index(string $entity)
+    public function index(Request $request, string $entity)
     {
         $cfg   = $this->resolve($entity);
-        $items = $cfg['model']::orderBy('nama')->get();
+        $query = $cfg['model']::orderBy('nama');
+
+        if ($search = $request->input('search')) {
+            $query->where('nama', 'like', '%' . $search . '%');
+        }
+
+        $items = $query->paginate(15)->withQueryString();
 
         return view('admin.master-data.index', [
             'items'  => $items,

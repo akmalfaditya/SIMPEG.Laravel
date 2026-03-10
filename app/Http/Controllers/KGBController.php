@@ -2,38 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\PaginatesArray;
 use App\Http\Requests\Riwayat\StoreKGBRequest;
 use App\Services\KGBService;
 use App\Services\RiwayatService;
+use Illuminate\Http\Request;
 
 class KGBController extends Controller
 {
+    use PaginatesArray;
+
     public function __construct(
         private KGBService $service,
         private RiwayatService $riwayatService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $alerts = $this->service->getAllKGBStatus();
+        $alerts = $this->paginateArray($this->service->getAllKGBStatus(), $request);
         return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => null]);
     }
 
-    public function upcoming()
+    public function upcoming(Request $request)
     {
-        $alerts = $this->service->getUpcomingKGB(60);
+        $alerts = $this->paginateArray($this->service->getUpcomingKGB(60), $request);
         return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => 'Pegawai H-60 Hari Menuju KGB']);
     }
 
-    public function eligible()
+    public function eligible(Request $request)
     {
-        $alerts = $this->service->getEligiblePegawai();
+        $alerts = $this->paginateArray($this->service->getEligiblePegawai(), $request);
         return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => 'Pegawai Eligible KGB']);
     }
 
-    public function ditunda()
+    public function ditunda(Request $request)
     {
-        $alerts = $this->service->getDitundaPegawai();
+        $alerts = $this->paginateArray($this->service->getDitundaPegawai(), $request);
         return view('kgb.index', ['alerts' => $alerts, 'filterTitle' => 'Pegawai Ditunda KGB (Hukdis)']);
     }
 
@@ -60,7 +64,10 @@ class KGBController extends Controller
 
         if ($request->hasFile('file_sk')) {
             $validated['file_pdf_path'] = $this->riwayatService->uploadSk(
-                $request->file('file_sk'), 'sk_kgb', null, (int) $validated['pegawai_id']
+                $request->file('file_sk'),
+                'sk_kgb',
+                null,
+                (int) $validated['pegawai_id']
             );
         }
 

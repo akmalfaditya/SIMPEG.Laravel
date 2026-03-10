@@ -60,9 +60,10 @@ Request → Route → Controller → Service → Model → Database
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
 8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`.
 9. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
-   - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
-   - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun + opsional `file_sk_pensiun_path` dan `link_sk_pensiun_gdrive`). Reversible via `PegawaiService::cancelPensiun()` (nullify 6 field + delete file upload + restore).
-   - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
+    - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
+    - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun + opsional `file_sk_pensiun_path` dan `link_sk_pensiun_gdrive`). Reversible via `PegawaiService::cancelPensiun()` (nullify 6 field + delete file upload + restore).
+    - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
+10. **Server-Side Pagination (Monitoring Pages)** — Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) menggunakan server-side pagination via `LengthAwarePaginator`. Karena Service-layer menjalankan kalkulasi bisnis kompleks (eligibilitas, hukdis, gaji) yang tidak bisa dipindahkan ke SQL, pattern-nya: Service mengembalikan array penuh → Controller menerapkan `?search=` filter → `PaginatesArray` trait memotong per halaman (15 item) → View merender hanya 1 halaman + `{{ $data->links() }}`. Trait `PaginatesArray` ada di `app/Http/Controllers/Traits/`.
 
 ---
 
@@ -288,18 +289,18 @@ SIMPEG.Laravel/
 
 ## 6. Routing Structure
 
-| Group        | Prefix                                                           | Middleware        | Controller                                                 |
-| ------------ | ---------------------------------------------------------------- | ----------------- | ---------------------------------------------------------- |
-| Auth         | `/login`, `/logout`                                              | guest/none        | AuthController                                             |
-| Dashboard    | `/dashboard`                                                     | auth              | DashboardController                                        |
-| Pegawai      | `/pegawai`                                                       | auth              | PegawaiController (resource)                               |
-| Riwayat      | `/riwayat/{type}`                                                | auth              | RiwayatController                                          |
-| Reports      | `/kgb`, `/kenaikan-pangkat`, `/pensiun`, `/duk`, `/satyalencana` | auth              | Dedicated controllers                                      |
-| Export       | `/export/{type}/{format}`                                        | auth              | ExportController                                           |
+| Group        | Prefix                                                           | Middleware        | Controller                                                                       |
+| ------------ | ---------------------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------- |
+| Auth         | `/login`, `/logout`                                              | guest/none        | AuthController                                                                   |
+| Dashboard    | `/dashboard`                                                     | auth              | DashboardController                                                              |
+| Pegawai      | `/pegawai`                                                       | auth              | PegawaiController (resource)                                                     |
+| Riwayat      | `/riwayat/{type}`                                                | auth              | RiwayatController                                                                |
+| Reports      | `/kgb`, `/kenaikan-pangkat`, `/pensiun`, `/duk`, `/satyalencana` | auth              | Dedicated controllers                                                            |
+| Export       | `/export/{type}/{format}`                                        | auth              | ExportController                                                                 |
 | Admin        | `/admin/*`                                                       | auth + superadmin | TabelGajiController, GolonganController, JabatanController, MasterDataController |
-| Profile      | `/profile`                                                       | auth              | ProfileController                                          |
-| Activity Log | `/activity-log`                                                  | auth              | ActivityLogController                                      |
-| Document     | `/dokumen/{type}/{id}`                                           | auth              | DocumentController                                         |
+| Profile      | `/profile`                                                       | auth              | ProfileController                                                                |
+| Activity Log | `/activity-log`                                                  | auth              | ActivityLogController                                                            |
+| Document     | `/dokumen/{type}/{id}`                                           | auth              | DocumentController                                                               |
 
 ---
 
@@ -314,9 +315,9 @@ SIMPEG.Laravel/
 ### Tabel Gaji ↔ KGB & Kenaikan Pangkat
 
 - **`SalaryCalculatorService`** — Single source of truth untuk salary resolution:
-  - `syncCurrentSalary(Pegawai)`: **Tongkat Estafet TMT** — bandingkan `tmt_pangkat` terbaru vs `tmt_kgb` terbaru, yang paling recent menentukan `gaji_pokok`. Jika KGB terbaru → gunakan `gaji_baru`, jika Pangkat terbaru → hitung dari TabelGaji (golongan × MKG).
-  - `calculateGaji(golongan_id, mkg_tahun)`: Query `tabel_gajis` dengan exact match, fallback ke closest lower MKG jika exact tidak ditemukan
-  - `calculateNextKgbDate(Pegawai)`: Ambil MAX(latest tmt_kgb, latest tmt_pangkat) + 2 tahun. Kenaikan Pangkat me-reset clock KGB.
+    - `syncCurrentSalary(Pegawai)`: **Tongkat Estafet TMT** — bandingkan `tmt_pangkat` terbaru vs `tmt_kgb` terbaru, yang paling recent menentukan `gaji_pokok`. Jika KGB terbaru → gunakan `gaji_baru`, jika Pangkat terbaru → hitung dari TabelGaji (golongan × MKG).
+    - `calculateGaji(golongan_id, mkg_tahun)`: Query `tabel_gajis` dengan exact match, fallback ke closest lower MKG jika exact tidak ditemukan
+    - `calculateNextKgbDate(Pegawai)`: Ambil MAX(latest tmt_kgb, latest tmt_pangkat) + 2 tahun. Kenaikan Pangkat me-reset clock KGB.
 - `KGBCalculationService`: Delegates `calculateNewSalary()` ke `SalaryCalculatorService`. Menyediakan `getNextKGBSalary()` untuk pre-fill form KGB.
 - Digunakan oleh Observers, Controllers, dan monitoring services.
 
@@ -325,14 +326,14 @@ SIMPEG.Laravel/
 - **`pegawais.gaji_pokok`** adalah kolom denormalized (cache) yang disinkronisasi otomatis oleh Laravel Observers, BUKAN manual di Controllers/Services.
 - **Aturan BKN**: Gaji pokok pegawai SELALU ditentukan oleh record terakhir berdasarkan TMT (Terhitung Mulai Tanggal) antara `RiwayatPangkat` dan `RiwayatKgb`. Siapapun yang memegang TMT terbaru menjadi single source of truth.
 - **Alur keputusan** (`SalaryCalculatorService::syncCurrentSalary()`):
-  1. Ambil `latestPangkat` (order by `tmt_pangkat` DESC) dan `latestKgb` (order by `tmt_kgb` DESC)
-  2. Jika keduanya null → `gaji_pokok = 0`
-  3. Jika hanya Pangkat → hitung dari TabelGaji (golongan × MKG)
-  4. Jika hanya KGB → gunakan `gaji_baru`
-  5. Jika keduanya ada → bandingkan TMT: KGB ≥ Pangkat → `gaji_baru`, Pangkat > KGB → hitung dari TabelGaji
+    1. Ambil `latestPangkat` (order by `tmt_pangkat` DESC) dan `latestKgb` (order by `tmt_kgb` DESC)
+    2. Jika keduanya null → `gaji_pokok = 0`
+    3. Jika hanya Pangkat → hitung dari TabelGaji (golongan × MKG)
+    4. Jika hanya KGB → gunakan `gaji_baru`
+    5. Jika keduanya ada → bandingkan TMT: KGB ≥ Pangkat → `gaji_baru`, Pangkat > KGB → hitung dari TabelGaji
 - **`RiwayatKgbObserver`** & **`RiwayatPangkatObserver`** (`app/Observers/`):
-  - `saved` (fires on create & update): Trigger `syncCurrentSalary()`
-  - `deleted`: Trigger `syncCurrentSalary()` — graceful rollback ke record valid sebelumnya
+    - `saved` (fires on create & update): Trigger `syncCurrentSalary()`
+    - `deleted`: Trigger `syncCurrentSalary()` — graceful rollback ke record valid sebelumnya
 - Observers di-register di `AppServiceProvider@boot`
 - Pattern ini menghilangkan duplikasi manual gaji_pokok update di `RiwayatService`, `KenaikanPangkatService`, dan Controllers
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\PaginatesArray;
 use App\Http\Requests\ProcessPensiunRequest;
 use App\Services\DocumentUploadService;
 use App\Services\PensiunService;
@@ -9,6 +10,8 @@ use Illuminate\Http\Request;
 
 class PensiunController extends Controller
 {
+    use PaginatesArray;
+
     public function __construct(
         private PensiunService $service,
         private DocumentUploadService $documentService,
@@ -22,6 +25,8 @@ class PensiunController extends Controller
         if ($filterLevel && in_array($filterLevel, ['Hitam', 'Merah', 'Kuning', 'Hijau'])) {
             $alerts = array_values(array_filter($alerts, fn($a) => $a['alert_level'] === $filterLevel));
         }
+
+        $alerts = $this->paginateArray($alerts, $request);
 
         return view('pensiun.index', compact('alerts', 'filterLevel'));
     }

@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\PaginatesArray;
 use App\Http\Requests\Riwayat\StorePangkatRequest;
 use App\Services\KenaikanPangkatService;
 use App\Services\RiwayatService;
+use Illuminate\Http\Request;
 
 class KenaikanPangkatController extends Controller
 {
+    use PaginatesArray;
+
     public function __construct(
         private KenaikanPangkatService $service,
         private RiwayatService $riwayatService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $candidates = $this->service->getEligiblePegawai();
+        $candidates = $this->paginateArray($this->service->getEligiblePegawai(), $request, ['nama_lengkap']);
         return view('kenaikan-pangkat.index', [
             'candidates' => $candidates,
             'filterTitle' => null,
@@ -23,20 +27,21 @@ class KenaikanPangkatController extends Controller
         ]);
     }
 
-    public function eligible()
+    public function eligible(Request $request)
     {
         $all = $this->service->getEligiblePegawai();
         $eligible = array_values(array_filter($all, fn($c) => $c['is_eligible']));
+        $candidates = $this->paginateArray($eligible, $request, ['nama_lengkap']);
         return view('kenaikan-pangkat.index', [
-            'candidates' => $eligible,
+            'candidates' => $candidates,
             'filterTitle' => 'Pegawai Eligible Kenaikan Pangkat',
             'activeFilter' => 'eligible',
         ]);
     }
 
-    public function ditunda()
+    public function ditunda(Request $request)
     {
-        $candidates = $this->service->getDitundaPegawai();
+        $candidates = $this->paginateArray($this->service->getDitundaPegawai(), $request, ['nama_lengkap']);
         return view('kenaikan-pangkat.index', [
             'candidates' => $candidates,
             'filterTitle' => 'Pegawai Ditunda Kenaikan Pangkat (Hukdis)',
@@ -67,7 +72,10 @@ class KenaikanPangkatController extends Controller
 
         if ($request->hasFile('file_sk')) {
             $validated['file_pdf_path'] = $this->riwayatService->uploadSk(
-                $request->file('file_sk'), 'sk_pangkat', null, (int) $validated['pegawai_id']
+                $request->file('file_sk'),
+                'sk_pangkat',
+                null,
+                (int) $validated['pegawai_id']
             );
         }
 
