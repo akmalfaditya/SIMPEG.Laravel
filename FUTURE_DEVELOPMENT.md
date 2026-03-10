@@ -210,10 +210,8 @@
 - **Dampak UX**: HR melihat pegawai eligible beserta proyeksi golongan, tapi harus keluar, cari pegawai, tambah RiwayatPangkat manual. Tidak ada koneksi antara halaman monitoring dan aksi.
 - **Aksi**: Tambah `processKenaikan(Request $request)` di KenaikanPangkatController. Pre-fill: golongan berikutnya (dari proyeksi service), TMT pangkat (April/Oktober), gaji pokok baru (dari TabelGaji lookup). Saat submit: buat RiwayatPangkat + update `gaji_pokok` + update `golongan_id` di Pegawai.
 
-### 🔴 GAP-35: Workflow Proses Pensiun Tidak Ada — Alert Only
-- **Masalah**: PensiunController hanya memiliki `index` dengan filter level alert. Tidak ada method untuk memproses pensiun. Tidak ada mekanisme mengubah `status_kepegawaian` ke "Pensiun" atau menonaktifkan pegawai.
-- **Dampak UX**: HR melihat alert Hitam/Merah (sudah/mendekati BUP) tapi harus: navigasi ke Pegawai → Edit → ubah status_kepegawaian ke Pensiun → set `is_active = false` secara manual. Tidak ada pencatatan tanggal pensiun, SK pensiun, dll.
-- **Aksi**: Tambah `processPensiun(Request $request)` di PensiunController. Form: nomor SK pensiun, tanggal SK, TMT pensiun, catatan. Saat submit: update `status_kepegawaian_id` → Pensiun, set `is_active = false`, simpan record pensiun (pertimbangkan tabel `riwayat_pensiun` baru atau gunakan field di `pegawais`).
+### ~~🔴 GAP-35: Workflow Proses Pensiun Tidak Ada — Alert Only~~ ✅ RESOLVED
+- **Status**: `PensiunController` sekarang memiliki `showProcessForm($pegawaiId)` + `process(ProcessPensiunRequest)`. `PensiunService` menambahkan `getProcessData()` (pre-fill form) dan `processPensiun()` (update status_kepegawaian → Pensiun, set is_active = false, simpan SK pensiun di field pegawais). Migration menambahkan kolom `sk_pensiun_nomor`, `sk_pensiun_tanggal`, `tmt_pensiun`, `catatan_pensiun` di tabel pegawais. View `pensiun/process.blade.php` menampilkan info card + form. Tombol "Proses" muncul di baris Hitam/Merah di index. Pegawai yang sudah diproses otomatis hilang dari alert list (is_active = false).
 
 ### 🔴 GAP-36: Workflow CPNS → PNS Transition Tidak Ada
 - **Masalah**: Form Pegawai memiliki field `tmt_pns` tapi **tidak ada** workflow/state machine untuk transisi CPNS → PNS. Tidak ada validasi bisnis (misal: lulus Prajabatan sebagai syarat pengangkatan PNS). Tidak ada notifikasi atau monitoring untuk CPNS yang mendekati batas waktu pengangkatan.
@@ -291,13 +289,13 @@
 
 | Prioritas | Count | ID |
 |-----------|-------|----|
-| 🔴 Kritis | 5 (aktif) + 8 resolved | Aktif: GAP-01, 02, 03, 13, 33, 34, 35, 36, 37 · Resolved: ~~05, 06, 08, 10, 11, 16, 17, 18~~ |
+| 🔴 Kritis | 4 (aktif) + 9 resolved | Aktif: GAP-01, 02, 03, 13, 36, 37 · Resolved: ~~05, 06, 08, 10, 11, 16, 17, 18, 33, 34, 35~~ |
 | 🟡 Sedang | 12 (aktif) + 3 resolved | Aktif: GAP-04, 07, 12, 14, 15, 19, 20, 21, 22, 23, 25, 26, 29, 38, 39, 40, 41, 42, 43, 44 · Resolved: ~~09, 30, 31~~ |
 | 🟠 Menengah | 5 | GAP-45, 46, 47, 48, 49 |
 | 🟢 Rendah | 4 | GAP-24, 27, 28, 32 |
 
-### ✅ Total Resolved: 11 GAP
-> GAP-05, 06, 08, 09, 10, 11, 16, 17, 18, 30, 31
+### ✅ Total Resolved: 14 GAP
+> GAP-05, 06, 08, 09, 10, 11, 16, 17, 18, 30, 31, 33, 34, 35
 
 ---
 

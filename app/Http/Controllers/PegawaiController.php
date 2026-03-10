@@ -41,10 +41,11 @@ class PegawaiController extends Controller
         $page = $request->input('page', self::DEFAULT_PAGE);
         $limit = $request->input('limit', self::DEFAULT_LIMIT);
         $search = $request->input('search');
+        $status = $request->input('status', 'aktif');
 
         $pegawaiList = $search
-            ? $this->service->search($search)
-            : $this->service->getAll();
+            ? $this->service->searchByStatus($search, $status)
+            : $this->service->getByStatus($status);
 
         $total = $pegawaiList->count();
         $pagedModels = $pegawaiList->slice(($page - 1) * $limit, $limit)->values();
@@ -117,6 +118,18 @@ class PegawaiController extends Controller
     {
         $this->service->delete($pegawai);
         return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil dihapus.');
+    }
+
+    public function reactivate(Pegawai $pegawai)
+    {
+        $this->service->reactivate($pegawai);
+        return redirect()->route('pegawai.index')->with('success', "Pegawai {$pegawai->nama_lengkap} berhasil diaktifkan kembali.");
+    }
+
+    public function cancelPensiun(Pegawai $pegawai)
+    {
+        $this->service->cancelPensiun($pegawai);
+        return redirect()->route('pegawai.index')->with('success', "Pensiun pegawai {$pegawai->nama_lengkap} berhasil dibatalkan.");
     }
 
     private function masterDataOptions(): array

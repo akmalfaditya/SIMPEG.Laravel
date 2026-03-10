@@ -47,6 +47,10 @@ class Pegawai extends Model
         'npwp',
         'no_karpeg',
         'no_taspen',
+        'sk_pensiun_nomor',
+        'sk_pensiun_tanggal',
+        'tmt_pensiun',
+        'catatan_pensiun',
     ];
 
     protected $casts = [
@@ -55,6 +59,8 @@ class Pegawai extends Model
         'tmt_pns' => 'date',
         'gaji_pokok' => 'decimal:2',
         'is_active' => 'boolean',
+        'sk_pensiun_tanggal' => 'date',
+        'tmt_pensiun' => 'date',
     ];
 
     // BelongsTo relationships for master data

@@ -3,17 +3,56 @@
 namespace App\Services;
 
 use App\Models\Pegawai;
+use App\Models\StatusKepegawaian;
 use App\Models\TabelGaji;
 use App\DTOs\PegawaiDTO;
 use Illuminate\Support\Facades\DB;
 
 class PegawaiService
 {
+    private const EAGER_LOADS = ['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'];
+
     public function getAll()
     {
-        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'])
+        return Pegawai::with(self::EAGER_LOADS)
             ->where('is_active', true)
             ->get();
+    }
+
+    public function getByStatus(string $status)
+    {
+        $query = Pegawai::with(self::EAGER_LOADS);
+
+        return match ($status) {
+            'aktif' => $query->where('is_active', true)->get(),
+            'tidak-aktif' => $query->where('is_active', false)
+                ->whereNull('tmt_pensiun')
+                ->withTrashed()
+                ->get(),
+            'pensiun' => $query->where('is_active', false)
+                ->whereNotNull('tmt_pensiun')
+                ->withTrashed()
+                ->get(),
+            default => $query->where('is_active', true)->get(),
+        };
+    }
+
+    public function searchByStatus(string $keyword, string $status)
+    {
+        $query = Pegawai::with(self::EAGER_LOADS);
+
+        $query = match ($status) {
+            'aktif' => $query->where('is_active', true),
+            'tidak-aktif' => $query->where('is_active', false)->whereNull('tmt_pensiun')->withTrashed(),
+            'pensiun' => $query->where('is_active', false)->whereNotNull('tmt_pensiun')->withTrashed(),
+            default => $query->where('is_active', true),
+        };
+
+        return $query->where(function ($q) use ($keyword) {
+            $q->where('nip', 'like', "%{$keyword}%")
+              ->orWhere('nama_lengkap', 'like', "%{$keyword}%")
+              ->orWhereHas('unitKerja', fn ($r) => $r->where('nama', 'like', "%{$keyword}%"));
+        })->get();
     }
 
     public function getById(int $id)
@@ -27,7 +66,7 @@ class PegawaiService
 
     public function search(string $keyword)
     {
-        return Pegawai::with(['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'])
+        return Pegawai::with(self::EAGER_LOADS)
             ->where('is_active', true)
             ->where(function ($q) use ($keyword) {
                 $q->where('nip', 'like', "%{$keyword}%")
@@ -35,6 +74,42 @@ class PegawaiService
                   ->orWhereHas('unitKerja', fn ($r) => $r->where('nama', 'like', "%{$keyword}%"));
             })
             ->get();
+    }
+
+    public function reactivate(Pegawai $pegawai): void
+    {
+        DB::transaction(function () use ($pegawai) {
+            $aktifStatusId = StatusKepegawaian::where('nama', 'Aktif')->value('id');
+
+            if ($pegawai->trashed()) {
+                $pegawai->restore();
+            }
+
+            $pegawai->update([
+                'is_active' => true,
+                'status_kepegawaian_id' => $aktifStatusId,
+            ]);
+        });
+    }
+
+    public function cancelPensiun(Pegawai $pegawai): void
+    {
+        DB::transaction(function () use ($pegawai) {
+            $aktifStatusId = StatusKepegawaian::where('nama', 'Aktif')->value('id');
+
+            if ($pegawai->trashed()) {
+                $pegawai->restore();
+            }
+
+            $pegawai->update([
+                'is_active' => true,
+                'status_kepegawaian_id' => $aktifStatusId,
+                'sk_pensiun_nomor' => null,
+                'sk_pensiun_tanggal' => null,
+                'tmt_pensiun' => null,
+                'catatan_pensiun' => null,
+            ]);
+        });
     }
 
     /**

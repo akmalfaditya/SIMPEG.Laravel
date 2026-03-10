@@ -33,6 +33,8 @@ Route::middleware('auth')->group(function () {
     // Pegawai
     Route::resource('pegawai', PegawaiController::class);
     Route::get('/pegawai-data', [PegawaiController::class, 'getPaginated'])->name('pegawai.data');
+    Route::patch('/pegawai/{pegawai}/reactivate', [PegawaiController::class, 'reactivate'])->name('pegawai.reactivate')->withTrashed();
+    Route::patch('/pegawai/{pegawai}/cancel-pensiun', [PegawaiController::class, 'cancelPensiun'])->name('pegawai.cancel-pensiun')->withTrashed();
 
     // Riwayat Pangkat
     Route::get('/riwayat/pangkat/create/{pegawaiId}', [RiwayatController::class, 'createPangkat'])->name('riwayat.pangkat.create');
@@ -99,6 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/kenaikan-pangkat/process', [KenaikanPangkatController::class, 'process'])->name('kenaikan-pangkat.process');
 
     Route::get('/pensiun', [PensiunController::class, 'index'])->name('pensiun.index');
+    Route::get('/pensiun/process/{pegawai}', [PensiunController::class, 'showProcessForm'])->name('pensiun.process.form');
+    Route::post('/pensiun/process', [PensiunController::class, 'process'])->name('pensiun.process');
     Route::get('/duk', [DUKController::class, 'index'])->name('duk.index');
     Route::get('/satyalencana', [SatyalencanaController::class, 'index'])->name('satyalencana.index');
     Route::post('/satyalencana/award', [SatyalencanaController::class, 'award'])->name('satyalencana.award');

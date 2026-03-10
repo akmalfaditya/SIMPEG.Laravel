@@ -59,6 +59,10 @@ Request → Route → Controller → Service → Model → Database
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
 8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`.
+9. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
+   - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
+   - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun). Reversible via `PegawaiService::cancelPensiun()` (nullify 4 field + restore).
+   - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
 
 ---
 

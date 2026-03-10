@@ -17,6 +17,8 @@ class PegawaiResource extends JsonResource
             'pangkat_terakhir' => $this->pangkat_terakhir ?? '-',
             'jabatan_terakhir' => $this->jabatan_terakhir ?? '-',
             'masa_kerja' => $this->masa_kerja ?? '-',
+            'sk_pensiun_nomor' => $this->sk_pensiun_nomor,
+            'tmt_pensiun' => $this->tmt_pensiun?->format('d/m/Y'),
         ];
     }
 }

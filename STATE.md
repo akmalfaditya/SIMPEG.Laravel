@@ -19,7 +19,7 @@
 
 ### CRUD & Manajemen
 
-- [x] **Pegawai** — CRUD lengkap + pencarian AJAX + paginasi server-side + validasi NIP 18 digit + **One-Stop Creation Flow** (auto gaji lookup, auto RiwayatPangkat & RiwayatJabatan)
+- [x] **Pegawai** — CRUD lengkap + pencarian AJAX + paginasi server-side + validasi NIP 18 digit + **One-Stop Creation Flow** (auto gaji lookup, auto RiwayatPangkat & RiwayatJabatan) + **Tabbed Index** (Aktif / Tidak Aktif / Pensiun) dengan aksi kontekstual per tab
 - [x] **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian (Aktif/Tidak Aktif/Pensiun), unit kerja default Kanim Jakut — **semua 8 atribut dinormalisasi ke tabel master data dengan FK**
 - [x] **7 Riwayat Kepegawaian** — CRUD untuk Pangkat, Jabatan, KGB, Hukuman Disiplin, Pendidikan, Latihan Jabatan, Penilaian Kinerja
 - [x] **Master Data Jabatan** — CRUD + filter rumpun + toggle active (SuperAdmin only)
@@ -35,7 +35,7 @@
 - [x] **Dashboard** — Ringkasan data pegawai + chart distribusi (golongan, gender, usia, unit kerja) + alert KGB/Pensiun
 - [x] **Monitoring KGB** — Alert jatuh tempo, eligibilitas, kalkulasi gaji otomatis (PP 15/2019), integrasi hukdis (penundaan KGB)
 - [x] **Kenaikan Pangkat** — Analisis eligibilitas 4 syarat (masa kerja, SKP, latihan, hukuman disiplin), proyeksi periode April/Oktober, integrasi hukdis (penundaan + penurunan pangkat)
-- [x] **Alert Pensiun** — Level alert (Hijau/Kuning/Merah/Hitam) berdasarkan BUP
+- [x] **Alert Pensiun** — Level alert (Hijau/Kuning/Merah/Hitam) berdasarkan BUP + **Workflow Proses Pensiun** (alert → proses SK → nonaktifkan pegawai)
 - [x] **DUK** — Ranking otomatis sesuai hierarki BKN
 - [x] **Satyalencana** — Identifikasi kandidat 10/20/30 tahun masa kerja + filter hukdis
 
@@ -69,6 +69,8 @@ _Tidak ada fitur yang sedang aktif dikerjakan saat ini._
 
 ### Recently Completed
 
+- **Tabbed Employee Index + Fallback Mechanisms** — Halaman index pegawai sekarang memiliki 3 tab (Aktif / Tidak Aktif / Pensiun) dengan data isolation via `getByStatus()`. Tab Aktif: Detail/Edit/Hapus. Tab Tidak Aktif: Aktifkan Kembali (reactivate). Tab Pensiun: Batalkan Pensiun (cancelPensiun → nullify 4 kolom SK + restore). AJAX pagination per tab dengan search. PATCH confirmation modal.
+- **Pensiun Processing Workflow (GAP-35)** — `PensiunService::processPensiun()` mengeset status_kepegawaian → Pensiun, is_active → false, dan merekam 4 field SK pensiun. Form proses dengan data pre-filled dari alert. Tombol "Proses" di baris alert Hitam/Merah.
 - **Salary Calculator Service & Observer Pattern — Tongkat Estafet TMT** — `SalaryCalculatorService` sebagai single source of truth untuk salary resolution (TabelGaji lookup dengan fallback ke closest lower MKG). Method `syncCurrentSalary()` mengimplementasikan logika "Tongkat Estafet TMT": bandingkan TMT terbaru antara RiwayatPangkat dan RiwayatKgb, yang paling recent menentukan `gaji_pokok`. `RiwayatKgbObserver` dan `RiwayatPangkatObserver` menggunakan event `saved` (created+updated) dan `deleted` untuk trigger sync otomatis. Manual gaji update dihapus dari semua Controllers/Services. `calculateNextKgbDate()` menghitung estimasi KGB selanjutnya: MAX(tmt_kgb, tmt_pangkat) + 2 tahun.
 - **Observer-Driven Seeding** — `PegawaiFactory` dan `PegawaiSeeder` tidak lagi meng-hardcode `gaji_pokok`. Factory membuat logical timeline (Pangkat awal + KGB setiap 2 tahun), Seeder membuat Pangkat progression + KGB timeline penuh. Observer fires pada setiap record → gaji_pokok akhir otomatis sesuai MKG aktual. `KGBCalculationService` pre-fill MKG form: lastKgb.mkg+2, atau total masa kerja jika belum ada KGB.
 - **Normalisasi 8 Atribut Pegawai ke Master Data Tables** — Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah. Semuanya sekarang disimpan di tabel terpisah dengan FK constraint. CRUD generik via `MasterDataController`. 4 Enum biodata (Agama, JenisKelamin, StatusPernikahan, GolonganDarah) deprecated, diganti 8 model master data baru. Status Kepegawaian ditampilkan sebagai badge di halaman profil pegawai.
