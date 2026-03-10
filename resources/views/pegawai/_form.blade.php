@@ -30,26 +30,30 @@
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Kelamin <span class="text-red-500">*</span></label>
-        <select name="jenis_kelamin" required class="{{ $inputClass }}">
-            @foreach($jenisKelaminOptions as $opt)<option value="{{ $opt->value }}" {{ old('jenis_kelamin', $p?->jenis_kelamin?->value) == $opt->value ? 'selected' : '' }}>{{ $opt->label() }}</option>@endforeach
+        <select name="jenis_kelamin_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($jenisKelaminOptions as $opt)<option value="{{ $opt->id }}" {{ old('jenis_kelamin_id', $p?->jenis_kelamin_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>@endforeach
         </select>
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Agama <span class="text-red-500">*</span></label>
-        <select name="agama" required class="{{ $inputClass }}">
-            @foreach($agamaOptions as $opt)<option value="{{ $opt->value }}" {{ old('agama', $p?->agama?->value) == $opt->value ? 'selected' : '' }}>{{ $opt->label() }}</option>@endforeach
+        <select name="agama_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($agamaOptions as $opt)<option value="{{ $opt->id }}" {{ old('agama_id', $p?->agama_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>@endforeach
         </select>
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Status Pernikahan <span class="text-red-500">*</span></label>
-        <select name="status_pernikahan" required class="{{ $inputClass }}">
-            @foreach($statusPernikahanOptions as $opt)<option value="{{ $opt->value }}" {{ old('status_pernikahan', $p?->status_pernikahan?->value) == $opt->value ? 'selected' : '' }}>{{ $opt->label() }}</option>@endforeach
+        <select name="status_pernikahan_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($statusPernikahanOptions as $opt)<option value="{{ $opt->id }}" {{ old('status_pernikahan_id', $p?->status_pernikahan_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>@endforeach
         </select>
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Golongan Darah <span class="text-red-500">*</span></label>
-        <select name="golongan_darah" required class="{{ $inputClass }}">
-            @foreach($golonganDarahOptions as $opt)<option value="{{ $opt->value }}" {{ old('golongan_darah', $p?->golongan_darah?->value) == $opt->value ? 'selected' : '' }}>{{ $opt->label() }}</option>@endforeach
+        <select name="golongan_darah_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($golonganDarahOptions as $opt)<option value="{{ $opt->id }}" {{ old('golongan_darah_id', $p?->golongan_darah_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>@endforeach
         </select>
     </div>
     <div>
@@ -71,17 +75,19 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Tipe Pegawai <span class="text-red-500">*</span></label>
-        <select name="tipe_pegawai" required class="{{ $inputClass }}">
-            @foreach(['PNS', 'CPNS', 'PPPK'] as $tipe)
-                <option value="{{ $tipe }}" {{ old('tipe_pegawai', $p?->tipe_pegawai ?? 'PNS') === $tipe ? 'selected' : '' }}>{{ $tipe }}</option>
+        <select name="tipe_pegawai_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($tipePegawaiOptions as $opt)
+                <option value="{{ $opt->id }}" {{ old('tipe_pegawai_id', $p?->tipe_pegawai_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
             @endforeach
         </select>
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Status Kepegawaian <span class="text-red-500">*</span></label>
-        <select name="status_kepegawaian" required class="{{ $inputClass }}">
-            @foreach(['Aktif', 'Tidak Aktif'] as $status)
-                <option value="{{ $status }}" {{ old('status_kepegawaian', $p?->status_kepegawaian ?? 'Aktif') === $status ? 'selected' : '' }}>{{ $status }}</option>
+        <select name="status_kepegawaian_id" required class="{{ $inputClass }}">
+            <option value="">-- Pilih --</option>
+            @foreach($statusKepegawaianOptions as $opt)
+                <option value="{{ $opt->id }}" {{ old('status_kepegawaian_id', $p?->status_kepegawaian_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
             @endforeach
         </select>
     </div>
@@ -95,16 +101,21 @@
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Bagian</label>
-        <select name="bagian" class="{{ $inputClass }}">
+        <select name="bagian_id" class="{{ $inputClass }}">
             <option value="">-- Pilih Bagian --</option>
-            @foreach(['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim'] as $bagian)
-                <option value="{{ $bagian }}" {{ old('bagian', $p?->bagian) === $bagian ? 'selected' : '' }}>{{ $bagian }}</option>
+            @foreach($bagianOptions as $opt)
+                <option value="{{ $opt->id }}" {{ old('bagian_id', $p?->bagian_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
             @endforeach
         </select>
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Unit Kerja</label>
-        <input type="text" name="unit_kerja" value="{{ old('unit_kerja', $p?->unit_kerja ?? 'Kanim Jakut') }}" class="{{ $inputClass }}">
+        <select name="unit_kerja_id" class="{{ $inputClass }}">
+            <option value="">-- Pilih Unit Kerja --</option>
+            @foreach($unitKerjaOptions as $opt)
+                <option value="{{ $opt->id }}" {{ old('unit_kerja_id', $p?->unit_kerja_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
+            @endforeach
+        </select>
     </div>
     @if($isEdit)
     <div>

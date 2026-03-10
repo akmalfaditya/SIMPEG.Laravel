@@ -2,13 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\Agama;
-use App\Enums\GolonganDarah;
-use App\Enums\JenisKelamin;
-use App\Enums\StatusHukdis;
-use App\Enums\StatusPernikahan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
@@ -32,38 +28,75 @@ class Pegawai extends Model
         'gelar_belakang',
         'tempat_lahir',
         'tanggal_lahir',
-        'jenis_kelamin',
+        'jenis_kelamin_id',
+        'agama_id',
+        'status_pernikahan_id',
+        'golongan_darah_id',
         'alamat',
         'no_telepon',
         'email',
         'tmt_cpns',
         'tmt_pns',
+        'tipe_pegawai_id',
+        'status_kepegawaian_id',
+        'bagian_id',
+        'unit_kerja_id',
         'foto_path',
         'is_active',
         'gaji_pokok',
-        'agama',
-        'status_pernikahan',
-        'golongan_darah',
         'npwp',
         'no_karpeg',
         'no_taspen',
-        'unit_kerja',
-        'bagian',
-        'tipe_pegawai',
-        'status_kepegawaian',
     ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tmt_cpns' => 'date',
         'tmt_pns' => 'date',
-        'jenis_kelamin' => JenisKelamin::class,
-        'agama' => Agama::class,
-        'status_pernikahan' => StatusPernikahan::class,
-        'golongan_darah' => GolonganDarah::class,
         'gaji_pokok' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    // BelongsTo relationships for master data
+    public function jenisKelamin(): BelongsTo
+    {
+        return $this->belongsTo(JenisKelaminMaster::class, 'jenis_kelamin_id');
+    }
+
+    public function agama(): BelongsTo
+    {
+        return $this->belongsTo(AgamaMaster::class, 'agama_id');
+    }
+
+    public function statusPernikahan(): BelongsTo
+    {
+        return $this->belongsTo(StatusPernikahanMaster::class, 'status_pernikahan_id');
+    }
+
+    public function golonganDarah(): BelongsTo
+    {
+        return $this->belongsTo(GolonganDarahMaster::class, 'golongan_darah_id');
+    }
+
+    public function tipePegawai(): BelongsTo
+    {
+        return $this->belongsTo(TipePegawai::class);
+    }
+
+    public function statusKepegawaian(): BelongsTo
+    {
+        return $this->belongsTo(StatusKepegawaian::class);
+    }
+
+    public function bagian(): BelongsTo
+    {
+        return $this->belongsTo(Bagian::class);
+    }
+
+    public function unitKerja(): BelongsTo
+    {
+        return $this->belongsTo(UnitKerja::class);
+    }
 
     public function riwayatPangkat(): HasMany
     {

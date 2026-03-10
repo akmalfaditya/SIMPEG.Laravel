@@ -15,6 +15,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\GolonganController;
 use App\Http\Controllers\JabatanController;
+use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\TabelGajiController;
 use Illuminate\Support\Facades\Route;
 
@@ -132,5 +133,13 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('jabatan', JabatanController::class)->names('admin.jabatan')->except(['show']);
         Route::patch('/jabatan/{jabatan}/toggle-active', [JabatanController::class, 'toggleActive'])->name('admin.jabatan.toggle-active');
+
+        // Generic Master Data CRUD (8 normalized tables)
+        Route::get('/master-data/{entity}', [MasterDataController::class, 'index'])->name('admin.master-data.index');
+        Route::get('/master-data/{entity}/create', [MasterDataController::class, 'create'])->name('admin.master-data.create');
+        Route::post('/master-data/{entity}', [MasterDataController::class, 'store'])->name('admin.master-data.store');
+        Route::get('/master-data/{entity}/{id}/edit', [MasterDataController::class, 'edit'])->name('admin.master-data.edit');
+        Route::put('/master-data/{entity}/{id}', [MasterDataController::class, 'update'])->name('admin.master-data.update');
+        Route::delete('/master-data/{entity}/{id}', [MasterDataController::class, 'destroy'])->name('admin.master-data.destroy');
     });
 });

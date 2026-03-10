@@ -4,7 +4,15 @@ namespace Database\Seeders;
 
 use App\Enums\JenisJabatan;
 use App\Enums\RumpunJabatan;
+use App\Models\AgamaMaster;
+use App\Models\Bagian;
+use App\Models\GolonganDarahMaster;
 use App\Models\Jabatan;
+use App\Models\JenisKelaminMaster;
+use App\Models\StatusKepegawaian;
+use App\Models\StatusPernikahanMaster;
+use App\Models\TipePegawai;
+use App\Models\UnitKerja;
 use Illuminate\Database\Seeder;
 
 class MasterDataSeeder extends Seeder
@@ -27,6 +35,16 @@ class MasterDataSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seed normalized master data tables
+        $this->seedSimpleMaster(TipePegawai::class, ['PNS', 'CPNS', 'PPPK']);
+        $this->seedSimpleMaster(StatusKepegawaian::class, ['Aktif', 'Tidak Aktif', 'Pensiun']);
+        $this->seedSimpleMaster(Bagian::class, ['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim']);
+        $this->seedSimpleMaster(UnitKerja::class, ['Kanim Jakut']);
+        $this->seedSimpleMaster(JenisKelaminMaster::class, ['Laki-laki', 'Perempuan']);
+        $this->seedSimpleMaster(AgamaMaster::class, ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']);
+        $this->seedSimpleMaster(StatusPernikahanMaster::class, ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']);
+        $this->seedSimpleMaster(GolonganDarahMaster::class, ['A', 'B', 'AB', 'O']);
+
         if (Jabatan::count() > 0) return;
 
         $jabatanList = [
@@ -159,6 +177,13 @@ class MasterDataSeeder extends Seeder
 
         foreach ($jabatanList as $item) {
             Jabatan::create($item);
+        }
+    }
+
+    private function seedSimpleMaster(string $modelClass, array $names): void
+    {
+        foreach ($names as $name) {
+            $modelClass::firstOrCreate(['nama' => $name]);
         }
     }
 }

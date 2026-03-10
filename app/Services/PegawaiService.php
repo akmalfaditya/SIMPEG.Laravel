@@ -32,7 +32,7 @@ class PegawaiService
             ->where(function ($q) use ($keyword) {
                 $q->where('nip', 'like', "%{$keyword}%")
                   ->orWhere('nama_lengkap', 'like', "%{$keyword}%")
-                  ->orWhere('unit_kerja', 'like', "%{$keyword}%");
+                  ->orWhereHas('unitKerja', fn ($r) => $r->where('nama', 'like', "%{$keyword}%"));
             })
             ->get();
     }

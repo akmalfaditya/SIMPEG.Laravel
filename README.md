@@ -6,7 +6,7 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 
 - **Dashboard** — Ringkasan data pegawai dengan chart distribusi (golongan, gender, usia, unit kerja) dan alert KGB/Pensiun
 - **Manajemen Pegawai** — CRUD lengkap dengan pencarian AJAX, paginasi server-side, validasi format NIP, dan **One-Stop Creation Flow** (pilih pangkat & jabatan saat create → gaji otomatis + auto-generate RiwayatPangkat & RiwayatJabatan)
-- **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian, unit kerja
+- **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian, unit kerja — semua dinormalisasi ke tabel master data dengan FK
 - **Riwayat Kepegawaian** — 7 modul riwayat (Pangkat, Jabatan, KGB, Hukuman Disiplin, Pendidikan, Latihan Jabatan, Penilaian Kinerja)
 - **Monitoring KGB** — Alert otomatis pegawai yang mendekati/eligible kenaikan gaji berkala (siklus 2 tahun), kalkulasi gaji baru otomatis berdasarkan PP 15/2019, integrasi hukuman disiplin (penundaan KGB)
 - **Kenaikan Pangkat** — Analisis eligibilitas berdasarkan syarat masa kerja, SKP, latihan, dan hukuman disiplin
@@ -14,7 +14,7 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 - **Alert Pensiun** — Monitoring pensiun berdasarkan BUP dengan level alert (Hijau/Kuning/Merah/Hitam)
 - **DUK** — Daftar Urut Kepangkatan dengan ranking otomatis sesuai hierarki BKN
 - **Satyalencana** — Identifikasi kandidat penghargaan Satyalencana Karya Satya (10/20/30 tahun)
-- **Master Data** — CRUD Jabatan (dengan rumpun jabatan), Tabel Gaji (PP 15/2019), dan referensi Golongan Ruang
+- **Master Data** — CRUD Jabatan (dengan rumpun jabatan), Tabel Gaji (PP 15/2019), referensi Golongan Ruang, **serta 8 tabel referensi pegawai** (Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah) via generic `MasterDataController`
 - **Export PDF & Excel** — Semua laporan (KGB, Pensiun, DUK, Kenaikan Pangkat, Satyalencana) bisa diekspor ke PDF dan Excel
 - **Activity Log** — Pencatatan otomatis setiap perubahan data pegawai dan riwayat menggunakan Spatie Activity Log
 - **Document Management** — Upload dan manajemen file SK (PDF, maks 5MB) dengan penamaan bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`), inline PDF preview di browser, link Google Drive opsional

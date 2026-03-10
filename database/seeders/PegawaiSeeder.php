@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Agama;
-use App\Enums\GolonganDarah;
-use App\Enums\JenisKelamin;
-use App\Enums\StatusPernikahan;
 use App\Enums\JenisSanksi;
 use App\Enums\TingkatHukuman;
+use App\Models\AgamaMaster;
+use App\Models\Bagian;
+use App\Models\GolonganDarahMaster;
 use App\Models\GolonganPangkat;
 use App\Models\Jabatan;
+use App\Models\JenisKelaminMaster;
 use App\Models\Pegawai;
 use App\Models\PenilaianKinerja;
 use App\Models\RiwayatHukumanDisiplin;
@@ -18,7 +18,11 @@ use App\Models\RiwayatKgb;
 use App\Models\RiwayatLatihanJabatan;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
+use App\Models\StatusKepegawaian;
+use App\Models\StatusPernikahanMaster;
 use App\Models\TabelGaji;
+use App\Models\TipePegawai;
+use App\Models\UnitKerja;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
@@ -168,20 +172,29 @@ class PegawaiSeeder extends Seeder
 
     private function createPegawai($birthDate, $tmtCpns): Pegawai
     {
-        $gender = mt_rand(0, 1) === 0 ? JenisKelamin::LakiLaki : JenisKelamin::Perempuan;
+        $genderId = mt_rand(0, 1) === 0
+            ? JenisKelaminMaster::where('nama', 'Laki-laki')->value('id')
+            : JenisKelaminMaster::where('nama', 'Perempuan')->value('id');
+        $genderName = JenisKelaminMaster::find($genderId)?->nama;
+        $fakerGender = $genderName === 'Laki-laki' ? 'male' : 'female';
+
         $nipBirth = $birthDate->format('Ymd');
         $nipTmt = $tmtCpns->format('Ym');
-        $nipGender = $gender === JenisKelamin::LakiLaki ? '1' : '2';
+        $nipGender = $genderName === 'Laki-laki' ? '1' : '2';
         $nipSeq = str_pad($this->nipCounter, 3, '0', STR_PAD_LEFT);
         $nip = "{$nipBirth}{$nipTmt}{$nipGender}{$nipSeq}";
         $this->nipCounter++;
 
-        $namaLengkap = $this->faker->name($gender === JenisKelamin::LakiLaki ? 'male' : 'female');
+        $namaLengkap = $this->faker->name($fakerGender);
         $emailName = strtolower(str_replace([' ', '.', ',', "'"], '', $namaLengkap)) . $this->nipCounter;
 
         $gelarDepanOptions = [null, null, null, 'Dr.', 'Drs.', 'Ir.', 'Prof.'];
         $gelarBelakangOptions = [null, null, null, 'S.H.', 'S.E.', 'M.H.', 'M.Sc.', 'S.Kom.'];
-        $bagianOptions = ['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim'];
+
+        $agamaIds = AgamaMaster::pluck('id')->toArray();
+        $statusPernikahanIds = StatusPernikahanMaster::pluck('id')->toArray();
+        $golonganDarahIds = GolonganDarahMaster::pluck('id')->toArray();
+        $bagianIds = Bagian::pluck('id')->toArray();
 
         return Pegawai::create([
             'nip' => $nip,
@@ -190,7 +203,7 @@ class PegawaiSeeder extends Seeder
             'gelar_belakang' => $gelarBelakangOptions[mt_rand(0, count($gelarBelakangOptions) - 1)],
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $birthDate,
-            'jenis_kelamin' => $gender,
+            'jenis_kelamin_id' => $genderId,
             'alamat' => $this->faker->address(),
             'no_telepon' => '08' . $this->faker->numerify('##########'),
             'email' => $emailName . '@kemenipas.go.id',
@@ -198,16 +211,16 @@ class PegawaiSeeder extends Seeder
             'tmt_pns' => $tmtCpns->copy()->addYear(),
             'gaji_pokok' => 0,
             'is_active' => true,
-            'agama' => Agama::cases()[mt_rand(0, 5)],
-            'status_pernikahan' => StatusPernikahan::cases()[mt_rand(0, 3)],
-            'golongan_darah' => GolonganDarah::cases()[mt_rand(0, 3)],
+            'agama_id' => $agamaIds[mt_rand(0, count($agamaIds) - 1)],
+            'status_pernikahan_id' => $statusPernikahanIds[mt_rand(0, count($statusPernikahanIds) - 1)],
+            'golongan_darah_id' => $golonganDarahIds[mt_rand(0, count($golonganDarahIds) - 1)],
             'npwp' => mt_rand(10, 99) . '.' . mt_rand(100, 999) . '.' . mt_rand(100, 999) . '.' . mt_rand(1, 9) . '-' . mt_rand(100, 999) . '.000',
             'no_karpeg' => 'K-' . mt_rand(100000, 999999),
             'no_taspen' => 'T-' . mt_rand(1000000, 9999999),
-            'bagian' => $bagianOptions[mt_rand(0, count($bagianOptions) - 1)],
-            'unit_kerja' => 'Kanim Jakut',
-            'tipe_pegawai' => 'PNS',
-            'status_kepegawaian' => 'Aktif',
+            'bagian_id' => $bagianIds[mt_rand(0, count($bagianIds) - 1)],
+            'unit_kerja_id' => UnitKerja::where('nama', 'Kanim Jakut')->value('id'),
+            'tipe_pegawai_id' => TipePegawai::where('nama', 'PNS')->value('id'),
+            'status_kepegawaian_id' => StatusKepegawaian::where('nama', 'Aktif')->value('id'),
         ]);
     }
 

@@ -9,9 +9,9 @@
 
 ### Core Data & Models
 
-- [x] 13 Eloquent Models dengan relationships lengkap
-- [x] 9 PHP Enums (Agama, GolonganDarah, JenisJabatan, JenisKelamin, JenisSanksi, RumpunJabatan, StatusHukdis, StatusPernikahan, TingkatHukuman)
-- [x] 19 database migrations
+- [x] 21 Eloquent Models dengan relationships lengkap (termasuk 8 model master data pegawai baru)
+- [x] 5 PHP Enums aktif (JenisJabatan, JenisSanksi, RumpunJabatan, StatusHukdis, TingkatHukuman) — 4 enum biodata (Agama, GolonganDarah, JenisKelamin, StatusPernikahan) deprecated, diganti master data tables
+- [x] 20 database migrations (termasuk normalisasi FK pegawai)
 - [x] 6 seeders (User, MasterData, GolonganPangkat, Pegawai, TabelGaji, Database)
 - [x] PegawaiFactory (with afterCreating hook for auto riwayat)
 - [x] Activity logging (Spatie) pada semua model utama
@@ -19,11 +19,12 @@
 ### CRUD & Manajemen
 
 - [x] **Pegawai** — CRUD lengkap + pencarian AJAX + paginasi server-side + validasi NIP 18 digit + **One-Stop Creation Flow** (auto gaji lookup, auto RiwayatPangkat & RiwayatJabatan)
-- [x] **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian (Aktif/Tidak Aktif), unit kerja default Kanim Jakut
+- [x] **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian (Aktif/Tidak Aktif/Pensiun), unit kerja default Kanim Jakut — **semua 8 atribut dinormalisasi ke tabel master data dengan FK**
 - [x] **7 Riwayat Kepegawaian** — CRUD untuk Pangkat, Jabatan, KGB, Hukuman Disiplin, Pendidikan, Latihan Jabatan, Penilaian Kinerja
 - [x] **Master Data Jabatan** — CRUD + filter rumpun + toggle active (SuperAdmin only)
 - [x] **Master Data Golongan/Pangkat** — CRUD + toggle active (SuperAdmin only) — _refactor dari Enum ke tabel database_
 - [x] **Master Data Tabel Gaji** — CRUD per golongan × masa kerja (SuperAdmin only)
+- [x] **Master Data Pegawai** — CRUD generik untuk 8 tabel referensi (Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah) via `MasterDataController` — sidebar "Master Data Pegawai" dengan 8 link dinamis
 - [x] **Document Management** — Upload file SK (PDF, maks 5MB) + link Google Drive opsional + inline PDF preview di browser + penamaan file bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`) + kolom "Dokumen" di semua tab riwayat (show.blade.php) + link "Lihat Dokumen" di semua form edit
 - [x] **UX: Tab Retention** — Setelah CRUD riwayat, halaman profil pegawai otomatis kembali ke tab yang sedang aktif via URL fragment (`#tab-{type}`)
 - [x] **UX: Flash Messages** — Alert sukses/error yang deskriptif dengan icon, judul, pesan detail (termasuk info dokumen yang diunggah), dan tombol dismiss
@@ -64,6 +65,10 @@
 ## Active Development
 
 _Tidak ada fitur yang sedang aktif dikerjakan saat ini._
+
+### Recently Completed
+
+- **Normalisasi 8 Atribut Pegawai ke Master Data Tables** — Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah. Semuanya sekarang disimpan di tabel terpisah dengan FK constraint. CRUD generik via `MasterDataController`. 4 Enum biodata (Agama, JenisKelamin, StatusPernikahan, GolonganDarah) deprecated, diganti 8 model master data baru. Status Kepegawaian ditampilkan sebagai badge di halaman profil pegawai.
 
 ---
 

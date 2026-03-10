@@ -2,14 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Enums\Agama;
-use App\Enums\GolonganDarah;
-use App\Enums\JenisKelamin;
-use App\Enums\StatusPernikahan;
+use App\Models\AgamaMaster;
+use App\Models\Bagian;
+use App\Models\GolonganDarahMaster;
 use App\Models\GolonganPangkat;
 use App\Models\Jabatan;
+use App\Models\JenisKelaminMaster;
 use App\Models\Pegawai;
+use App\Models\StatusKepegawaian;
+use App\Models\StatusPernikahanMaster;
 use App\Models\TabelGaji;
+use App\Models\TipePegawai;
+use App\Models\UnitKerja;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,7 +23,9 @@ class PegawaiFactory extends Factory
 
     public function definition(): array
     {
-        $gender = $this->faker->randomElement([JenisKelamin::LakiLaki, JenisKelamin::Perempuan]);
+        $genderId = JenisKelaminMaster::inRandomOrder()->value('id') ?? 1;
+        $genderName = JenisKelaminMaster::find($genderId)?->nama;
+        $fakerGender = $genderName === 'Laki-laki' ? 'male' : 'female';
         $birthDate = $this->faker->dateTimeBetween('-55 years', '-25 years');
         $tmtCpns = Carbon::parse($birthDate)->addYears($this->faker->numberBetween(22, 28));
 
@@ -30,11 +36,11 @@ class PegawaiFactory extends Factory
         return [
             'nip' => $this->faker->unique()->numerify('##################'),
             'gelar_depan' => $this->faker->optional(0.3)->randomElement(['Dr.', 'Drs.', 'Ir.', 'Prof.']),
-            'nama_lengkap' => $this->faker->name($gender === JenisKelamin::LakiLaki ? 'male' : 'female'),
+            'nama_lengkap' => $this->faker->name($fakerGender),
             'gelar_belakang' => $this->faker->optional(0.4)->randomElement(['S.H.', 'S.E.', 'M.H.', 'M.Sc.', 'S.Kom.']),
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $birthDate,
-            'jenis_kelamin' => $gender,
+            'jenis_kelamin_id' => $genderId,
             'alamat' => $this->faker->address(),
             'no_telepon' => '08' . $this->faker->numerify('##########'),
             'email' => $this->faker->unique()->safeEmail(),
@@ -42,16 +48,16 @@ class PegawaiFactory extends Factory
             'tmt_pns' => $tmtCpns->copy()->addYear(),
             'gaji_pokok' => 0,
             'is_active' => true,
-            'agama' => $this->faker->randomElement(Agama::cases()),
-            'status_pernikahan' => $this->faker->randomElement(StatusPernikahan::cases()),
-            'golongan_darah' => $this->faker->randomElement(GolonganDarah::cases()),
+            'agama_id' => AgamaMaster::inRandomOrder()->value('id') ?? 1,
+            'status_pernikahan_id' => StatusPernikahanMaster::inRandomOrder()->value('id') ?? 1,
+            'golongan_darah_id' => GolonganDarahMaster::inRandomOrder()->value('id') ?? 1,
             'npwp' => $this->faker->numerify('##.###.###.#-###.000'),
             'no_karpeg' => 'K-' . $this->faker->numerify('######'),
             'no_taspen' => 'T-' . $this->faker->numerify('#######'),
-            'bagian' => $this->faker->randomElement(['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim']),
-            'unit_kerja' => 'Kanim Jakut',
-            'tipe_pegawai' => $this->faker->randomElement(['PNS', 'CPNS', 'PPPK']),
-            'status_kepegawaian' => 'Aktif',
+            'bagian_id' => Bagian::inRandomOrder()->value('id'),
+            'unit_kerja_id' => UnitKerja::inRandomOrder()->value('id'),
+            'tipe_pegawai_id' => TipePegawai::inRandomOrder()->value('id') ?? 1,
+            'status_kepegawaian_id' => StatusKepegawaian::where('nama', 'Aktif')->value('id') ?? 1,
         ];
     }
 

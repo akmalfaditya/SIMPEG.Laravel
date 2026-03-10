@@ -14,6 +14,10 @@
                 <div>
                     <h3 class="text-xl font-bold text-slate-800">
                         {{ $pegawai->nama_lengkap }}
+                        @if ($pegawai->statusKepegawaian)
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full
+                                {{ $pegawai->statusKepegawaian->nama === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : ($pegawai->statusKepegawaian->nama === 'Pensiun' ? 'bg-slate-100 text-slate-600' : 'bg-red-100 text-red-700') }}">{{ $pegawai->statusKepegawaian->nama }}</span>
+                        @endif
                         @if ($pegawai->has_active_hukdis)
                             <span
                                 class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">Hukdis
@@ -25,7 +29,7 @@
                         <span><strong>Golongan:</strong> {{ $pegawai->pangkat_terakhir ?? '-' }}</span>
                         <span><strong>Jabatan:</strong> {{ $pegawai->jabatan_terakhir ?? '-' }}</span>
                         <span><strong>Masa Kerja:</strong> {{ $pegawai->masa_kerja }}</span>
-                        <span><strong>Unit Kerja:</strong> {{ $pegawai->unit_kerja ?? '-' }}</span>
+                        <span><strong>Unit Kerja:</strong> {{ $pegawai->unitKerja?->nama ?? '-' }}</span>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -52,19 +56,19 @@
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">Jenis Kelamin</p>
-                    <p class="text-slate-700 font-medium">{{ $pegawai->jenis_kelamin->label() }}</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->jenisKelamin?->nama ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">Agama</p>
-                    <p class="text-slate-700 font-medium">{{ $pegawai->agama->label() }}</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->agama?->nama ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">Status Pernikahan</p>
-                    <p class="text-slate-700 font-medium">{{ $pegawai->status_pernikahan->label() }}</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->statusPernikahan?->nama ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">Golongan Darah</p>
-                    <p class="text-slate-700 font-medium">{{ $pegawai->golongan_darah->label() }}</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->golonganDarah?->nama ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">Email</p>
@@ -77,6 +81,21 @@
                 <div class="col-span-2">
                     <p class="text-slate-400 text-xs">Alamat</p>
                     <p class="text-slate-700 font-medium">{{ $pegawai->alamat ?? '-' }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Data Kepegawaian --}}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h4 class="text-sm font-semibold text-slate-700 mb-4">Data Kepegawaian</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <p class="text-slate-400 text-xs">Tipe Pegawai</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->tipePegawai?->nama ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs">Bagian</p>
+                    <p class="text-slate-700 font-medium">{{ $pegawai->bagian?->nama ?? '-' }}</p>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs">TMT CPNS</p>

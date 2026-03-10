@@ -128,6 +128,31 @@
                         </svg>
                         Master Jabatan
                     </a>
+
+                    <div class="pt-2 pb-1 px-3">
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Master Data Pegawai</p>
+                    </div>
+                    @php
+                        $masterEntities = [
+                            'tipe-pegawai'       => 'Tipe Pegawai',
+                            'status-kepegawaian' => 'Status Kepegawaian',
+                            'bagian'             => 'Bagian',
+                            'unit-kerja'         => 'Unit Kerja',
+                            'jenis-kelamin'      => 'Jenis Kelamin',
+                            'agama'              => 'Agama',
+                            'status-pernikahan'  => 'Status Pernikahan',
+                            'golongan-darah'     => 'Golongan Darah',
+                        ];
+                    @endphp
+                    @foreach($masterEntities as $slug => $name)
+                        <a href="{{ route('admin.master-data.index', $slug) }}"
+                            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->is('admin/master-data/' . $slug . '*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                            <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            {{ $name }}
+                        </a>
+                    @endforeach
                 @endif
 
                 <div class="pt-3 pb-1 px-3">

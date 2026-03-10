@@ -208,10 +208,8 @@
 - **Aktual**: `KGBCalculationService` sudah ada method `getNextKGBSalary()`, tapi **tidak dipanggil** di `KGBController` atau view `kgb/index.blade.php`. Tabel hanya menampilkan TMT dan status tanpa estimasi gaji.
 - **Aksi**: Integrasikan `KGBCalculationService` ke `KGBController`, tambahkan kolom "Est. Gaji Baru" di view.
 
-### 🟡 GAP-31: Sidebar Belum Ada Menu "Admin Setting" / Master Data
-- **PRD**: SuperAdmin punya menu CRUD Master Data (Jabatan, Gaji, Golongan).
-- **Aktual**: Sidebar `layouts/app.blade.php` tidak punya menu group "Admin Setting" atau link ke master data.
-- **Aksi**: Tambah section "Admin Setting" di sidebar, conditionally visible hanya untuk role SuperAdmin.
+### ~~🟡 GAP-31: Sidebar Belum Ada Menu "Admin Setting" / Master Data~~ ✅ RESOLVED
+- **Status**: Sidebar sekarang memiliki section "Master Data Pegawai" dengan 8 link dinamis + section "Admin" untuk Jabatan, Golongan, Tabel Gaji.
 
 ### 🟢 GAP-32: Satyalencana — Filter Berdasarkan Milestone Belum Ada di UI
 - **PRD**: Filter berdasarkan milestone (10/20/30 tahun).

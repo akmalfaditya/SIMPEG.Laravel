@@ -29,8 +29,8 @@
                 <label class="block text-xs font-medium text-slate-500 mb-1">Unit Kerja</label>
                 <select name="unit_kerja" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="document.getElementById('filterForm').submit()">
                     <option value="">Semua Unit</option>
-                    @foreach($filterOptions['unit_kerja_list'] as $unit)
-                    <option value="{{ $unit }}" {{ request('unit_kerja') == $unit ? 'selected' : '' }}>{{ $unit }}</option>
+                    @foreach($filterOptions['unit_kerja_list'] as $id => $nama)
+                    <option value="{{ $id }}" {{ request('unit_kerja') == $id ? 'selected' : '' }}>{{ $nama }}</option>
                     @endforeach
                 </select>
             </div>

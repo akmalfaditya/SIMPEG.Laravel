@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
+use App\Models\UnitKerja;
 use Illuminate\Support\Carbon;
 
 class DashboardService
@@ -16,12 +17,7 @@ class DashboardService
 
     public function getFilterOptions(): array
     {
-        $unitKerjaList = Pegawai::where('is_active', true)
-            ->whereNotNull('unit_kerja')
-            ->distinct()
-            ->orderBy('unit_kerja')
-            ->pluck('unit_kerja')
-            ->toArray();
+        $unitKerjaList = UnitKerja::orderBy('nama')->pluck('nama', 'id')->toArray();
 
         $golonganList = [];
         foreach (GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get() as $g) {
@@ -42,10 +38,12 @@ class DashboardService
             'riwayatKgb',
             'riwayatPendidikan',
             'riwayatLatihanJabatan',
+            'jenisKelamin',
+            'unitKerja',
         ])->where('is_active', true);
 
         if (!empty($filters['unit_kerja'])) {
-            $query->where('unit_kerja', $filters['unit_kerja']);
+            $query->where('unit_kerja_id', $filters['unit_kerja']);
         }
 
         if (!empty($filters['tmt_cpns_from'])) {
@@ -94,7 +92,11 @@ class DashboardService
             'advanced_charts' => $advancedCharts,
             'summary_per_unit' => $summaryPerUnit,
             'stats' => $stats,
-            'filters' => $filters,
+            'filters' => array_merge($filters, [
+                'unit_kerja' => !empty($filters['unit_kerja'])
+                    ? UnitKerja::find($filters['unit_kerja'])?->nama
+                    : null,
+            ]),
         ];
     }
 
@@ -117,7 +119,7 @@ class DashboardService
             $masaKerjaBulan = (($today->year - $peg->tmt_cpns->year) * 12) + $today->month - $peg->tmt_cpns->month;
             $totalMasaKerja += $masaKerjaBulan;
 
-            if ($peg->jenis_kelamin->value === 1) {
+            if ($peg->jenisKelamin?->nama === 'Laki-laki') {
                 $totalLaki++;
             } else {
                 $totalPerempuan++;
@@ -149,7 +151,7 @@ class DashboardService
                 $golongan[$label] = ($golongan[$label] ?? 0) + 1;
             }
 
-            $gLabel = $peg->jenis_kelamin->label();
+            $gLabel = $peg->jenisKelamin?->nama ?? 'Tidak Diketahui';
             $gender[$gLabel] = ($gender[$gLabel] ?? 0) + 1;
 
             $age = $today->year - $peg->tanggal_lahir->year
@@ -166,7 +168,7 @@ class DashboardService
             };
             $usia[$bracket] = ($usia[$bracket] ?? 0) + 1;
 
-            $unit = $peg->unit_kerja ?? 'Belum Ditetapkan';
+            $unit = $peg->unitKerja?->nama ?? 'Belum Ditetapkan';
             $unitKerja[$unit] = ($unitKerja[$unit] ?? 0) + 1;
         }
 
@@ -265,13 +267,13 @@ class DashboardService
         $summary = [];
 
         foreach ($allPegawai as $peg) {
-            $unit = $peg->unit_kerja ?? 'Belum Ditetapkan';
+            $unit = $peg->unitKerja?->nama ?? 'Belum Ditetapkan';
             if (!isset($summary[$unit])) {
                 $summary[$unit] = ['unit_kerja' => $unit, 'total' => 0, 'laki' => 0, 'perempuan' => 0, 'total_usia' => 0];
             }
             $summary[$unit]['total']++;
 
-            if ($peg->jenis_kelamin->value === 1) {
+            if ($peg->jenisKelamin?->nama === 'Laki-laki') {
                 $summary[$unit]['laki']++;
             } else {
                 $summary[$unit]['perempuan']++;
