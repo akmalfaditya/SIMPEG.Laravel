@@ -1067,13 +1067,13 @@ Total: **37 jabatan** master data.
 
 Buat file `database/seeders/PegawaiSeeder.php` untuk generate ~100 pegawai dengan data random menggunakan Faker (`id_ID` locale). Seeder ini harus membuat:
 
-- Data pegawai (NIP, nama, biodata)
+- Data pegawai (NIP, nama, biodata, gelar depan/belakang, bagian, tipe pegawai, status kepegawaian)
 - Riwayat pangkat (progresi otomatis setiap 4 tahun)
 - Riwayat jabatan
 - Riwayat KGB
 - Riwayat pendidikan & latihan
 - Penilaian kinerja (SKP)
-- Sebagian pegawai mendapat riwayat hukuman disiplin
+- Sebagian pegawai mendapat riwayat hukuman disiplin (durasi_tahun=1 untuk Sedang/Berat per PP 94/2021)
 
 > **Tip:** Bagi pegawai ke 5 grup: (1) mendekati pensiun, (2) KGB akan datang, (3) eligible Satyalencana, (4) punya hukuman disiplin, (5) reguler. Ini memastikan semua fitur report terisi data.
 
@@ -1428,7 +1428,7 @@ Buat 16 controller di `app/Http/Controllers/`:
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AuthController`            | `showLogin()`, `login(LoginRequest)`, `logout()`                                                                                                              |
 | `DashboardController`       | `index()`, `exportPdf()` — inject `DashboardService`                                                                                                          |
-| `PegawaiController`         | CRUD + `getPaginated()` — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource`                                          |
+| `PegawaiController`         | CRUD + `getPaginated()` + One-Stop Creation Flow — menggunakan `StorePegawaiRequest`, `UpdatePegawaiRequest`, `PegawaiDTO`, `PegawaiResource`. `create()` passes golongan & jabatan options, `store()` auto-creates riwayat via `PegawaiService` |
 | `RiwayatController`         | CRUD untuk 7 jenis riwayat + `pulihkanHukuman()` — inject `RiwayatService`, `JabatanService`, `KGBCalculationService`, menggunakan FormRequest + DTO per tipe |
 | `KGBController`             | `index()`, `upcoming()`, `eligible()`, `ditunda()`                                                                                                            |
 | `KenaikanPangkatController` | `index()`, `eligible()`, `ditunda()`                                                                                                                          |
@@ -1451,6 +1451,19 @@ Request masuk → FormRequest (validasi otomatis)
                   → DTO::fromRequest($request->validated())
                   → Service->method($dto)   // dibungkus DB::transaction()
                   → return redirect/view
+```
+
+**One-Stop Creation Flow (PegawaiController@store):**
+
+```
+StorePegawaiRequest → PegawaiDTO::fromRequest()
+                    → PegawaiService->create($dto, golonganId, jabatanId)
+                        // Inside DB::transaction:
+                        // 1. Lookup gaji_pokok from TabelGaji
+                        // 2. Create Pegawai
+                        // 3. Auto-create RiwayatPangkat
+                        // 4. Auto-create RiwayatJabatan
+                    → redirect('pegawai.index')
 ```
 
 **Aturan ketat:**

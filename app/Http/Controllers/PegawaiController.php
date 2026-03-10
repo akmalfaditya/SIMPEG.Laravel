@@ -73,15 +73,22 @@ class PegawaiController extends Controller
             'agamaOptions' => Agama::cases(),
             'statusPernikahanOptions' => StatusPernikahan::cases(),
             'golonganDarahOptions' => GolonganDarah::cases(),
+            'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
+            'jabatanOptions' => Jabatan::where('is_active', true)->orderBy('nama_jabatan')->get(),
         ]);
     }
 
     public function store(StorePegawaiRequest $request)
     {
         $dto = PegawaiDTO::fromRequest($request->validated());
-        $pegawai = $this->service->create($dto);
+        $pegawai = $this->service->create(
+            $dto,
+            golonganId: (int) $request->validated('golongan_id'),
+            jabatanId: (int) $request->validated('jabatan_id'),
+        );
 
-        return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil ditambahkan.');
+        return redirect()->route('pegawai.show', $pegawai)
+            ->with('success', 'Data pegawai berhasil ditambahkan. Riwayat pangkat dan jabatan awal telah dibuat otomatis.');
     }
 
     public function edit(Pegawai $pegawai)

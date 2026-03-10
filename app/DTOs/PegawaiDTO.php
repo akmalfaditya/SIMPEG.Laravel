@@ -6,7 +6,9 @@ class PegawaiDTO
 {
     public function __construct(
         public readonly string $nip,
+        public readonly ?string $gelarDepan,
         public readonly string $namaLengkap,
+        public readonly ?string $gelarBelakang,
         public readonly ?string $tempatLahir,
         public readonly string $tanggalLahir,
         public readonly int $jenisKelamin,
@@ -23,6 +25,9 @@ class PegawaiDTO
         public readonly ?string $noKarpeg,
         public readonly ?string $noTaspen,
         public readonly ?string $unitKerja,
+        public readonly ?string $bagian,
+        public readonly string $tipePegawai,
+        public readonly string $statusKepegawaian,
         public readonly bool $isActive = true,
     ) {}
 
@@ -30,7 +35,9 @@ class PegawaiDTO
     {
         return new self(
             nip: $validated['nip'],
+            gelarDepan: $validated['gelar_depan'] ?? null,
             namaLengkap: $validated['nama_lengkap'],
+            gelarBelakang: $validated['gelar_belakang'] ?? null,
             tempatLahir: $validated['tempat_lahir'] ?? null,
             tanggalLahir: $validated['tanggal_lahir'],
             jenisKelamin: (int) $validated['jenis_kelamin'],
@@ -39,14 +46,17 @@ class PegawaiDTO
             email: $validated['email'] ?? null,
             tmtCpns: $validated['tmt_cpns'],
             tmtPns: $validated['tmt_pns'] ?? null,
-            gajiPokok: (float) $validated['gaji_pokok'],
+            gajiPokok: (float) ($validated['gaji_pokok'] ?? 0),
             agama: (int) $validated['agama'],
             statusPernikahan: (int) $validated['status_pernikahan'],
             golonganDarah: (int) $validated['golongan_darah'],
             npwp: $validated['npwp'] ?? null,
             noKarpeg: $validated['no_karpeg'] ?? null,
             noTaspen: $validated['no_taspen'] ?? null,
-            unitKerja: $validated['unit_kerja'] ?? null,
+            unitKerja: $validated['unit_kerja'] ?? 'Kanim Jakut',
+            bagian: $validated['bagian'] ?? null,
+            tipePegawai: $validated['tipe_pegawai'] ?? 'PNS',
+            statusKepegawaian: $validated['status_kepegawaian'] ?? 'Aktif',
             isActive: $validated['is_active'] ?? true,
         );
     }
@@ -55,7 +65,9 @@ class PegawaiDTO
     {
         return [
             'nip' => $this->nip,
+            'gelar_depan' => $this->gelarDepan,
             'nama_lengkap' => $this->namaLengkap,
+            'gelar_belakang' => $this->gelarBelakang,
             'tempat_lahir' => $this->tempatLahir,
             'tanggal_lahir' => $this->tanggalLahir,
             'jenis_kelamin' => $this->jenisKelamin,
@@ -72,6 +84,9 @@ class PegawaiDTO
             'no_karpeg' => $this->noKarpeg,
             'no_taspen' => $this->noTaspen,
             'unit_kerja' => $this->unitKerja,
+            'bagian' => $this->bagian,
+            'tipe_pegawai' => $this->tipePegawai,
+            'status_kepegawaian' => $this->statusKepegawaian,
             'is_active' => $this->isActive,
         ];
     }

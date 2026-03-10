@@ -1,7 +1,7 @@
 # STATE.md — Development Status
 
 > Status perkembangan aplikasi SIMPEG Kemenipas.  
-> Terakhir diperbarui: **9 Maret 2026**
+> Terakhir diperbarui: **10 Maret 2026**
 
 ---
 
@@ -11,13 +11,15 @@
 
 - [x] 13 Eloquent Models dengan relationships lengkap
 - [x] 9 PHP Enums (Agama, GolonganDarah, JenisJabatan, JenisKelamin, JenisSanksi, RumpunJabatan, StatusHukdis, StatusPernikahan, TingkatHukuman)
-- [x] 18 database migrations
+- [x] 19 database migrations
 - [x] 6 seeders (User, MasterData, GolonganPangkat, Pegawai, TabelGaji, Database)
+- [x] PegawaiFactory (with afterCreating hook for auto riwayat)
 - [x] Activity logging (Spatie) pada semua model utama
 
 ### CRUD & Manajemen
 
-- [x] **Pegawai** — CRUD lengkap + pencarian AJAX + paginasi server-side + validasi NIP 18 digit
+- [x] **Pegawai** — CRUD lengkap + pencarian AJAX + paginasi server-side + validasi NIP 18 digit + **One-Stop Creation Flow** (auto gaji lookup, auto RiwayatPangkat & RiwayatJabatan)
+- [x] **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian (Aktif/Tidak Aktif), unit kerja default Kanim Jakut
 - [x] **7 Riwayat Kepegawaian** — CRUD untuk Pangkat, Jabatan, KGB, Hukuman Disiplin, Pendidikan, Latihan Jabatan, Penilaian Kinerja
 - [x] **Master Data Jabatan** — CRUD + filter rumpun + toggle active (SuperAdmin only)
 - [x] **Master Data Golongan/Pangkat** — CRUD + toggle active (SuperAdmin only) — _refactor dari Enum ke tabel database_
@@ -40,6 +42,7 @@
 - [x] 3 status (Aktif, Selesai, Dipulihkan) + 6 jenis sanksi + 3 tingkat hukuman
 - [x] Type 1 — Penundaan (soft-block): Penundaan KGB + Penundaan Pangkat
 - [x] Type 2 — Penurunan (hard-update): Penurunan Pangkat, Penurunan Jabatan, Pembebasan Jabatan → auto-insert demotion records
+- [x] Durasi hukuman Sedang/Berat di-hardcode 1 tahun sesuai PP 94/2021 (enforced di service + readonly di form)
 - [x] Pemulihan — Restore pangkat/jabatan + rekalkulasi gaji otomatis
 - [x] Integrasi blokir KGB dan kenaikan pangkat
 

@@ -5,7 +5,8 @@ Aplikasi manajemen kepegawaian berbasis web untuk **Kementerian Imigrasi dan Pem
 ## Fitur Utama
 
 - **Dashboard** — Ringkasan data pegawai dengan chart distribusi (golongan, gender, usia, unit kerja) dan alert KGB/Pensiun
-- **Manajemen Pegawai** — CRUD lengkap dengan pencarian AJAX, paginasi server-side, dan validasi format NIP
+- **Manajemen Pegawai** — CRUD lengkap dengan pencarian AJAX, paginasi server-side, validasi format NIP, dan **One-Stop Creation Flow** (pilih pangkat & jabatan saat create → gaji otomatis + auto-generate RiwayatPangkat & RiwayatJabatan)
+- **Biodata Pegawai** — Gelar depan/belakang, bagian (5 seksi Kanim), tipe pegawai (PNS/CPNS/PPPK), status kepegawaian, unit kerja
 - **Riwayat Kepegawaian** — 7 modul riwayat (Pangkat, Jabatan, KGB, Hukuman Disiplin, Pendidikan, Latihan Jabatan, Penilaian Kinerja)
 - **Monitoring KGB** — Alert otomatis pegawai yang mendekati/eligible kenaikan gaji berkala (siklus 2 tahun), kalkulasi gaji baru otomatis berdasarkan PP 15/2019, integrasi hukuman disiplin (penundaan KGB)
 - **Kenaikan Pangkat** — Analisis eligibilitas berdasarkan syarat masa kerja, SKP, latihan, dan hukuman disiplin
@@ -120,8 +121,9 @@ app/
 ├── Providers/          # AppServiceProvider
 └── Services/           # 13 Service Class (business logic layer)
 database/
-├── migrations/         # 15 migration files
-├── seeders/            # 5 seeder (User, MasterData, Pegawai, TabelGaji, Database)
+├── factories/          # Model factories (UserFactory, PegawaiFactory)
+├── migrations/         # 19 migration files
+├── seeders/            # 6 seeder (User, MasterData, GolonganPangkat, Pegawai, TabelGaji, Database)
 resources/views/
 ├── layouts/app.blade.php          # Layout utama dengan responsive sidebar
 ├── auth/login.blade.php           # Halaman login
@@ -160,7 +162,7 @@ resources/views/
 | `users`                     | Data user login dengan role (SuperAdmin, HR)                                    |
 | `golongan_pangkats`         | Master data golongan/pangkat (label, pangkat, group, min_pendidikan, is_active) |
 | `jabatans`                  | Master data jabatan (nama, jenis, BUP, eselon, kelas, rumpun, is_active)        |
-| `pegawais`                  | Data utama pegawai (NIP, biodata, ASN, gaji pokok)                              |
+| `pegawais`                  | Data utama pegawai (NIP, biodata, gelar, bagian, tipe pegawai, status kepegawaian, ASN, gaji pokok) |
 | `riwayat_pangkats`          | Riwayat kenaikan pangkat (FK ke `golongan_pangkats`, flag `is_hukdis_demotion`) |
 | `riwayat_jabatans`          | Riwayat penempatan jabatan (dengan flag `is_hukdis_demotion`)                   |
 | `riwayat_kgbs`              | Riwayat KGB (gaji lama/baru, masa kerja golongan)                               |
@@ -194,8 +196,8 @@ Semua business logic dipisahkan ke Service class untuk menjaga controller tetap 
 
 | Service                  | Tanggung Jawab                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------------- |
-| `PegawaiService`         | CRUD pegawai, pencarian, paginasi                                                        |
-| `RiwayatService`         | CRUD 7 jenis riwayat, hukdis hybrid logic (Type 2 demotion, pemulihan, rekalkulasi gaji) |
+| `PegawaiService`         | CRUD pegawai, pencarian, paginasi, One-Stop Creation Flow (auto gaji + riwayat dalam DB::transaction) |
+| `RiwayatService`         | CRUD 7 jenis riwayat, hukdis hybrid logic (Type 2 demotion, pemulihan, rekalkulasi gaji), durasi Sedang/Berat enforced 1 tahun |
 | `JabatanService`         | CRUD master data jabatan                                                                 |
 | `TabelGajiService`       | CRUD tabel gaji PP 15/2019                                                               |
 | `KGBService`             | Monitoring status KGB, jatuh tempo, eligibilitas (dengan integrasi hukdis)               |

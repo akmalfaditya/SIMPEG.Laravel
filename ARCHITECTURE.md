@@ -154,17 +154,17 @@ SIMPEG.Laravel/
 │       ├── KenaikanPangkatService.php #   Analisis eligibilitas kenaikan pangkat
 │       ├── KGBCalculationService.php  #   Kalkulasi gaji baru via tabel PP 15/2019
 │       ├── KGBService.php             #   Monitoring KGB (jatuh tempo, eligibilitas)
-│       ├── PegawaiService.php         #   CRUD pegawai
+│       ├── PegawaiService.php         #   CRUD pegawai + One-Stop Creation Flow (auto gaji, riwayat)
 │       ├── PensiunService.php         #   Alert pensiun (level Hijau-Hitam)
-│       ├── RiwayatService.php         #   CRUD 7 jenis riwayat + hukdis logic
+│       ├── RiwayatService.php         #   CRUD 7 jenis riwayat + hukdis logic (durasi enforced)
 │       ├── SatyalencanaService.php    #   Kandidat penghargaan Satyalencana
 │       └── TabelGajiService.php       #   CRUD tabel gaji PP 15/2019
 │
 ├── bootstrap/                         # Laravel bootstrap
 ├── config/                            # Konfigurasi (app, auth, database, dll)
 ├── database/
-│   ├── factories/                     # Model factory (UserFactory)
-│   ├── migrations/                    # 18 migration files
+│   ├── factories/                     # Model factories (UserFactory, PegawaiFactory)
+│   ├── migrations/                    # 19 migration files
 │   └── seeders/                       # 6 seeders (User, MasterData, Golongan, Pegawai, TabelGaji, Database)
 │
 ├── public/                            # Entry point + compiled assets
@@ -253,7 +253,7 @@ SIMPEG.Laravel/
 
 ### Entitas Utama
 
-- **`pegawais`** — Central entity, connected to 8 riwayat tables
+- **`pegawais`** — Central entity, connected to 8 riwayat tables. Fields include gelar_depan, gelar_belakang, bagian, tipe_pegawai (PNS/CPNS/PPPK), status_kepegawaian (Aktif/Tidak Aktif), unit_kerja (default Kanim Jakut)
 - **`golongan_pangkats`** — Master golongan/pangkat (17 level I/a – IV/e), FK from `riwayat_pangkats` dan `tabel_gajis`
 - **`jabatans`** — Master jabatan, FK from `riwayat_jabatans`
 - **`tabel_gajis`** — Lookup salary matrix (golongan × masa_kerja)
@@ -297,3 +297,14 @@ SIMPEG.Laravel/
 
 - `KGBCalculationService`: Lookup `tabel_gajis` berdasarkan `golongan_id` dan `masa_kerja_tahun` untuk menghitung gaji baru
 - Digunakan saat create riwayat KGB via `RiwayatService`
+
+### One-Stop Pegawai Creation Flow
+
+- `PegawaiService@create`: Menerima `golonganId` dan `jabatanId` bersama `PegawaiDTO`
+- Di dalam `DB::transaction`: (1) Lookup `gaji_pokok` dari `tabel_gajis` (masa_kerja_tahun=0), (2) Create Pegawai, (3) Auto-create `RiwayatPangkat` (tmt=tmt_cpns), (4) Auto-create `RiwayatJabatan` (tmt=tmt_cpns)
+- `PegawaiFactory` memiliki `afterCreating` hook yang meniru flow ini untuk testing/seeding
+
+### Hukdis Duration Enforcement (PP 94/2021)
+
+- `RiwayatService@storeHukuman` dan `updateHukuman`: Jika tingkat hukuman Sedang atau Berat, `durasi_tahun` di-force ke 1 tahun
+- Form hukdis (create & edit) menampilkan field durasi sebagai readonly dengan value=1

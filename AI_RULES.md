@@ -71,6 +71,8 @@
 - **DILARANG** menambah method ke Model yang seharusnya di Service (kecuali accessor/scope).
 - **WAJIB** ikuti pattern: Controller → Service → Model. Tidak ada shortcut.
 - **WAJIB** gunakan FormRequest untuk validasi, bukan manual validation di controller.
+- **WAJIB** gunakan `DB::transaction()` untuk operasi multi-tabel (contoh: `PegawaiService@create` yang membuat Pegawai + RiwayatPangkat + RiwayatJabatan sekaligus).
+- **WAJIB** durasi hukuman disiplin Sedang/Berat di-enforce ke 1 tahun di Service layer (PP 94/2021), bukan hanya di form view.
 - **DILARANG** menggunakan raw SQL queries. Gunakan Eloquent ORM atau Query Builder.
 
 ### 2.4 Naming Conventions

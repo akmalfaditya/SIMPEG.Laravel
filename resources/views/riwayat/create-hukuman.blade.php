@@ -24,9 +24,10 @@
                         @endforeach
                     </select>
                 </div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-1">Durasi Hukuman (Tahun)</label><input
-                        type="number" name="durasi_tahun" value="{{ old('durasi_tahun') }}" min="1" max="10"
-                        placeholder="contoh: 1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
+                <div id="durasiSection"><label class="block text-sm font-medium text-slate-700 mb-1">Durasi Hukuman (Tahun)</label><input
+                        type="number" name="durasi_tahun" id="durasiTahun" value="{{ old('durasi_tahun', 1) }}" min="1" max="1"
+                        readonly class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50">
+                    <p class="text-xs text-slate-500 mt-1">PP 94/2021: durasi hukuman sedang/berat ditetapkan 1 tahun</p></div>
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK</label><input type="text"
                         name="nomor_sk" value="{{ old('nomor_sk') }}"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>

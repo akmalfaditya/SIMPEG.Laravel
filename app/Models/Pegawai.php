@@ -27,7 +27,9 @@ class Pegawai extends Model
 
     protected $fillable = [
         'nip',
+        'gelar_depan',
         'nama_lengkap',
+        'gelar_belakang',
         'tempat_lahir',
         'tanggal_lahir',
         'jenis_kelamin',
@@ -46,6 +48,9 @@ class Pegawai extends Model
         'no_karpeg',
         'no_taspen',
         'unit_kerja',
+        'bagian',
+        'tipe_pegawai',
+        'status_kepegawaian',
     ];
 
     protected $casts = [

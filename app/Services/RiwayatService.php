@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\JenisSanksi;
 use App\Enums\StatusHukdis;
+use App\Enums\TingkatHukuman;
 
 use App\Models\Pegawai;
 use App\Models\RiwayatPangkat;
@@ -165,6 +166,12 @@ class RiwayatService
                 $data['file_pdf_path'] = $dto->filePdfPath;
             }
 
+            // PP 94/2021: durasi untuk hukuman sedang/berat selalu 1 tahun
+            $tingkat = TingkatHukuman::from($dto->tingkatHukuman);
+            if (in_array($tingkat, [TingkatHukuman::Sedang, TingkatHukuman::Berat])) {
+                $data['durasi_tahun'] = 1;
+            }
+
             $hukuman = RiwayatHukumanDisiplin::create($data);
 
             // Type 2: Hard-update — insert demotion record into riwayat tables
@@ -241,6 +248,13 @@ class RiwayatService
             if ($dto->filePdfPath) {
                 $data['file_pdf_path'] = $dto->filePdfPath;
             }
+
+            // PP 94/2021: durasi untuk hukuman sedang/berat selalu 1 tahun
+            $tingkat = TingkatHukuman::from($dto->tingkatHukuman);
+            if (in_array($tingkat, [TingkatHukuman::Sedang, TingkatHukuman::Berat])) {
+                $data['durasi_tahun'] = 1;
+            }
+
             return $riwayat->update($data);
         });
     }

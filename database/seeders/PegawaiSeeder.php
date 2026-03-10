@@ -121,7 +121,7 @@ class PegawaiSeeder extends Seeder
                 'pegawai_id' => $peg->id,
                 'tingkat_hukuman' => $tingkat,
                 'jenis_sanksi' => $sanksi,
-                'durasi_tahun' => $tingkat === TingkatHukuman::Sedang ? 1 : null,
+                'durasi_tahun' => 1,
                 'nomor_sk' => 'SK-HD/' . ($today->year - mt_rand(1, 4)) . '/00' . ($i + 1),
                 'tanggal_sk' => $today->copy()->subYears(mt_rand(1, 4)),
                 'tmt_hukuman' => $today->copy()->subYears(mt_rand(1, 4)),
@@ -176,40 +176,18 @@ class PegawaiSeeder extends Seeder
         $nip = "{$nipBirth}{$nipTmt}{$nipGender}{$nipSeq}";
         $this->nipCounter++;
 
-        $unitKerjaList = [
-            // Sekretariat Jenderal
-            'Sekretariat Jenderal',
-            'Biro Kepegawaian dan Organisasi',
-            'Biro Perencanaan dan Keuangan',
-            'Biro Hukum dan Hubungan Masyarakat',
-            'Biro Umum dan Pengadaan',
-            // Inspektorat Jenderal
-            'Inspektorat Jenderal',
-            // Ditjen Imigrasi
-            'Direktorat Jenderal Imigrasi',
-            'Kantor Imigrasi Kelas I TPI Jakarta',
-            'Kantor Imigrasi Kelas I TPI Surabaya',
-            'Kantor Imigrasi Kelas II TPI Semarang',
-            'Kantor Imigrasi Kelas II TPI Medan',
-            'Kantor Imigrasi Kelas III Non-TPI Cirebon',
-            'Rumah Detensi Imigrasi Jakarta',
-            // Ditjen Pemasyarakatan
-            'Direktorat Jenderal Pemasyarakatan',
-            'Lembaga Pemasyarakatan Kelas I Cipinang',
-            'Lembaga Pemasyarakatan Kelas II A Tangerang',
-            'Lembaga Pemasyarakatan Kelas II B Bogor',
-            'Rumah Tahanan Negara Kelas I Jakarta Pusat',
-            'Rumah Tahanan Negara Kelas II B Bekasi',
-            'Balai Pemasyarakatan Kelas I Jakarta Selatan',
-            'Balai Pemasyarakatan Kelas II Bandung',
-        ];
-
         $namaLengkap = $this->faker->name($gender === JenisKelamin::LakiLaki ? 'male' : 'female');
         $emailName = strtolower(str_replace([' ', '.', ',', "'"], '', $namaLengkap)) . $this->nipCounter;
 
+        $gelarDepanOptions = [null, null, null, 'Dr.', 'Drs.', 'Ir.', 'Prof.'];
+        $gelarBelakangOptions = [null, null, null, 'S.H.', 'S.E.', 'M.H.', 'M.Sc.', 'S.Kom.'];
+        $bagianOptions = ['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim'];
+
         return Pegawai::create([
             'nip' => $nip,
+            'gelar_depan' => $gelarDepanOptions[mt_rand(0, count($gelarDepanOptions) - 1)],
             'nama_lengkap' => $namaLengkap,
+            'gelar_belakang' => $gelarBelakangOptions[mt_rand(0, count($gelarBelakangOptions) - 1)],
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $birthDate,
             'jenis_kelamin' => $gender,
@@ -226,7 +204,10 @@ class PegawaiSeeder extends Seeder
             'npwp' => mt_rand(10, 99) . '.' . mt_rand(100, 999) . '.' . mt_rand(100, 999) . '.' . mt_rand(1, 9) . '-' . mt_rand(100, 999) . '.000',
             'no_karpeg' => 'K-' . mt_rand(100000, 999999),
             'no_taspen' => 'T-' . mt_rand(1000000, 9999999),
-            'unit_kerja' => $unitKerjaList[mt_rand(0, count($unitKerjaList) - 1)],
+            'bagian' => $bagianOptions[mt_rand(0, count($bagianOptions) - 1)],
+            'unit_kerja' => 'Kanim Jakut',
+            'tipe_pegawai' => 'PNS',
+            'status_kepegawaian' => 'Aktif',
         ]);
     }
 
