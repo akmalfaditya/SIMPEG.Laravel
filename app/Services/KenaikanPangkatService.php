@@ -277,21 +277,14 @@ class KenaikanPangkatService
     }
 
     /**
-     * Process kenaikan pangkat: create RiwayatPangkat + update gaji_pokok.
+     * Process kenaikan pangkat: create RiwayatPangkat record.
+     * Gaji pokok is automatically synced by RiwayatPangkatObserver.
      */
     public function processKenaikanPangkat(array $validated): \App\Models\RiwayatPangkat
     {
         return DB::transaction(function () use ($validated) {
             $dto = RiwayatPangkatDTO::fromRequest($validated);
-            $riwayat = $this->riwayatService->storePangkat($dto);
-
-            // Update gaji_pokok on Pegawai if gaji_baru is provided
-            if (!empty($validated['gaji_baru'])) {
-                Pegawai::where('id', $dto->pegawaiId)
-                    ->update(['gaji_pokok' => (float) $validated['gaji_baru']]);
-            }
-
-            return $riwayat;
+            return $this->riwayatService->storePangkat($dto);
         });
     }
 }

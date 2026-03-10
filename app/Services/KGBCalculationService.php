@@ -4,17 +4,14 @@ namespace App\Services;
 
 use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
-use App\Models\TabelGaji;
 
 class KGBCalculationService
 {
+    public function __construct(private SalaryCalculatorService $salaryService) {}
+
     public function calculateNewSalary(int $golonganId, int $masaKerjaTahun): ?float
     {
-        $entry = TabelGaji::where('golongan_id', $golonganId)
-            ->where('masa_kerja_tahun', $masaKerjaTahun)
-            ->first();
-
-        return $entry?->gaji_pokok ? (float) $entry->gaji_pokok : null;
+        return $this->salaryService->calculateGaji($golonganId, $masaKerjaTahun);
     }
 
     public function getNextKGBSalary(Pegawai $pegawai): array
@@ -30,21 +27,16 @@ class KGBCalculationService
         $golongan = $pangkatTerakhir->golongan;
         $today = today();
 
-        // Hitung masa kerja golongan dalam tahun (dari TMT pangkat terakhir)
-        $totalMonths = (($today->year - $pangkatTerakhir->tmt_pangkat->year) * 12)
-            + $today->month - $pangkatTerakhir->tmt_pangkat->month;
-        $masaKerjaGolTahun = intdiv($totalMonths, 12);
-
-        // Tambah 2 tahun untuk KGB berikutnya (MKG setelah KGB)
         $lastKgb = $pegawai->riwayatKgb->sortByDesc('tmt_kgb')->first();
         $masaKerjaTotalBulan = (($today->year - $pegawai->tmt_cpns->year) * 12)
             + $today->month - $pegawai->tmt_cpns->month;
         $masaKerjaTotalTahun = intdiv($masaKerjaTotalBulan, 12);
 
         // Untuk KGB berikutnya, MKG naik 2 tahun dari terakhir
+        // Jika belum ada KGB, hitung MKG awal dari tmt_cpns (total masa kerja)
         $mkgUntukKgb = $lastKgb
             ? $lastKgb->masa_kerja_golongan_tahun + 2
-            : $masaKerjaGolTahun;
+            : $masaKerjaTotalTahun;
 
         $gajiBaru = $this->calculateNewSalary($golonganId, $mkgUntukKgb);
 

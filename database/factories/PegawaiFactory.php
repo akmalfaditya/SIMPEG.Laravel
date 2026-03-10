@@ -11,9 +11,9 @@ use App\Models\JenisKelaminMaster;
 use App\Models\Pegawai;
 use App\Models\StatusKepegawaian;
 use App\Models\StatusPernikahanMaster;
-use App\Models\TabelGaji;
 use App\Models\TipePegawai;
 use App\Models\UnitKerja;
+use App\Services\SalaryCalculatorService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -62,8 +62,8 @@ class PegawaiFactory extends Factory
     }
 
     /**
-     * afterCreating hook: automatically attach initial RiwayatPangkat & RiwayatJabatan
-     * to mimic the One-Stop Creation Flow.
+     * afterCreating hook: build a logical timeline of history records
+     * (Pangkat progression + KGB cycles) and let Observers sync gaji_pokok.
      */
     public function configure(): static
     {
@@ -73,7 +73,7 @@ class PegawaiFactory extends Factory
 
             if (!$golongan || !$jabatan) return;
 
-            // Auto-attach initial RiwayatPangkat
+            // 1. Initial RiwayatPangkat at tmt_cpns (Observer fires → sets initial gaji_pokok)
             $pegawai->riwayatPangkat()->create([
                 'golongan_id' => $golongan->id,
                 'tmt_pangkat' => $pegawai->tmt_cpns,
@@ -81,7 +81,7 @@ class PegawaiFactory extends Factory
                 'nomor_sk' => 'SK-CPNS/' . $pegawai->tmt_cpns->year . '/AUTO',
             ]);
 
-            // Auto-attach initial RiwayatJabatan
+            // 2. Initial RiwayatJabatan
             $pegawai->riwayatJabatan()->create([
                 'jabatan_id' => $jabatan->id,
                 'tmt_jabatan' => $pegawai->tmt_cpns,
@@ -89,13 +89,31 @@ class PegawaiFactory extends Factory
                 'nomor_sk' => 'SK-JAB/' . $pegawai->tmt_cpns->year . '/AUTO',
             ]);
 
-            // Lookup & set starting salary
-            $gaji = TabelGaji::where('golongan_id', $golongan->id)
-                ->where('masa_kerja_tahun', 0)
-                ->value('gaji_pokok');
+            // 3. Build KGB timeline every 2 years from tmt_cpns
+            //    Observer fires on each create → gaji_pokok auto-synced
+            $salaryService = app(SalaryCalculatorService::class);
+            $tmtKgb = $pegawai->tmt_cpns->copy()->addYears(2);
+            $mkgTahun = 2;
+            $kgbCounter = 1;
 
-            if ($gaji) {
-                $pegawai->update(['gaji_pokok' => $gaji]);
+            while ($tmtKgb->lte(today())) {
+                $gajiBaru = $salaryService->calculateGaji($golongan->id, $mkgTahun);
+                $gajiLama = $salaryService->calculateGaji($golongan->id, max(0, $mkgTahun - 2));
+
+                if ($gajiBaru) {
+                    $pegawai->riwayatKgb()->create([
+                        'nomor_sk' => 'SK-KGB/' . $tmtKgb->year . '/' . str_pad($kgbCounter, 3, '0', STR_PAD_LEFT),
+                        'tmt_kgb' => $tmtKgb->copy(),
+                        'gaji_lama' => $gajiLama ?? $gajiBaru,
+                        'gaji_baru' => $gajiBaru,
+                        'masa_kerja_golongan_tahun' => $mkgTahun,
+                        'masa_kerja_golongan_bulan' => 0,
+                    ]);
+                    $kgbCounter++;
+                }
+
+                $tmtKgb->addYears(2);
+                $mkgTahun += 2;
             }
         });
     }

@@ -58,6 +58,7 @@ Request → Route → Controller → Service → Model → Database
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
+8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`.
 
 ---
 
@@ -125,6 +126,10 @@ SIMPEG.Laravel/
 │   │   └── Resources/
 │   │       └── PegawaiResource.php    #   API Resource (JSON transform)
 │   │
+│   ├── Observers/                     # Model Observers (event-driven sync)
+│   │   ├── RiwayatKgbObserver.php     #   Sync pegawai.gaji_pokok on KGB events
+│   │   └── RiwayatPangkatObserver.php #   Sync pegawai.gaji_pokok on Pangkat events
+│   │
 │   ├── Models/                        # 21 Eloquent Models
 │   │   ├── AgamaMaster.php            #   Master agama (table: agamas)
 │   │   ├── Bagian.php                 #   Master bagian/seksi
@@ -151,18 +156,19 @@ SIMPEG.Laravel/
 │   ├── Providers/
 │   │   └── AppServiceProvider.php
 │   │
-│   └── Services/                      # 13 Service classes (business logic)
+│   └── Services/                      # 14 Service classes (business logic)
 │       ├── DashboardService.php       #   Agregasi dashboard + chart data
 │       ├── DocumentUploadService.php  #   Upload/delete file SK
 │       ├── DUKService.php             #   Ranking DUK per aturan BKN
 │       ├── GolonganPangkatService.php #   CRUD master golongan/pangkat
 │       ├── JabatanService.php         #   CRUD master jabatan
 │       ├── KenaikanPangkatService.php #   Analisis eligibilitas kenaikan pangkat
-│       ├── KGBCalculationService.php  #   Kalkulasi gaji baru via tabel PP 15/2019
+│       ├── KGBCalculationService.php  #   Kalkulasi gaji baru (delegates to SalaryCalculatorService)
 │       ├── KGBService.php             #   Monitoring KGB (jatuh tempo, eligibilitas)
 │       ├── PegawaiService.php         #   CRUD pegawai + One-Stop Creation Flow (auto gaji, riwayat)
 │       ├── PensiunService.php         #   Alert pensiun (level Hijau-Hitam)
 │       ├── RiwayatService.php         #   CRUD 7 jenis riwayat + hukdis logic (durasi enforced)
+│       ├── SalaryCalculatorService.php #   **Single source of truth** untuk salary resolution (TabelGaji lookup + fallback)
 │       ├── SatyalencanaService.php    #   Kandidat penghargaan Satyalencana
 │       └── TabelGajiService.php       #   CRUD tabel gaji PP 15/2019
 │
@@ -299,18 +305,39 @@ SIMPEG.Laravel/
 
 - `KGBService`: Cek sanksi `PenundaanKgb` aktif → geser jatuh tempo KGB
 - `KenaikanPangkatService`: Cek sanksi `PenundaanPangkat` (geser masa kerja), `PenurunanPangkat` (turunkan golongan + reset TMT), dan semua hukuman aktif → blokir eligibilitas
-- `RiwayatService`: Handle Type 2 hukdis (hard-update: insert demotion record ke riwayat_pangkats/jabatans), pemulihan (insert restoration + rekalkulasi gaji)
+- `RiwayatService`: Handle Type 2 hukdis (hard-update: insert demotion record ke riwayat_pangkats/jabatans via model-level operations agar Observer aktif), pemulihan (insert restoration record → Observer otomatis recalculate gaji)
 
-### Tabel Gaji ↔ KGB
+### Tabel Gaji ↔ KGB & Kenaikan Pangkat
 
-- `KGBCalculationService`: Lookup `tabel_gajis` berdasarkan `golongan_id` dan `masa_kerja_tahun` untuk menghitung gaji baru
-- Digunakan saat create riwayat KGB via `RiwayatService`
+- **`SalaryCalculatorService`** — Single source of truth untuk salary resolution:
+  - `syncCurrentSalary(Pegawai)`: **Tongkat Estafet TMT** — bandingkan `tmt_pangkat` terbaru vs `tmt_kgb` terbaru, yang paling recent menentukan `gaji_pokok`. Jika KGB terbaru → gunakan `gaji_baru`, jika Pangkat terbaru → hitung dari TabelGaji (golongan × MKG).
+  - `calculateGaji(golongan_id, mkg_tahun)`: Query `tabel_gajis` dengan exact match, fallback ke closest lower MKG jika exact tidak ditemukan
+  - `calculateNextKgbDate(Pegawai)`: Ambil MAX(latest tmt_kgb, latest tmt_pangkat) + 2 tahun. Kenaikan Pangkat me-reset clock KGB.
+- `KGBCalculationService`: Delegates `calculateNewSalary()` ke `SalaryCalculatorService`. Menyediakan `getNextKGBSalary()` untuk pre-fill form KGB.
+- Digunakan oleh Observers, Controllers, dan monitoring services.
+
+### Data Denormalization — Tongkat Estafet TMT (TMT Relay Baton)
+
+- **`pegawais.gaji_pokok`** adalah kolom denormalized (cache) yang disinkronisasi otomatis oleh Laravel Observers, BUKAN manual di Controllers/Services.
+- **Aturan BKN**: Gaji pokok pegawai SELALU ditentukan oleh record terakhir berdasarkan TMT (Terhitung Mulai Tanggal) antara `RiwayatPangkat` dan `RiwayatKgb`. Siapapun yang memegang TMT terbaru menjadi single source of truth.
+- **Alur keputusan** (`SalaryCalculatorService::syncCurrentSalary()`):
+  1. Ambil `latestPangkat` (order by `tmt_pangkat` DESC) dan `latestKgb` (order by `tmt_kgb` DESC)
+  2. Jika keduanya null → `gaji_pokok = 0`
+  3. Jika hanya Pangkat → hitung dari TabelGaji (golongan × MKG)
+  4. Jika hanya KGB → gunakan `gaji_baru`
+  5. Jika keduanya ada → bandingkan TMT: KGB ≥ Pangkat → `gaji_baru`, Pangkat > KGB → hitung dari TabelGaji
+- **`RiwayatKgbObserver`** & **`RiwayatPangkatObserver`** (`app/Observers/`):
+  - `saved` (fires on create & update): Trigger `syncCurrentSalary()`
+  - `deleted`: Trigger `syncCurrentSalary()` — graceful rollback ke record valid sebelumnya
+- Observers di-register di `AppServiceProvider@boot`
+- Pattern ini menghilangkan duplikasi manual gaji_pokok update di `RiwayatService`, `KenaikanPangkatService`, dan Controllers
 
 ### One-Stop Pegawai Creation Flow
 
 - `PegawaiService@create`: Menerima `golonganId` dan `jabatanId` bersama `PegawaiDTO`
-- Di dalam `DB::transaction`: (1) Lookup `gaji_pokok` dari `tabel_gajis` (masa_kerja_tahun=0), (2) Create Pegawai, (3) Auto-create `RiwayatPangkat` (tmt=tmt_cpns), (4) Auto-create `RiwayatJabatan` (tmt=tmt_cpns)
-- `PegawaiFactory` memiliki `afterCreating` hook yang meniru flow ini untuk testing/seeding
+- Di dalam `DB::transaction`: (1) Create Pegawai dengan `gaji_pokok=0`, (2) Auto-create `RiwayatPangkat` (tmt=tmt_cpns) → Observer fires → gaji_pokok dihitung dari TabelGaji, (3) Auto-create `RiwayatJabatan` (tmt=tmt_cpns)
+- `PegawaiFactory` memiliki `afterCreating` hook yang membuat logical timeline: Initial Pangkat + KGB setiap 2 tahun dari tmt_cpns → Observer fires pada setiap record → gaji_pokok otomatis tersinkronisasi ke level MKG yang benar
+- `PegawaiSeeder` membangun timeline realistis: Pangkat progression (setiap 4 tahun naik golongan) + KGB timeline (setiap 2 tahun naik MKG) → dummy data memiliki riwayat yang konsisten dan logis, bukan gaji yang di-hardcode
 
 ### Hukdis Duration Enforcement (PP 94/2021)
 

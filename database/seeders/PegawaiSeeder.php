@@ -20,9 +20,9 @@ use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
 use App\Models\StatusKepegawaian;
 use App\Models\StatusPernikahanMaster;
-use App\Models\TabelGaji;
 use App\Models\TipePegawai;
 use App\Models\UnitKerja;
+use App\Services\SalaryCalculatorService;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
@@ -55,7 +55,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(6, 19));
+            $this->addKgbTimeline($peg, $today, mt_rand(6, 19));
         }
 
         $jabatanBup60 = $jabatanList->where('bup', 60)->values();
@@ -67,7 +67,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(6, 19));
+            $this->addKgbTimeline($peg, $today, mt_rand(6, 19));
         }
 
         $jabatanBup65 = $jabatanList->where('bup', 65)->values();
@@ -79,7 +79,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(6, 19));
+            $this->addKgbTimeline($peg, $today, mt_rand(6, 19));
         }
 
         // GROUP 2: KGB due soon (20)
@@ -90,7 +90,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(22, 23));
+            $this->addKgbTimeline($peg, $today, mt_rand(22, 23));
         }
 
         // GROUP 3: Satyalencana eligible (15)
@@ -103,7 +103,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(3, 19));
+            $this->addKgbTimeline($peg, $today, mt_rand(3, 19));
         }
 
         // GROUP 4: With hukuman disiplin (10)
@@ -115,7 +115,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(3, 19));
+            $this->addKgbTimeline($peg, $today, mt_rand(3, 19));
 
             $tingkat = $i < 5 ? TingkatHukuman::Sedang : TingkatHukuman::Berat;
             $sanksi = $tingkat === TingkatHukuman::Sedang
@@ -146,7 +146,7 @@ class PegawaiSeeder extends Seeder
             $peg = $this->createPegawai($birthDate, $tmtCpns);
             $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
             $this->addRiwayatPangkatProgression($peg, $tmtCpns, $today);
-            $this->addRecentKGB($peg, $today, mt_rand(1, 21));
+            $this->addKgbTimeline($peg, $today, mt_rand(1, 21));
 
             if ($i % 8 === 0) {
                 RiwayatHukumanDisiplin::create([
@@ -266,46 +266,47 @@ class PegawaiSeeder extends Seeder
         }
     }
 
-    private function addRecentKGB(Pegawai $peg, $today, int $monthsAgo): void
+    /**
+     * Build a realistic KGB timeline from earliest pangkat TMT to today,
+     * with the last KGB occurring `monthsAgoLastKgb` months before today.
+     * Observers fire on each RiwayatKgb::create → gaji_pokok auto-synced.
+     */
+    private function addKgbTimeline(Pegawai $peg, $today, int $monthsAgoLastKgb): void
     {
-        $tmtKgb = $today->copy()->subMonths($monthsAgo);
-
-        // Get latest pangkat for golongan lookup
         $latestPangkat = $peg->riwayatPangkat()->orderByDesc('tmt_pangkat')->first();
         if (!$latestPangkat) return;
 
         $golonganId = $latestPangkat->golongan_id;
-        $totalMonths = (($today->year - $peg->tmt_cpns->year) * 12) + $today->month - $peg->tmt_cpns->month;
-        $mkgTahun = intdiv($totalMonths, 12);
-        $mkgBulan = $totalMonths % 12;
+        $salaryService = app(SalaryCalculatorService::class);
 
-        // Look up gaji_baru from TabelGaji (current MKG, capped to highest available)
-        $gajiBaru = TabelGaji::where('golongan_id', $golonganId)
-            ->where('masa_kerja_tahun', '<=', $mkgTahun)
-            ->orderByDesc('masa_kerja_tahun')
-            ->value('gaji_pokok');
+        // Build KGB every 2 years from tmt_cpns, but stop so the last one
+        // lands at approximately `monthsAgoLastKgb` months before today
+        $lastKgbDate = $today->copy()->subMonths($monthsAgoLastKgb);
+        $tmtKgb = $peg->tmt_cpns->copy()->addYears(2);
+        $mkgTahun = 2;
+        $counter = 1;
 
-        // Look up gaji_lama (MKG - 2 years, the previous KGB period)
-        $mkgLama = max(0, $mkgTahun - 2);
-        $gajiLama = TabelGaji::where('golongan_id', $golonganId)
-            ->where('masa_kerja_tahun', '<=', $mkgLama)
-            ->orderByDesc('masa_kerja_tahun')
-            ->value('gaji_pokok');
+        while ($tmtKgb->lte($lastKgbDate)) {
+            $gajiBaru = $salaryService->calculateGaji($golonganId, $mkgTahun);
+            $gajiLama = $salaryService->calculateGaji($golonganId, max(0, $mkgTahun - 2));
 
-        if (!$gajiBaru) return;
+            if (!$gajiBaru) break;
 
-        RiwayatKgb::create([
-            'pegawai_id' => $peg->id,
-            'nomor_sk' => 'SK-KGB/' . $tmtKgb->year . '/001',
-            'tmt_kgb' => $tmtKgb,
-            'gaji_lama' => $gajiLama ?? $gajiBaru,
-            'gaji_baru' => $gajiBaru,
-            'masa_kerja_golongan_tahun' => $mkgTahun,
-            'masa_kerja_golongan_bulan' => $mkgBulan,
-        ]);
+            RiwayatKgb::create([
+                'pegawai_id' => $peg->id,
+                'nomor_sk' => 'SK-KGB/' . $tmtKgb->year . '/' . str_pad($counter, 3, '0', STR_PAD_LEFT),
+                'tmt_kgb' => $tmtKgb->copy(),
+                'gaji_lama' => $gajiLama ?? $gajiBaru,
+                'gaji_baru' => $gajiBaru,
+                'masa_kerja_golongan_tahun' => $mkgTahun,
+                'masa_kerja_golongan_bulan' => 0,
+            ]);
 
-        // Sync pegawai gaji_pokok to latest KGB gaji_baru
-        $peg->update(['gaji_pokok' => $gajiBaru]);
+            $tmtKgb->addYears(2);
+            $mkgTahun += 2;
+            $counter++;
+        }
+        // gaji_pokok sync handled by RiwayatKgbObserver on each create
     }
 
     private function addRiwayatPendidikan(Pegawai $peg): void

@@ -14,6 +14,7 @@ use App\Models\StatusPernikahanMaster;
 use App\Models\TipePegawai;
 use App\Models\UnitKerja;
 use App\Services\PegawaiService;
+use App\Services\SalaryCalculatorService;
 use App\Http\Requests\StorePegawaiRequest;
 use App\Http\Requests\UpdatePegawaiRequest;
 use App\DTOs\PegawaiDTO;
@@ -25,7 +26,10 @@ class PegawaiController extends Controller
     private const DEFAULT_PAGE = 1;
     private const DEFAULT_LIMIT = 10;
 
-    public function __construct(private PegawaiService $service) {}
+    public function __construct(
+        private PegawaiService $service,
+        private SalaryCalculatorService $salaryCalculatorService,
+    ) {}
 
     public function index()
     {
@@ -69,6 +73,7 @@ class PegawaiController extends Controller
             'pegawai' => $pegawai,
             'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
             'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
+            'estimasiKgbSelanjutnya' => $this->salaryCalculatorService->calculateNextKgbDate($pegawai),
         ]);
     }
 

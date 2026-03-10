@@ -230,8 +230,17 @@
 
             {{-- KGB --}}
             <div class="tab-content p-5 hidden" id="tab-kgb">
-                <div class="flex justify-end mb-3"><a href="{{ route('riwayat.kgb.create', $pegawai->id) }}"
-                        class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+                <div class="flex items-center justify-between mb-3">
+                    @if($estimasiKgbSelanjutnya)
+                    <div class="text-sm text-slate-600">
+                        Estimasi KGB Selanjutnya: <span class="font-semibold text-blue-600">{{ $estimasiKgbSelanjutnya->format('d/m/Y') }}</span>
+                    </div>
+                    @else
+                    <div></div>
+                    @endif
+                    <a href="{{ route('riwayat.kgb.create', $pegawai->id) }}"
+                        class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a>
+                </div>
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50">
                         <tr>

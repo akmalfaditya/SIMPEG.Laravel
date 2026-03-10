@@ -18,6 +18,7 @@ use App\Models\PenilaianKinerja;
 use App\Services\RiwayatService;
 use App\Services\JabatanService;
 use App\Services\KGBCalculationService;
+use App\Services\SalaryCalculatorService;
 
 use App\Http\Requests\Riwayat\StorePangkatRequest;
 use App\Http\Requests\Riwayat\UpdatePangkatRequest;
@@ -53,6 +54,7 @@ class RiwayatController extends Controller
         private RiwayatService $service,
         private JabatanService $jabatanService,
         private KGBCalculationService $kgbCalculationService,
+        private SalaryCalculatorService $salaryCalculatorService,
     ) {}
 
     // --- PANGKAT ---
@@ -208,6 +210,21 @@ class RiwayatController extends Controller
         if ($request->hasFile('file_sk')) {
             $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', null, (int) $validated['pegawai_id']);
         }
+
+        // Auto-calculate gaji_baru from TabelGaji (golongan × MKG)
+        $pegawai = Pegawai::with('riwayatPangkat')->findOrFail($validated['pegawai_id']);
+        $latestPangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
+        if ($latestPangkat) {
+            $calculated = $this->salaryCalculatorService->calculateGaji(
+                $latestPangkat->golongan_id,
+                (int) $validated['masa_kerja_golongan_tahun']
+            );
+            if ($calculated !== null) {
+                $validated['gaji_baru'] = $calculated;
+            }
+        }
+        $validated['gaji_lama'] = (float) $pegawai->gaji_pokok;
+
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->storeKgb($dto);
         $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK turut diunggah.' : '';
@@ -226,6 +243,21 @@ class RiwayatController extends Controller
         if ($request->hasFile('file_sk')) {
             $validated['file_pdf_path'] = $this->service->uploadSk($request->file('file_sk'), 'sk_kgb', $riwayatKgb->file_pdf_path, $riwayatKgb->pegawai_id);
         }
+
+        // Auto-calculate gaji_baru from TabelGaji (golongan × MKG)
+        $pegawai = Pegawai::with('riwayatPangkat')->findOrFail($riwayatKgb->pegawai_id);
+        $latestPangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
+        if ($latestPangkat) {
+            $calculated = $this->salaryCalculatorService->calculateGaji(
+                $latestPangkat->golongan_id,
+                (int) $validated['masa_kerja_golongan_tahun']
+            );
+            if ($calculated !== null) {
+                $validated['gaji_baru'] = $calculated;
+            }
+        }
+        $validated['gaji_lama'] = (float) $pegawai->gaji_pokok;
+
         $dto = RiwayatKgbDTO::fromRequest($validated);
         $this->service->updateKgb($riwayatKgb, $dto);
         $docMsg = $request->hasFile('file_sk') ? ' Dokumen SK telah diperbarui.' : '';

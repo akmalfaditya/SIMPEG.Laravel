@@ -30,7 +30,6 @@ class RiwayatService
 {
     public function __construct(
         private DocumentUploadService $uploadService,
-        private KGBCalculationService $kgbService,
     ) {}
 
     /**
@@ -110,49 +109,21 @@ class RiwayatService
     // --- KGB ---
     public function storeKgb(RiwayatKgbDTO $dto): RiwayatKgb
     {
-        return DB::transaction(function () use ($dto) {
-            $riwayat = RiwayatKgb::create($dto->toArray());
-
-            // Update Base Salary
-            Pegawai::where('id', $dto->pegawaiId)->update(['gaji_pokok' => $dto->gajiBaru]);
-
-            return $riwayat;
-        });
+        return DB::transaction(fn() => RiwayatKgb::create($dto->toArray()));
     }
 
     public function updateKgb(RiwayatKgb $riwayat, RiwayatKgbDTO $dto): bool
     {
-        return DB::transaction(function () use ($riwayat, $dto) {
-            $result = $riwayat->update($dto->toArray());
-
-            // Sync gaji_pokok if this is the latest KGB
-            $pegawaiId = $riwayat->pegawai_id;
-            $latestKgb = RiwayatKgb::where('pegawai_id', $pegawaiId)
-                ->orderByDesc('tmt_kgb')->first();
-            if ($latestKgb && $latestKgb->id === $riwayat->id) {
-                Pegawai::where('id', $pegawaiId)->update(['gaji_pokok' => $dto->gajiBaru]);
-            }
-
-            return $result;
-        });
+        return DB::transaction(fn() => $riwayat->update($dto->toArray()));
     }
 
     public function deleteKgb(RiwayatKgb $riwayat): bool
     {
         return DB::transaction(function () use ($riwayat) {
-            $pegawaiId = $riwayat->pegawai_id;
             if ($riwayat->file_pdf_path) {
                 $this->uploadService->delete($riwayat->file_pdf_path);
             }
-            $riwayat->delete();
-
-            // Revert gaji_pokok to previous KGB's gaji_baru, or 0 if none left
-            $previousKgb = RiwayatKgb::where('pegawai_id', $pegawaiId)
-                ->orderByDesc('tmt_kgb')->first();
-            $newGaji = $previousKgb ? $previousKgb->gaji_baru : 0;
-            Pegawai::where('id', $pegawaiId)->update(['gaji_pokok' => $newGaji]);
-
-            return true;
+            return $riwayat->delete();
         });
     }
 
@@ -198,9 +169,6 @@ class RiwayatService
                 'tanggal_sk' => $dto->tanggalSk ?? $dto->tmtHukuman,
                 'is_hukdis_demotion' => true,
             ]);
-
-            // Update gaji_pokok based on the new (lower) pangkat
-            $this->recalculateGajiPokok($pegawaiId);
         }
 
         if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan]) && $dto->demotionJabatanId !== null) {
@@ -212,32 +180,6 @@ class RiwayatService
                 'tanggal_sk' => $dto->tanggalSk ?? $dto->tmtHukuman,
                 'is_hukdis_demotion' => true,
             ]);
-        }
-    }
-
-    /**
-     * Recalculate gaji_pokok based on the latest pangkat record.
-     */
-    private function recalculateGajiPokok(int $pegawaiId): void
-    {
-        $pegawai = Pegawai::find($pegawaiId);
-        if (!$pegawai) return;
-
-        $latestPangkat = RiwayatPangkat::where('pegawai_id', $pegawaiId)
-            ->orderByDesc('tmt_pangkat')
-            ->first();
-
-        if (!$latestPangkat) return;
-
-        $golonganId = $latestPangkat->golongan_id;
-        $tmtPangkat = $latestPangkat->tmt_pangkat;
-        $today = today();
-        $totalMonths = (($today->year - $tmtPangkat->year) * 12) + $today->month - $tmtPangkat->month;
-        $masaKerjaTahun = intdiv($totalMonths, 12);
-
-        $gajiBaru = $this->kgbService->calculateNewSalary($golonganId, $masaKerjaTahun);
-        if ($gajiBaru !== null) {
-            $pegawai->update(['gaji_pokok' => $gajiBaru]);
         }
     }
 
@@ -267,13 +209,14 @@ class RiwayatService
             $pegawaiId = $riwayat->pegawai_id;
 
             if ($jenis === JenisSanksi::PenurunanPangkat) {
-                RiwayatPangkat::where('pegawai_id', $pegawaiId)
+                // Use model-level deletes so RiwayatPangkatObserver fires
+                $demotions = RiwayatPangkat::where('pegawai_id', $pegawaiId)
                     ->where('is_hukdis_demotion', true)
                     ->where('tmt_pangkat', $riwayat->tmt_hukuman)
-                    ->delete();
-
-                // Recalculate gaji_pokok from the now-latest pangkat
-                $this->recalculateGajiPokok($pegawaiId);
+                    ->get();
+                foreach ($demotions as $demotion) {
+                    $demotion->delete();
+                }
             }
 
             if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan])) {
@@ -325,9 +268,6 @@ class RiwayatService
                     'tmt_pangkat' => $tanggalPemulihan,
                     'tanggal_sk' => $tanggalPemulihan,
                 ]);
-
-                // Recalculate gaji_pokok based on restored pangkat
-                $this->recalculateGajiPokok($pegawaiId);
             }
 
             if (in_array($jenis, [JenisSanksi::PenurunanJabatan, JenisSanksi::PembebasanJabatan]) && $restorationJabatanId !== null) {

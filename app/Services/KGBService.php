@@ -11,6 +11,7 @@ class KGBService
     public function __construct(
         private KGBCalculationService $calculationService,
         private RiwayatService $riwayatService,
+        private SalaryCalculatorService $salaryCalculatorService,
     ) {}
 
     public function getAllKGBStatus(): array
@@ -24,7 +25,10 @@ class KGBService
             $lastKGB = $pegawai->riwayatKgb->sortByDesc('tmt_kgb')->first();
             if (!$lastKGB) continue;
 
-            $jatuhTempo = $lastKGB->tmt_kgb->copy()->addYears(2);
+            // Next KGB = max(latest tmt_kgb, latest tmt_pangkat) + 2 years
+            $jatuhTempo = $this->salaryCalculatorService->calculateNextKgbDate($pegawai);
+            if (!$jatuhTempo) continue;
+
             $pangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
 
             // GAP-08: Check for active Penundaan KGB sanctions
@@ -130,7 +134,9 @@ class KGBService
             ];
         }
 
-        $jatuhTempo = $lastKGB->tmt_kgb->copy()->addYears(2);
+        $jatuhTempo = $this->salaryCalculatorService->calculateNextKgbDate($pegawai);
+        if (!$jatuhTempo) return null;
+
         $pangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
         $kgbEstimate = $this->calculationService->getNextKGBSalary($pegawai);
 
