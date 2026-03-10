@@ -10,7 +10,7 @@ class SatyalencanaService
     public function getEligibleCandidates(): array
     {
         $pegawaiList = Pegawai::with([
-            'riwayatPangkat', 'riwayatJabatan.jabatan',
+            'riwayatPangkat.golongan', 'riwayatJabatan.jabatan',
             'riwayatHukumanDisiplin', 'riwayatPenghargaan',
         ])->where('is_active', true)->get();
 
@@ -34,6 +34,7 @@ class SatyalencanaService
             if ($alreadyAwarded) continue;
 
             $hasDisqualifying = $pegawai->riwayatHukumanDisiplin
+                ->filter(fn($h) => $h->isAktif())
                 ->filter(fn($h) =>
                     $h->tingkat_hukuman === TingkatHukuman::Sedang ||
                     $h->tingkat_hukuman === TingkatHukuman::Berat
@@ -54,7 +55,7 @@ class SatyalencanaService
                     'pegawai_id' => $pegawai->id,
                     'nip' => $pegawai->nip,
                     'nama_lengkap' => $pegawai->nama_lengkap,
-                    'pangkat_terakhir' => $pangkat?->golongan_ruang?->label() ?? '-',
+                    'pangkat_terakhir' => $pangkat?->golongan?->label ?? '-',
                     'jabatan_terakhir' => $jabatan?->jabatan?->nama_jabatan ?? '-',
                     'masa_kerja_tahun' => $masaKerjaTahun,
                     'milestone' => $milestone,

@@ -223,16 +223,16 @@
 - **Dampak UX**: Tidak ada pencatatan alasan, tanggal efektif, atau SK pemberhentian. Data bisa diubah tanpa audit trail yang jelas.
 - **Aksi**: Buat `OffboardingController` dengan form: jenis off-boarding (Resign/Diberhentikan/Meninggal/Pensiun), tanggal efektif, nomor SK, alasan. Saat submit: update status, set `is_active = false`, catat di tabel riwayat.
 
-### 🟡 GAP-38: Satyalencana Service Bug — `golongan_ruang?->label()` Error
-- **Masalah**: `SatyalencanaService` baris 57 menggunakan `$pangkat?->golonSatyalencanaService` baris 36-40 men-disqualify kandidat berdasarkan **seluruh riwayat** hukdis Sedang/Berat, tanpa memfilter `isAktif()`. Pegawai yang hukdisnya sudah selesai (status Selesai) tetap didiskualifikasi permanen.
-- **Dampak UX**: Pegawai yang pernah kena hukdis Sedang 10 tahun lalu (sudah selesai dan dipulihkan) tidak akan pernah muncul di daftar kandidat Satyalencana.
-- **Aksi**: Tambah filter `->filter(fn($h) => $h->isAktif())` sebelum cek tingkat hukuman, atau tambah parameter time-window (misal 5 tahun terakhir) sesuai regulasi.
-gan_ruang?->label()`. Setelah normalisasi, `golongan_ruang` bukan lagi Enum object — field lama sudah diganti dengan FK `golongan_id`. Kode akan menghasilkan error karena `golongan_ruang` bernilai `null` (field tidak ada) atau integer.
+### 🟡 GAP-38: Satyalencana Service Bug — `golongan_ruang?->label()` Error DONE
+- **Masalah**: `SatyalencanaService` baris 57 menggunakan `$pangkat?->golonSatyalencanaService` baris 36-40 men-disqualify kandidat berdasarkan **seluruh riwayat** hukdis Sedang/Berat, tanpa memfilter `isAktif()`. 
 - **Dampak UX**: Halaman Satyalencana kemungkinan error saat menampilkan kolom "Pangkat Terakhir", atau menampilkan "-" default untuk semua pegawai.
 - **Aksi**: Ubah `$pangkat?->golongan_ruang?->label()` menjadi `$pangkat?->golongan?->label ?? '-'`. Tambahkan `riwayatPangkat.golongan` di eager-load query (baris 13) untuk menghindari N+1.
 
-### 🟡 GAP-39: Satyalencana Hukdis Check Terlalu Luas — Tidak Cek Status Aktif
-- **Masalah**: `
+### 🟡 GAP-39: Satyalencana Hukdis Check Terlalu Luas — Tidak Cek Status Aktif DONE
+- **Masalah**: `Pegawai yang hukdisnya sudah selesai (status Selesai) tetap didiskualifikasi permanen.
+- **Dampak UX**: Pegawai yang pernah kena hukdis Sedang 10 tahun lalu (sudah selesai dan dipulihkan) tidak akan pernah muncul di daftar kandidat Satyalencana.
+- **Aksi**: Tambah filter `->filter(fn($h) => $h->isAktif())` sebelum cek tingkat hukuman, atau tambah parameter time-window (misal 5 tahun terakhir) sesuai regulasi.
+gan_ruang?->label()`. Setelah normalisasi, `golongan_ruang` bukan lagi Enum object — field lama sudah diganti dengan FK `golongan_id`. Kode akan menghasilkan error karena `golongan_ruang` bernilai `null` (field tidak ada) atau integer.
 ### 🟡 GAP-40: No "Quick Action" Buttons dari Halaman Monitoring
 - **Masalah**: Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) menampilkan data dalam tabel tapi **tidak ada tombol aksi** (selain Satyalencana yang punya "Berikan Penghargaan"). HR harus meninggalkan halaman untuk melakukan tindak lanjut.
 - **Dampak UX**: Informasi dan aksi terpisah. HR harus bolak-balik antara halaman monitoring dan halaman pegawai.
