@@ -200,12 +200,12 @@
 > Hasil analisis mendalam terhadap seluruh Service, Controller, dan View.  
 > Fokus: workflow yang belum komplit sehingga UX terasa terputus — HR harus melakukan workaround manual.
 
-### 🔴 GAP-33: Workflow Proses KGB Tidak Ada — Monitoring Only
+### 🔴 GAP-33: Workflow Proses KGB Tidak Ada — Monitoring Only - DONE
 - **Masalah**: KGBController hanya memiliki 4 aksi read-only: `index`, `upcoming`, `eligible`, `ditunda`. Tidak ada method `store`/`process`/`approve`. HR melihat daftar pegawai yang eligible KGB tapi **tidak bisa memproses** dari halaman tersebut.
 - **Dampak UX**: HR harus: (1) catat NIP dari halaman KGB → (2) navigasi ke Pegawai → (3) buka tab Riwayat KGB → (4) klik Tambah → (5) isi manual semua field (gaji baru harus hitung sendiri). Alur ini sangat rentan human error dan membuang waktu.
 - **Aksi**: Tambah `processKGB(Request $request)` di KGBController. Buat form modal/halaman "Proses KGB" yang pre-fill data dari KGBService (gaji_baru dari TabelGaji lookup, TMT KGB baru = jatuh tempo). Saat submit: otomatis buat RiwayatKgb record + update `gaji_pokok` di Pegawai. Tambahkan tombol "Proses" di setiap baris tabel eligible.
 
-### 🔴 GAP-34: Workflow Proses Kenaikan Pangkat Tidak Ada — Eligibility Only
+### 🔴 GAP-34: Workflow Proses Kenaikan Pangkat Tidak Ada — Eligibility Only - DONE
 - **Masalah**: KenaikanPangkatController hanya memiliki `index`, `eligible`, `ditunda` (read-only). Tidak ada method untuk memproses kenaikan pangkat. Halaman hanya menampilkan checklist 4 kriteria (✓/✗) dan proyeksi pangkat berikutnya.
 - **Dampak UX**: HR melihat pegawai eligible beserta proyeksi golongan, tapi harus keluar, cari pegawai, tambah RiwayatPangkat manual. Tidak ada koneksi antara halaman monitoring dan aksi.
 - **Aksi**: Tambah `processKenaikan(Request $request)` di KenaikanPangkatController. Pre-fill: golongan berikutnya (dari proyeksi service), TMT pangkat (April/Oktober), gaji pokok baru (dari TabelGaji lookup). Saat submit: buat RiwayatPangkat + update `gaji_pokok` + update `golongan_id` di Pegawai.

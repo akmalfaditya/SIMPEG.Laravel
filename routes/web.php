@@ -95,6 +95,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/kenaikan-pangkat', [KenaikanPangkatController::class, 'index'])->name('kenaikan-pangkat.index');
     Route::get('/kenaikan-pangkat/eligible', [KenaikanPangkatController::class, 'eligible'])->name('kenaikan-pangkat.eligible');
     Route::get('/kenaikan-pangkat/ditunda', [KenaikanPangkatController::class, 'ditunda'])->name('kenaikan-pangkat.ditunda');
+    Route::get('/kenaikan-pangkat/process/{pegawai}', [KenaikanPangkatController::class, 'showProcessForm'])->name('kenaikan-pangkat.process.form');
+    Route::post('/kenaikan-pangkat/process', [KenaikanPangkatController::class, 'process'])->name('kenaikan-pangkat.process');
 
     Route::get('/pensiun', [PensiunController::class, 'index'])->name('pensiun.index');
     Route::get('/duk', [DUKController::class, 'index'])->name('duk.index');
