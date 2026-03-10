@@ -51,6 +51,8 @@ class Pegawai extends Model
         'sk_pensiun_tanggal',
         'tmt_pensiun',
         'catatan_pensiun',
+        'file_sk_pensiun_path',
+        'link_sk_pensiun_gdrive',
     ];
 
     protected $casts = [

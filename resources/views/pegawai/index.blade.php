@@ -99,6 +99,7 @@ const headConfigs = {
         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Pangkat</th>
         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">SK Pensiun</th>
         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">TMT Pensiun</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Dokumen SK</th>
         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>`,
 };
 
@@ -131,6 +132,19 @@ function renderRow(r) {
         masaKerja: `<td class="px-4 py-3 text-slate-600">${r.masa_kerja}</td>`,
         skPensiun: `<td class="px-4 py-3 text-slate-600">${r.sk_pensiun_nomor ?? '-'}</td>`,
         tmtPensiun: `<td class="px-4 py-3 text-slate-600">${r.tmt_pensiun ?? '-'}</td>`,
+        dokumenSk: (() => {
+            let buttons = [];
+            if (r.file_sk_pensiun_path) {
+                buttons.push(`<a href="/dokumen/pensiun/${r.id}" target="_blank" class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Lihat PDF</a>`);
+            }
+            if (r.link_sk_pensiun_gdrive) {
+                buttons.push(`<a href="${r.link_sk_pensiun_gdrive}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 text-xs rounded-md font-medium transition-colors">Google Drive</a>`);
+            }
+            if (!buttons.length) {
+                buttons.push(`<span class="text-xs text-slate-400">Tidak ada dokumen</span>`);
+            }
+            return `<td class="px-4 py-3"><div class="flex items-center gap-2">${buttons.join('')}</div></td>`;
+        })(),
     };
 
     let actions = '';
@@ -152,7 +166,7 @@ function renderRow(r) {
     const actionTd = `<td class="px-4 py-3"><div class="flex items-center gap-2">${actions}</div></td>`;
 
     if (activeTab === 'pensiun') {
-        return `<tr class="hover:bg-slate-50 transition-colors">${cols.nip}${cols.nama}${cols.pangkat}${cols.skPensiun}${cols.tmtPensiun}${actionTd}</tr>`;
+        return `<tr class="hover:bg-slate-50 transition-colors">${cols.nip}${cols.nama}${cols.pangkat}${cols.skPensiun}${cols.tmtPensiun}${cols.dokumenSk}${actionTd}</tr>`;
     }
     return `<tr class="hover:bg-slate-50 transition-colors">${cols.nip}${cols.nama}${cols.pangkat}${cols.jabatan}${cols.masaKerja}${actionTd}</tr>`;
 }
@@ -169,7 +183,8 @@ function loadData() {
             document.getElementById('count-' + activeTab).textContent = d.total;
 
             if (!d.data.length) {
-                body.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Tidak ada data pegawai.</td></tr>';
+                const colCount = activeTab === 'pensiun' ? 7 : 6;
+                body.innerHTML = `<tr><td colspan="${colCount}" class="px-4 py-8 text-center text-slate-400">Tidak ada data pegawai.</td></tr>`;
             }
             d.data.forEach(r => { body.innerHTML += renderRow(r); });
 

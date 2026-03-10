@@ -61,7 +61,7 @@ Request → Route → Controller → Service → Model → Database
 8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`.
 9. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
    - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
-   - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun). Reversible via `PegawaiService::cancelPensiun()` (nullify 4 field + restore).
+   - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun + opsional `file_sk_pensiun_path` dan `link_sk_pensiun_gdrive`). Reversible via `PegawaiService::cancelPensiun()` (nullify 6 field + delete file upload + restore).
    - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
 
 ---

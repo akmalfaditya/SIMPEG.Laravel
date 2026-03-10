@@ -35,7 +35,7 @@
 - [x] **Dashboard** — Ringkasan data pegawai + chart distribusi (golongan, gender, usia, unit kerja) + alert KGB/Pensiun
 - [x] **Monitoring KGB** — Alert jatuh tempo, eligibilitas, kalkulasi gaji otomatis (PP 15/2019), integrasi hukdis (penundaan KGB)
 - [x] **Kenaikan Pangkat** — Analisis eligibilitas 4 syarat (masa kerja, SKP, latihan, hukuman disiplin), proyeksi periode April/Oktober, integrasi hukdis (penundaan + penurunan pangkat)
-- [x] **Alert Pensiun** — Level alert (Hijau/Kuning/Merah/Hitam) berdasarkan BUP + **Workflow Proses Pensiun** (alert → proses SK → nonaktifkan pegawai)
+- [x] **Alert Pensiun** — Level alert (Hijau/Kuning/Merah/Hitam) berdasarkan BUP + **Workflow Proses Pensiun** (alert → proses SK → nonaktifkan pegawai) + **Dokumen SK Pensiun** (upload PDF + tautan Google Drive fallback)
 - [x] **DUK** — Ranking otomatis sesuai hierarki BKN
 - [x] **Satyalencana** — Identifikasi kandidat 10/20/30 tahun masa kerja + filter hukdis
 
@@ -69,6 +69,7 @@ _Tidak ada fitur yang sedang aktif dikerjakan saat ini._
 
 ### Recently Completed
 
+- **Dokumen SK Pensiun (GDrive Fallback)** — Dual-document support pada form proses pensiun: upload file PDF SK (max 5MB via `DocumentUploadService`) dan/atau tautan Google Drive. Kolom baru: `file_sk_pensiun_path`, `link_sk_pensiun_gdrive`. Tab Pensiun di index pegawai menampilkan kolom "Dokumen SK" dengan tombol dinamis (Lihat PDF / Google Drive / Tidak ada dokumen). `cancelPensiun()` otomatis menghapus file yang di-upload. Route `dokumen/pensiun/{id}` ditambahkan ke `DocumentController`.
 - **Tabbed Employee Index + Fallback Mechanisms** — Halaman index pegawai sekarang memiliki 3 tab (Aktif / Tidak Aktif / Pensiun) dengan data isolation via `getByStatus()`. Tab Aktif: Detail/Edit/Hapus. Tab Tidak Aktif: Aktifkan Kembali (reactivate). Tab Pensiun: Batalkan Pensiun (cancelPensiun → nullify 4 kolom SK + restore). AJAX pagination per tab dengan search. PATCH confirmation modal.
 - **Pensiun Processing Workflow (GAP-35)** — `PensiunService::processPensiun()` mengeset status_kepegawaian → Pensiun, is_active → false, dan merekam 4 field SK pensiun. Form proses dengan data pre-filled dari alert. Tombol "Proses" di baris alert Hitam/Merah.
 - **Salary Calculator Service & Observer Pattern — Tongkat Estafet TMT** — `SalaryCalculatorService` sebagai single source of truth untuk salary resolution (TabelGaji lookup dengan fallback ke closest lower MKG). Method `syncCurrentSalary()` mengimplementasikan logika "Tongkat Estafet TMT": bandingkan TMT terbaru antara RiwayatPangkat dan RiwayatKgb, yang paling recent menentukan `gaji_pokok`. `RiwayatKgbObserver` dan `RiwayatPangkatObserver` menggunakan event `saved` (created+updated) dan `deleted` untuk trigger sync otomatis. Manual gaji update dihapus dari semua Controllers/Services. `calculateNextKgbDate()` menghitung estimasi KGB selanjutnya: MAX(tmt_kgb, tmt_pangkat) + 2 tahun.

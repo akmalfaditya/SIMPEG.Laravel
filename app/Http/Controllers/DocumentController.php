@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pegawai;
 use App\Models\PenilaianKinerja;
 use App\Models\RiwayatHukumanDisiplin;
 use App\Models\RiwayatJabatan;
@@ -22,6 +23,11 @@ class DocumentController extends Controller
         'pendidikan' => RiwayatPendidikan::class,
         'latihan' => RiwayatLatihanJabatan::class,
         'skp' => PenilaianKinerja::class,
+        'pensiun' => Pegawai::class,
+    ];
+
+    private const FILE_PATH_COLUMN = [
+        'pensiun' => 'file_sk_pensiun_path',
     ];
 
     public function download(string $type, int $id): BinaryFileResponse
@@ -33,16 +39,18 @@ class DocumentController extends Controller
         }
 
         $record = $modelClass::findOrFail($id);
+        $column = self::FILE_PATH_COLUMN[$type] ?? 'file_pdf_path';
+        $filePath = $record->{$column};
 
-        if (!$record->file_pdf_path || !Storage::disk('documents')->exists($record->file_pdf_path)) {
+        if (!$filePath || !Storage::disk('documents')->exists($filePath)) {
             abort(404, 'File tidak ditemukan.');
         }
 
-        $fullPath = Storage::disk('documents')->path($record->file_pdf_path);
+        $fullPath = Storage::disk('documents')->path($filePath);
 
         return response()->file($fullPath, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . basename($record->file_pdf_path) . '"',
+            'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"',
         ]);
     }
 }

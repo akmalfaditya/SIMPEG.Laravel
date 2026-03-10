@@ -12,6 +12,8 @@ class PegawaiService
 {
     private const EAGER_LOADS = ['riwayatPangkat', 'riwayatJabatan.jabatan', 'riwayatKgb', 'riwayatHukumanDisiplin'];
 
+    public function __construct(private DocumentUploadService $documentService) {}
+
     public function getAll()
     {
         return Pegawai::with(self::EAGER_LOADS)
@@ -101,6 +103,8 @@ class PegawaiService
                 $pegawai->restore();
             }
 
+            $this->documentService->delete($pegawai->file_sk_pensiun_path);
+
             $pegawai->update([
                 'is_active' => true,
                 'status_kepegawaian_id' => $aktifStatusId,
@@ -108,6 +112,8 @@ class PegawaiService
                 'sk_pensiun_tanggal' => null,
                 'tmt_pensiun' => null,
                 'catatan_pensiun' => null,
+                'file_sk_pensiun_path' => null,
+                'link_sk_pensiun_gdrive' => null,
             ]);
         });
     }

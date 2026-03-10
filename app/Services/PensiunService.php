@@ -107,6 +107,8 @@ class PensiunService
                 'sk_pensiun_tanggal' => $validated['sk_pensiun_tanggal'],
                 'tmt_pensiun' => $validated['tmt_pensiun'],
                 'catatan_pensiun' => $validated['catatan_pensiun'] ?? null,
+                'file_sk_pensiun_path' => $validated['file_sk_pensiun_path'] ?? null,
+                'link_sk_pensiun_gdrive' => $validated['link_sk_pensiun_gdrive'] ?? null,
             ]);
         });
     }

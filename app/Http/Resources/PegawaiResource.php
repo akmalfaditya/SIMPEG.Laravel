@@ -19,6 +19,8 @@ class PegawaiResource extends JsonResource
             'masa_kerja' => $this->masa_kerja ?? '-',
             'sk_pensiun_nomor' => $this->sk_pensiun_nomor,
             'tmt_pensiun' => $this->tmt_pensiun?->format('d/m/Y'),
+            'file_sk_pensiun_path' => $this->file_sk_pensiun_path,
+            'link_sk_pensiun_gdrive' => $this->link_sk_pensiun_gdrive,
         ];
     }
 }
