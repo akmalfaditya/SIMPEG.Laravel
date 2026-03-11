@@ -188,16 +188,38 @@ function loadData() {
             }
             d.data.forEach(r => { body.innerHTML += renderRow(r); });
 
-            const totalPages = Math.ceil(d.total / limit);
-            document.getElementById('paginationInfo').textContent = `Halaman ${currentPage} dari ${totalPages} (${d.total} data)`;
+            const totalPages = d.last_page;
+            document.getElementById('paginationInfo').textContent = `Halaman ${d.current_page} dari ${totalPages} (${d.total} data)`;
             const btns = document.getElementById('paginationBtns');
             btns.innerHTML = '';
-            for (let i = 1; i <= totalPages; i++) {
+
+            // Build smart page range: first, last, and window around current
+            let pages = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                let start = Math.max(2, currentPage - 1);
+                let end = Math.min(totalPages - 1, currentPage + 1);
+                if (start > 2) pages.push('...');
+                for (let i = start; i <= end; i++) pages.push(i);
+                if (end < totalPages - 1) pages.push('...');
+                pages.push(totalPages);
+            }
+
+            pages.forEach(p => {
+                if (p === '...') {
+                    const span = document.createElement('span');
+                    span.textContent = '…';
+                    span.style.cssText = 'padding:0.375rem 0.5rem;font-size:0.75rem;color:#94a3b8;';
+                    btns.appendChild(span);
+                    return;
+                }
                 const btn = document.createElement('button');
-                btn.textContent = i;
-                const pg = i;
+                btn.textContent = p;
+                const pg = p;
                 btn.onclick = () => { currentPage = pg; loadData(); };
-                if (i === currentPage) {
+                if (p === currentPage) {
                     btn.style.cssText = 'padding:0.375rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;background:#2563eb;color:#fff;cursor:default;';
                 } else {
                     btn.style.cssText = 'padding:0.375rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;background:#f1f5f9;color:#475569;cursor:pointer;';
@@ -205,7 +227,7 @@ function loadData() {
                     btn.onmouseleave = function(){ this.style.background='#f1f5f9'; };
                 }
                 btns.appendChild(btn);
-            }
+            });
         });
 }
 
@@ -234,7 +256,11 @@ function closePatchModal() {
     document.getElementById('patch-modal').classList.add('hidden');
 }
 
-document.getElementById('searchInput').addEventListener('input', function() { currentPage = 1; loadData(); });
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { currentPage = 1; loadData(); }, 300);
+});
 switchTab('aktif');
 loadTabCounts();
 </script>

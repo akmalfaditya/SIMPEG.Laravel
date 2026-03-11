@@ -39,6 +39,28 @@ class PegawaiService
         };
     }
 
+    public function getPaginatedByStatus(string $status, int $perPage = 10, ?string $search = null)
+    {
+        $query = Pegawai::with(self::EAGER_LOADS);
+
+        $query = match ($status) {
+            'aktif' => $query->where('is_active', true),
+            'tidak-aktif' => $query->where('is_active', false)->whereNull('tmt_pensiun')->withTrashed(),
+            'pensiun' => $query->where('is_active', false)->whereNotNull('tmt_pensiun')->withTrashed(),
+            default => $query->where('is_active', true),
+        };
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nip', 'like', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhereHas('unitKerja', fn ($r) => $r->where('nama', 'like', "%{$search}%"));
+            });
+        }
+
+        return $query->orderBy('nama_lengkap')->paginate($perPage);
+    }
+
     public function searchByStatus(string $keyword, string $status)
     {
         $query = Pegawai::with(self::EAGER_LOADS);
