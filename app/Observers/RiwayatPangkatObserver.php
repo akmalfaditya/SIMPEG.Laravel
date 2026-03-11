@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\RiwayatPangkat;
+use App\Services\DashboardService;
 use App\Services\SalaryCalculatorService;
 
 class RiwayatPangkatObserver
@@ -15,6 +16,7 @@ class RiwayatPangkatObserver
     public function saved(RiwayatPangkat $riwayatPangkat): void
     {
         $this->salaryService->syncCurrentSalary($riwayatPangkat->pegawai);
+        DashboardService::clearCache();
     }
 
     /**
@@ -23,5 +25,6 @@ class RiwayatPangkatObserver
     public function deleted(RiwayatPangkat $riwayatPangkat): void
     {
         $this->salaryService->syncCurrentSalary($riwayatPangkat->pegawai);
+        DashboardService::clearCache();
     }
 }

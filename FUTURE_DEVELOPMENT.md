@@ -285,7 +285,7 @@
 - **Dampak UX**: Dengan 50 pegawai demo, tidak terasa. Dengan 500+ pegawai produksi: page load lambat, browser lag, memory usage tinggi. Seluruh NIP/nama pegawai terekspos di HTML source.
 - **Solusi**: Implementasi server-side pagination via `PaginatesArray` trait + `LengthAwarePaginator`. Controller menerima `?search=` dan `?page=` dari query string. View menggunakan `{{ $data->links() }}` (Tailwind pagination). Search memfilter array berdasarkan NIP/Nama sebelum paginasi. Filter tabs (level, milestone) mempertahankan search parameter. Client-side JS pagination dihapus dari semua 5 modul monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK).
 
-### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat
+### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat DONE
 
 - **Masalah**: `DashboardService` menjalankan multiple aggregate queries (count by status, chart data, KGB alerts, pensiun alerts) setiap kali halaman di-load. Tidak ada caching.
 - **Dampak UX**: Dashboard load time akan bertambah seiring data bertambah. Semua user yang akses dashboard trigger query yang sama.

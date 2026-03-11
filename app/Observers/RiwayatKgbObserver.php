@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\RiwayatKgb;
+use App\Services\DashboardService;
 use App\Services\SalaryCalculatorService;
 
 class RiwayatKgbObserver
@@ -15,6 +16,7 @@ class RiwayatKgbObserver
     public function saved(RiwayatKgb $riwayatKgb): void
     {
         $this->salaryService->syncCurrentSalary($riwayatKgb->pegawai);
+        DashboardService::clearCache();
     }
 
     /**
@@ -23,5 +25,6 @@ class RiwayatKgbObserver
     public function deleted(RiwayatKgb $riwayatKgb): void
     {
         $this->salaryService->syncCurrentSalary($riwayatKgb->pegawai);
+        DashboardService::clearCache();
     }
 }
