@@ -33,6 +33,10 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <a href="{{ route('pegawai.export-pdf', $pegawai) }}"
+                        class="px-4 py-2 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Export PDF</a>
                     <a href="{{ route('pegawai.edit', $pegawai) }}"
                         class="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">Edit</a>
                     <button
@@ -116,13 +120,53 @@
             </div>
         </div>
 
+        {{-- Data Completeness Indicator --}}
+        @php
+            $completeness = [
+                'pangkat' => ['label' => 'Pangkat', 'filled' => $pegawai->riwayatPangkat->isNotEmpty()],
+                'jabatan' => ['label' => 'Jabatan', 'filled' => $pegawai->riwayatJabatan->isNotEmpty()],
+                'kgb' => ['label' => 'KGB', 'filled' => $pegawai->riwayatKgb->isNotEmpty()],
+                'hukuman' => ['label' => 'Hukuman', 'filled' => $pegawai->riwayatHukumanDisiplin->isNotEmpty()],
+                'pendidikan' => ['label' => 'Pendidikan', 'filled' => $pegawai->riwayatPendidikan->isNotEmpty()],
+                'latihan' => ['label' => 'Latihan', 'filled' => $pegawai->riwayatLatihanJabatan->isNotEmpty()],
+                'skp' => ['label' => 'SKP', 'filled' => $pegawai->penilaianKinerja->isNotEmpty()],
+                'penghargaan' => ['label' => 'Penghargaan', 'filled' => $pegawai->riwayatPenghargaan->isNotEmpty()],
+            ];
+            $filledCount = collect($completeness)->where('filled', true)->count();
+            $totalCount = count($completeness);
+            $percentage = round(($filledCount / $totalCount) * 100);
+        @endphp
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-slate-700">Kelengkapan Data:</span>
+                    <span class="text-sm font-bold {{ $percentage === 100 ? 'text-emerald-600' : ($percentage >= 50 ? 'text-blue-600' : 'text-amber-600') }}">{{ $filledCount }}/{{ $totalCount }} riwayat terisi</span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    @foreach($completeness as $key => $item)
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full {{ $item['filled'] ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-600' }}">
+                            @if($item['filled'])
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            @else
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            @endif
+                            {{ $item['label'] }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+            <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full transition-all {{ $percentage === 100 ? 'bg-emerald-500' : ($percentage >= 50 ? 'bg-blue-500' : 'bg-amber-500') }}" style="width: {{ $percentage }}%"></div>
+            </div>
+        </div>
+
         {{-- Tabs for Riwayat --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
                 @foreach (['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
                     <button onclick="showTab('{{ $key }}')"
-                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}"
-                        data-tab="{{ $key }}">{{ $label }}</button>
+                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }} flex items-center gap-1"
+                        data-tab="{{ $key }}">{{ $label }}@if(!$completeness[$key]['filled'])<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Belum ada data"></span>@endif</button>
                 @endforeach
             </div>
 

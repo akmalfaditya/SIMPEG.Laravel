@@ -19,6 +19,7 @@ use App\Http\Requests\StorePegawaiRequest;
 use App\Http\Requests\UpdatePegawaiRequest;
 use App\DTOs\PegawaiDTO;
 use App\Http\Resources\PegawaiResource;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class PegawaiController extends Controller
@@ -126,6 +127,28 @@ class PegawaiController extends Controller
     {
         $this->service->cancelPensiun($pegawai);
         return redirect()->route('pegawai.index')->with('success', "Pensiun pegawai {$pegawai->nama_lengkap} berhasil dibatalkan.");
+    }
+
+    public function exportPdf(Pegawai $pegawai)
+    {
+        $pegawai->load([
+            'jenisKelamin', 'agama', 'statusPernikahan', 'golonganDarah',
+            'tipePegawai', 'statusKepegawaian', 'bagian', 'unitKerja',
+            'riwayatPangkat.golongan',
+            'riwayatJabatan.jabatan',
+            'riwayatKgb',
+            'riwayatHukumanDisiplin',
+            'riwayatPendidikan',
+            'riwayatLatihanJabatan',
+            'penilaianKinerja',
+            'riwayatPenghargaan',
+        ]);
+
+        $pdf = Pdf::loadView('exports.pegawai-profile-pdf', compact('pegawai'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'profil_' . $pegawai->nip . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
     }
 
     private function masterDataOptions(): array
