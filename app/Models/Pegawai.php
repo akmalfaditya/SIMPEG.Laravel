@@ -16,9 +16,15 @@ class Pegawai extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nama_lengkap', 'nip', 'gaji_pokok', 'is_active'])
+            ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Menambah data pegawai #{$this->id} atas nama {$this->nama_lengkap}",
+                'updated' => "Mengubah data pegawai #{$this->id} atas nama {$this->nama_lengkap}",
+                'deleted' => "Menghapus data pegawai #{$this->id} atas nama {$this->nama_lengkap}",
+                default   => "{$eventName} data pegawai #{$this->id} atas nama {$this->nama_lengkap}",
+            });
     }
 
     protected $fillable = [

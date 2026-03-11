@@ -13,7 +13,17 @@ class RiwayatPenghargaan extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
+        $nama = $this->pegawai->nama_lengkap ?? 'Unknown';
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Menambah Riwayat Penghargaan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'updated' => "Mengubah Riwayat Penghargaan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'deleted' => "Menghapus Riwayat Penghargaan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                default   => "{$eventName} Riwayat Penghargaan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+            });
     }
     protected $fillable = [
         'pegawai_id', 'nama_penghargaan', 'tahun', 'milestone',

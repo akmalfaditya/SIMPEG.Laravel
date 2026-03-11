@@ -127,6 +127,7 @@ class PegawaiController extends Controller
     public function cancelPensiun(Pegawai $pegawai)
     {
         $this->service->cancelPensiun($pegawai);
+        activity()->performedOn($pegawai)->log("Membatalkan pensiun untuk pegawai #{$pegawai->id} atas nama {$pegawai->nama_lengkap}");
         return redirect()->route('pegawai.index')->with('success', "Pensiun pegawai {$pegawai->nama_lengkap} berhasil dibatalkan.");
     }
 

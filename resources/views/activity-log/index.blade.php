@@ -24,7 +24,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">User</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Aksi</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Subjek</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Deskripsi</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 min-w-[300px]">Deskripsi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -43,7 +43,7 @@
                             </td>
                             <td class="px-4 py-2.5 text-xs">{{ class_basename($activity->subject_type ?? '-') }}
                                 #{{ $activity->subject_id ?? '-' }}</td>
-                            <td class="px-4 py-2.5 text-xs text-slate-600">{{ $activity->description }}</td>
+                            <td class="px-4 py-2.5 text-xs text-slate-600 min-w-[300px]">{{ $activity->description }}</td>
                         </tr>
                     @empty
                         <tr>

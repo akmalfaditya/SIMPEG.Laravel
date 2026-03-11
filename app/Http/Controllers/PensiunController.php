@@ -61,6 +61,9 @@ class PensiunController extends Controller
 
         $this->service->processPensiun($validated);
 
+        $pegawai->refresh();
+        activity()->performedOn($pegawai)->log("Memproses pensiun untuk pegawai #{$pegawai->id} atas nama {$pegawai->nama_lengkap}");
+
         return redirect()->route('pensiun.index')
             ->with('success', 'Pensiun berhasil diproses. Status pegawai telah diubah menjadi Pensiun dan dinonaktifkan.');
     }

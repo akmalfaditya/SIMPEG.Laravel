@@ -16,7 +16,17 @@ class RiwayatHukumanDisiplin extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
+        $nama = $this->pegawai->nama_lengkap ?? 'Unknown';
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Menambah Riwayat Hukuman Disiplin untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'updated' => "Mengubah Riwayat Hukuman Disiplin untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'deleted' => "Menghapus Riwayat Hukuman Disiplin untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                default   => "{$eventName} Riwayat Hukuman Disiplin untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+            });
     }
     protected $fillable = [
         'pegawai_id', 'tingkat_hukuman', 'jenis_sanksi',

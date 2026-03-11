@@ -71,6 +71,12 @@ Request → Route → Controller → Service → Model → Database
 13. **Data Completeness Indicator** — Halaman profil pegawai menampilkan progress bar kelengkapan data (8 jenis riwayat) dengan badge per kategori (hijau ✓ / kuning ⚠). Tab kosong juga mendapat dot warning kuning.
 14. **Export PDF Profil Pegawai** — `PegawaiController::exportPdf()` menggunakan DomPDF untuk generate PDF profil individual (biodata + semua 8 riwayat dalam tabel). Template di `exports/pegawai-profile-pdf.blade.php`.
 15. **Edit Form Guidance** — Form edit pegawai menampilkan banner informasi bahwa gaji pokok, golongan, dan jabatan dikelola otomatis. Field `gaji_pokok` ditampilkan readonly.
+16. **Narrative Audit Logging (Bahasa Indonesia)** — Semua `setDescriptionForEvent()` menggunakan deskripsi naratif Bahasa Indonesia yang human-readable, bukan default Spatie (e.g. "created", "updated"). Tiga kategori format:
+    - **Category A (Pegawai)**: `"{Aksi} data pegawai #{id} atas nama {nama_lengkap}"` — contoh: "Mengubah data pegawai #53 atas nama Yanto"
+    - **Category B (Riwayat)**: `"{Aksi} {NamaModul} untuk pegawai #{pegawai_id} atas nama {nama_pegawai}"` — contoh: "Menambah Riwayat KGB untuk pegawai #53 atas nama Yanto"
+    - **Category C (Master Data)**: `"{Aksi} Master {NamaModel} #{id} ({nama_atau_keterangan})"` — contoh: "Menghapus Master Jabatan #2 (Polsuspas)"
+    - **State Transitions (Controller)**: Aksi non-CRUD seperti pensiun di-log eksplisit via `activity()->performedOn()->log()` di Controller — contoh: "Memproses pensiun untuk pegawai #5 atas nama Budi"
+    - Kata kerja: `Menambah` (created), `Mengubah` (updated), `Menghapus` (deleted)
 
 ---
 

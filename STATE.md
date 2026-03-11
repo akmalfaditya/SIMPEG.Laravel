@@ -14,7 +14,7 @@
 - [x] 20 database migrations (termasuk normalisasi FK pegawai)
 - [x] 6 seeders (User, MasterData, GolonganPangkat, Pegawai, TabelGaji, Database)
 - [x] PegawaiFactory (with afterCreating hook for auto riwayat)
-- [x] Activity logging (Spatie) pada semua model utama
+- [x] Activity logging (Spatie) pada semua model utama — **Narrative Audit Logging** dalam Bahasa Indonesia (deskripsi human-readable dengan konteks pegawai/modul)
 - [x] **`pegawais.gaji_pokok`** — Kolom denormalized (cache), disinkronisasi otomatis via `RiwayatKgbObserver` dan `RiwayatPangkatObserver` (model events). Bukan manual update.
 - [x] **Cache Layer** — `Cache::remember()` (TTL 5 menit) untuk DashboardService (per-filter) dan PegawaiService career timeline (per-pegawai). Invalidasi otomatis via 3 Observer + 6 model event listeners di AppServiceProvider.
 
@@ -71,6 +71,7 @@ _Tidak ada fitur yang sedang aktif dikerjakan saat ini._
 
 ### Recently Completed
 
+- **Narrative Audit Logging (Bahasa Indonesia)** — Semua 20 model (1 Pegawai + 8 Riwayat + 11 Master Data) menggunakan `setDescriptionForEvent()` dengan deskripsi naratif Bahasa Indonesia. Tiga format: Category A "Mengubah data pegawai #53 atas nama Yanto", Category B "Menambah Riwayat KGB untuk pegawai #53 atas nama Yanto", Category C "Menghapus Master Jabatan #2 (Polsuspas)". 11 master data models yang sebelumnya tidak di-log (Jabatan, GolonganPangkat, TabelGaji, TipePegawai, StatusKepegawaian, Bagian, UnitKerja, JenisKelaminMaster, AgamaMaster, StatusPernikahanMaster, GolonganDarahMaster) sekarang memiliki trait `LogsActivity`. `PensiunController::process()` dan `PegawaiController::cancelPensiun()` menambahkan log eksplisit via `activity()->performedOn()->log()`. UI Audit Log diperlebar kolom deskripsi (`min-w-[300px]`).
 - **GAP-48: Career Timeline View** — Tab "Timeline Karir" ditambahkan sebagai tab pertama (default aktif) di halaman profil pegawai. Merge kronologis semua 8 riwayat (pangkat, jabatan, KGB, hukdis, pendidikan, latihan, SKP, penghargaan) dalam vertical timeline dengan year separator, color-coded dot markers, dan card per event. Logic di `PegawaiService::getCareerTimeline()` dengan `Cache::remember()` (5 min TTL). Invalidasi via semua 3 Observer + 6 model event listeners di `AppServiceProvider`.
 - **GAP-47: Export PDF Profil Individual** — `PegawaiController::exportPdf()` via DomPDF, template `exports/pegawai-profile-pdf.blade.php` (portrait A4, inline CSS). Berisi biodata lengkap + 8 tabel riwayat. Route `GET pegawai/{pegawai}/export-pdf`. Tombol "Export PDF" di header halaman show.
 - **GAP-46: Data Completeness Indicator** — Progress bar di halaman profil pegawai menunjukkan kelengkapan data (8 riwayat). Badge hijau✓/kuning⚠ per kategori. Amber dot pada tab yang belum ada datanya.
