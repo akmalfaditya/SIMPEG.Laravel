@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\RiwayatKgb;
 use App\Services\DashboardService;
+use App\Services\PegawaiService;
 use App\Services\SalaryCalculatorService;
 
 class RiwayatKgbObserver
@@ -17,6 +18,7 @@ class RiwayatKgbObserver
     {
         $this->salaryService->syncCurrentSalary($riwayatKgb->pegawai);
         DashboardService::clearCache();
+        PegawaiService::clearTimelineCache($riwayatKgb->pegawai_id);
     }
 
     /**
@@ -26,5 +28,6 @@ class RiwayatKgbObserver
     {
         $this->salaryService->syncCurrentSalary($riwayatKgb->pegawai);
         DashboardService::clearCache();
+        PegawaiService::clearTimelineCache($riwayatKgb->pegawai_id);
     }
 }

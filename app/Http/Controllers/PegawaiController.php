@@ -72,6 +72,7 @@ class PegawaiController extends Controller
             'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
             'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
             'estimasiKgbSelanjutnya' => $this->salaryCalculatorService->calculateNextKgbDate($pegawai),
+            'timeline' => $this->service->getCareerTimeline($pegawai),
         ]);
     }
 

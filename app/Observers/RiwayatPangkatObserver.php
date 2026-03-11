@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\RiwayatPangkat;
 use App\Services\DashboardService;
+use App\Services\PegawaiService;
 use App\Services\SalaryCalculatorService;
 
 class RiwayatPangkatObserver
@@ -17,6 +18,7 @@ class RiwayatPangkatObserver
     {
         $this->salaryService->syncCurrentSalary($riwayatPangkat->pegawai);
         DashboardService::clearCache();
+        PegawaiService::clearTimelineCache($riwayatPangkat->pegawai_id);
     }
 
     /**
@@ -26,5 +28,6 @@ class RiwayatPangkatObserver
     {
         $this->salaryService->syncCurrentSalary($riwayatPangkat->pegawai);
         DashboardService::clearCache();
+        PegawaiService::clearTimelineCache($riwayatPangkat->pegawai_id);
     }
 }

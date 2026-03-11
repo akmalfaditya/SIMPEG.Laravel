@@ -163,15 +163,75 @@
         {{-- Tabs for Riwayat --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
-                @foreach (['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
+                @foreach (['timeline' => 'Timeline Karir', 'pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
                     <button onclick="showTab('{{ $key }}')"
                         class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }} flex items-center gap-1"
-                        data-tab="{{ $key }}">{{ $label }}@if(!$completeness[$key]['filled'])<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Belum ada data"></span>@endif</button>
+                        data-tab="{{ $key }}">{{ $label }}@if($key !== 'timeline' && !($completeness[$key]['filled'] ?? true))<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Belum ada data"></span>@endif</button>
                 @endforeach
             </div>
 
+            {{-- Timeline Karir --}}
+            <div class="tab-content p-5" id="tab-timeline">
+                @if(count($timeline) > 0)
+                <div class="relative">
+                    {{-- Vertical line --}}
+                    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+
+                    <div class="space-y-4">
+                        @php $currentYear = null; @endphp
+                        @foreach($timeline as $item)
+                            @php
+                                $itemYear = \Carbon\Carbon::parse($item['date'])->year;
+                                $showYear = $itemYear !== $currentYear;
+                                $currentYear = $itemYear;
+                                $colorMap = [
+                                    'blue' => ['bg' => 'bg-blue-500', 'light' => 'bg-blue-50 border-blue-200 text-blue-700', 'badge' => 'bg-blue-100 text-blue-700'],
+                                    'indigo' => ['bg' => 'bg-indigo-500', 'light' => 'bg-indigo-50 border-indigo-200 text-indigo-700', 'badge' => 'bg-indigo-100 text-indigo-700'],
+                                    'emerald' => ['bg' => 'bg-emerald-500', 'light' => 'bg-emerald-50 border-emerald-200 text-emerald-700', 'badge' => 'bg-emerald-100 text-emerald-700'],
+                                    'red' => ['bg' => 'bg-red-500', 'light' => 'bg-red-50 border-red-200 text-red-700', 'badge' => 'bg-red-100 text-red-700'],
+                                    'purple' => ['bg' => 'bg-purple-500', 'light' => 'bg-purple-50 border-purple-200 text-purple-700', 'badge' => 'bg-purple-100 text-purple-700'],
+                                    'cyan' => ['bg' => 'bg-cyan-500', 'light' => 'bg-cyan-50 border-cyan-200 text-cyan-700', 'badge' => 'bg-cyan-100 text-cyan-700'],
+                                    'amber' => ['bg' => 'bg-amber-500', 'light' => 'bg-amber-50 border-amber-200 text-amber-700', 'badge' => 'bg-amber-100 text-amber-700'],
+                                    'yellow' => ['bg' => 'bg-yellow-500', 'light' => 'bg-yellow-50 border-yellow-200 text-yellow-700', 'badge' => 'bg-yellow-100 text-yellow-700'],
+                                ];
+                                $c = $colorMap[$item['color']] ?? $colorMap['blue'];
+                            @endphp
+
+                            @if($showYear)
+                                <div class="relative flex items-center pl-10 pt-2">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ $currentYear }}</span>
+                                </div>
+                            @endif
+
+                            <div class="relative flex items-start gap-4 pl-10">
+                                {{-- Dot on the line --}}
+                                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full ring-2 ring-white {{ $c['bg'] }}"></div>
+
+                                {{-- Card --}}
+                                <div class="flex-1 border rounded-lg p-3 {{ $c['light'] }}">
+                                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $c['badge'] }}">{{ ucfirst($item['type']) }}</span>
+                                            <span class="text-sm font-semibold">{{ $item['title'] }}</span>
+                                        </div>
+                                        <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($item['date'])->format('d/m/Y') }}</span>
+                                    </div>
+                                    <p class="text-sm mt-1">{{ $item['subtitle'] }}</p>
+                                    @if($item['detail'])
+                                        <p class="text-xs mt-0.5 opacity-75">{{ $item['detail'] }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                    <p class="text-center text-slate-400 py-8">Belum ada data riwayat untuk ditampilkan.</p>
+                @endif
+            </div>
+
             {{-- Pangkat --}}
-            <div class="tab-content p-5" id="tab-pangkat">
+            <div class="tab-content p-5 hidden" id="tab-pangkat">
                 <div class="flex justify-end mb-3"><a href="{{ route('riwayat.pangkat.create', $pegawai->id) }}"
                         class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
                 <table class="w-full text-sm">

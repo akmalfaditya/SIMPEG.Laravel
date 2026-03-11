@@ -321,7 +321,7 @@
 - **Dampak UX**: Untuk keperluan mutasi, promosi, atau arsip, HR harus screenshot/print manual halaman profil pegawai.
 - **Aksi**: Buat `PegawaiProfileExport` menggunakan DomPDF. Tambahkan tombol "Export PDF" di halaman show pegawai. Template: biodata + tabel ringkas setiap riwayat.
 
-### 🟠 GAP-48: Tidak Ada Career Timeline View
+### 🟠 GAP-48: Tidak Ada Career Timeline View DONE
 
 - **Masalah**: Halaman show pegawai menampilkan riwayat dalam 8 tab terpisah (tabel per jenis). Tidak ada visualisasi kronologis gabungan yang menampilkan seluruh perjalanan karir dalam satu timeline.
 - **Dampak UX**: Untuk memahami perjalanan karir seorang pegawai, HR harus membuka 8 tab secara bergantian dan menyusun kronologi secara mental.

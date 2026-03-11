@@ -6,6 +6,7 @@ use App\Models\Pegawai;
 use App\Models\StatusKepegawaian;
 use App\Models\TabelGaji;
 use App\DTOs\PegawaiDTO;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PegawaiService
@@ -192,5 +193,134 @@ class PegawaiService
             $pegawai->save();
             return $pegawai->delete();
         });
+    }
+
+    public function getCareerTimeline(Pegawai $pegawai): array
+    {
+        return Cache::remember(
+            "career_timeline_{$pegawai->id}",
+            300,
+            fn () => $this->buildCareerTimeline($pegawai)
+        );
+    }
+
+    public static function clearTimelineCache(int $pegawaiId): void
+    {
+        Cache::forget("career_timeline_{$pegawaiId}");
+    }
+
+    private function buildCareerTimeline(Pegawai $pegawai): array
+    {
+        $timeline = collect();
+
+        foreach ($pegawai->riwayatPangkat as $r) {
+            $timeline->push([
+                'date' => $r->tmt_pangkat,
+                'type' => 'pangkat',
+                'icon' => 'arrow-up',
+                'color' => 'blue',
+                'title' => 'Kenaikan Pangkat',
+                'subtitle' => $r->golongan?->label ?? '-',
+                'detail' => $r->nomor_sk ? "SK: {$r->nomor_sk}" : null,
+            ]);
+        }
+
+        foreach ($pegawai->riwayatJabatan as $r) {
+            $timeline->push([
+                'date' => $r->tmt_jabatan,
+                'type' => 'jabatan',
+                'icon' => 'briefcase',
+                'color' => 'indigo',
+                'title' => 'Perubahan Jabatan',
+                'subtitle' => $r->jabatan?->nama_jabatan ?? '-',
+                'detail' => $r->nomor_sk ? "SK: {$r->nomor_sk}" : null,
+            ]);
+        }
+
+        foreach ($pegawai->riwayatKgb as $r) {
+            $timeline->push([
+                'date' => $r->tmt_kgb,
+                'type' => 'kgb',
+                'icon' => 'currency',
+                'color' => 'emerald',
+                'title' => 'Kenaikan Gaji Berkala',
+                'subtitle' => 'Rp ' . number_format($r->gaji_lama ?? 0, 0, ',', '.') . ' → Rp ' . number_format($r->gaji_baru ?? 0, 0, ',', '.'),
+                'detail' => $r->nomor_sk ? "SK: {$r->nomor_sk}" : null,
+            ]);
+        }
+
+        foreach ($pegawai->riwayatHukumanDisiplin as $r) {
+            $timeline->push([
+                'date' => $r->tmt_hukuman,
+                'type' => 'hukuman',
+                'icon' => 'exclamation',
+                'color' => 'red',
+                'title' => 'Hukuman Disiplin',
+                'subtitle' => ($r->tingkat_hukuman?->label() ?? '-') . ' — ' . ($r->jenis_sanksi?->label() ?? '-'),
+                'detail' => $r->nomor_sk ? "SK: {$r->nomor_sk}" : null,
+            ]);
+        }
+
+        foreach ($pegawai->riwayatPendidikan as $r) {
+            $date = $r->tanggal_ijazah ?? ($r->tahun_lulus ? \Carbon\Carbon::createFromDate($r->tahun_lulus, 1, 1) : null);
+            if ($date) {
+                $timeline->push([
+                    'date' => $date,
+                    'type' => 'pendidikan',
+                    'icon' => 'academic',
+                    'color' => 'purple',
+                    'title' => 'Pendidikan — ' . ($r->tingkat_pendidikan ?? '-'),
+                    'subtitle' => implode(', ', array_filter([$r->institusi, $r->jurusan])),
+                    'detail' => $r->tahun_lulus ? "Lulus: {$r->tahun_lulus}" : null,
+                ]);
+            }
+        }
+
+        foreach ($pegawai->riwayatLatihanJabatan as $r) {
+            $date = $r->tahun_pelaksanaan ? \Carbon\Carbon::createFromDate($r->tahun_pelaksanaan, 1, 1) : null;
+            if ($date) {
+                $timeline->push([
+                    'date' => $date,
+                    'type' => 'latihan',
+                    'icon' => 'clipboard',
+                    'color' => 'cyan',
+                    'title' => 'Diklat / Latihan',
+                    'subtitle' => $r->nama_latihan ?? '-',
+                    'detail' => $r->penyelenggara ? "Oleh: {$r->penyelenggara}" : null,
+                ]);
+            }
+        }
+
+        foreach ($pegawai->penilaianKinerja as $r) {
+            $date = $r->tahun ? \Carbon\Carbon::createFromDate($r->tahun, 12, 31) : null;
+            if ($date) {
+                $timeline->push([
+                    'date' => $date,
+                    'type' => 'skp',
+                    'icon' => 'chart',
+                    'color' => 'amber',
+                    'title' => "SKP Tahun {$r->tahun}",
+                    'subtitle' => "Nilai: {$r->nilai_skp}",
+                    'detail' => null,
+                ]);
+            }
+        }
+
+        foreach ($pegawai->riwayatPenghargaan as $r) {
+            $date = $r->tanggal_sk ?? ($r->tahun ? \Carbon\Carbon::createFromDate($r->tahun, 1, 1) : null);
+            if ($date) {
+                $timeline->push([
+                    'date' => $date,
+                    'type' => 'penghargaan',
+                    'icon' => 'star',
+                    'color' => 'yellow',
+                    'title' => 'Penghargaan',
+                    'subtitle' => $r->nama_penghargaan ?? '-',
+                    'detail' => $r->milestone ? "Milestone: {$r->milestone} Tahun" : null,
+                ]);
+            }
+        }
+
+        return $timeline->sortByDesc('date')->values()->toArray();
     }
 }
