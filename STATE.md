@@ -1,7 +1,7 @@
 # STATE.md — Development Status
 
 > Status perkembangan aplikasi SIMPEG Kemenipas.  
-> Terakhir diperbarui: **10 Maret 2026**
+> Terakhir diperbarui: **14 Maret 2026**
 
 ---
 
@@ -11,7 +11,7 @@
 
 - [x] 21 Eloquent Models dengan relationships lengkap (termasuk 8 model master data pegawai baru)
 - [x] 5 PHP Enums aktif (JenisJabatan, JenisSanksi, RumpunJabatan, StatusHukdis, TingkatHukuman) — 4 enum biodata (Agama, GolonganDarah, JenisKelamin, StatusPernikahan) deprecated, diganti master data tables
-- [x] 20 database migrations (termasuk normalisasi FK pegawai)
+- [x] 23 database migrations (termasuk normalisasi FK pegawai + dokumen dasar SK CPNS/PNS)
 - [x] 6 seeders (User, MasterData, GolonganPangkat, Pegawai, TabelGaji, Database)
 - [x] PegawaiFactory (with afterCreating hook for auto riwayat)
 - [x] Activity logging (Spatie) pada semua model utama
@@ -27,6 +27,7 @@
 - [x] **Master Data Tabel Gaji** — CRUD per golongan × masa kerja (SuperAdmin only)
 - [x] **Master Data Pegawai** — CRUD generik untuk 8 tabel referensi (Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah) via `MasterDataController` — sidebar "Master Data Pegawai" dengan 8 link dinamis
 - [x] **Document Management** — Upload file SK (PDF, maks 5MB) + link Google Drive opsional + inline PDF preview di browser + penamaan file bermakna (`NIP_Module_Timestamp_NamaAsli.pdf`) + kolom "Dokumen" di semua tab riwayat (show.blade.php) + link "Lihat Dokumen" di semua form edit
+- [x] **Dokumen Dasar (SK CPNS & SK PNS)** — Upload file SK CPNS dan SK PNS pada form create/edit pegawai + tombol "Lihat SK CPNS" dan "Lihat SK PNS" di halaman profil (Data Kepegawaian) + penamaan file `NIP_SK_CPNS/PNS_Timestamp.pdf` + penggantian file otomatis saat update
 - [x] **UX: Tab Retention** — Setelah CRUD riwayat, halaman profil pegawai otomatis kembali ke tab yang sedang aktif via URL fragment (`#tab-{type}`)
 - [x] **UX: Flash Messages** — Alert sukses/error yang deskriptif dengan icon, judul, pesan detail (termasuk info dokumen yang diunggah), dan tombol dismiss
 
@@ -68,6 +69,8 @@
 _Tidak ada fitur yang sedang aktif dikerjakan saat ini._
 
 ### Recently Completed
+
+- **Dokumen Dasar SK CPNS & SK PNS** — Kolom `sk_cpns_path` dan `sk_pns_path` ditambahkan ke tabel `pegawais`. Form create/edit pegawai mendapat section "Dokumen Dasar" dengan file input (PDF, maks 5MB). `PegawaiController` menangani upload via `DocumentUploadService` ke disk `documents` subfolder `sk_cpns/` dan `sk_pns/`. `DocumentController` di-extend dengan type mapping `sk_cpns` dan `sk_pns`. Halaman profil (Data Kepegawaian) menampilkan tombol "Lihat SK CPNS" dan "Lihat SK PNS" di samping TMT masing-masing jika dokumen tersedia. File lama otomatis dihapus saat diganti.
 
 - **Pagination & Search Halaman Master Data + Activity Log + Button Fix** — MasterDataController di-upgrade dari `::get()` ke `->paginate(15)->withQueryString()` dengan filter `?search=` pada kolom nama. View `master-data/index` mendapat form pencarian, row numbering berbasis `firstItem() + $loop->index`, dan `{{ $items->links() }}`. ActivityLogController mendapat filter `?search=` pada deskripsi. View `activity-log/index` mendapat form pencarian dan info count. Tombol "Proses" di halaman Kenaikan Pangkat distandarkan ke `bg-emerald-600 text-white` dengan SVG checkmark icon (konsisten dengan KGB dan Pensiun). CSS di-rebuild via `npm run build`.
 - **Server-Side Pagination (GAP-41)** — Semua 5 halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) dikonversi dari client-side JS pagination ke server-side pagination via `LengthAwarePaginator`. Trait `PaginatesArray` (di `app/Http/Controllers/Traits/`) menerima array hasil kalkulasi Service, menerapkan filter `?search=` (NIP/Nama), lalu memotong per halaman (15 item). View menggunakan `{{ $data->links() }}` (Tailwind). Filter tabs (level, milestone) mempertahankan search parameter. Client-side JS pagination dihapus seluruhnya.

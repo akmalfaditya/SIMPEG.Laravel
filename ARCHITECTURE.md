@@ -181,7 +181,7 @@ SIMPEG.Laravel/
 ├── config/                            # Konfigurasi (app, auth, database, dll)
 ├── database/
 │   ├── factories/                     # Model factories (UserFactory, PegawaiFactory)
-│   ├── migrations/                    # 20 migration files
+│   ├── migrations/                    # 23 migration files
 │   └── seeders/                       # 6 seeders (User, MasterData, Golongan, Pegawai, TabelGaji, Database)
 │
 ├── public/                            # Entry point + compiled assets
@@ -270,7 +270,7 @@ SIMPEG.Laravel/
 
 ### Entitas Utama
 
-- **`pegawais`** — Central entity, connected to 8 riwayat tables + 8 master data tables via FK. Fields include gelar_depan, gelar_belakang, jenis_kelamin_id, agama_id, status_pernikahan_id, golongan_darah_id, tipe_pegawai_id, status_kepegawaian_id, bagian_id, unit_kerja_id
+- **`pegawais`** — Central entity, connected to 8 riwayat tables + 8 master data tables via FK. Fields include gelar_depan, gelar_belakang, jenis_kelamin_id, agama_id, status_pernikahan_id, golongan_darah_id, tipe_pegawai_id, status_kepegawaian_id, bagian_id, unit_kerja_id, sk_cpns_path, sk_pns_path
 - **`tipe_pegawais`**, **`status_kepegawaans`**, **`bagians`**, **`unit_kerjas`**, **`jenis_kelamins`**, **`agamas`**, **`status_pernikahans`**, **`golongan_darahs`** — 8 master data tables (id + nama unique), FK from `pegawais`
 - **`golongan_pangkats`** — Master golongan/pangkat (17 level I/a – IV/e), FK from `riwayat_pangkats` dan `tabel_gajis`
 - **`jabatans`** — Master jabatan, FK from `riwayat_jabatans`

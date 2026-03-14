@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-4xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-    <form method="POST" action="{{ route('pegawai.store') }}">
+    <form method="POST" action="{{ route('pegawai.store') }}" enctype="multipart/form-data">
         @csrf
         @include('pegawai._form')
         <div class="flex gap-3 mt-6 pt-4 border-t border-slate-200">

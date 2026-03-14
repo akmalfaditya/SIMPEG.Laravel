@@ -28,6 +28,8 @@ class PegawaiDTO
         public readonly ?string $npwp,
         public readonly ?string $noKarpeg,
         public readonly ?string $noTaspen,
+        public readonly ?string $skCpnsPath = null,
+        public readonly ?string $skPnsPath = null,
         public readonly bool $isActive = true,
     ) {}
 
@@ -57,6 +59,8 @@ class PegawaiDTO
             npwp: $validated['npwp'] ?? null,
             noKarpeg: $validated['no_karpeg'] ?? null,
             noTaspen: $validated['no_taspen'] ?? null,
+            skCpnsPath: $validated['sk_cpns_path'] ?? null,
+            skPnsPath: $validated['sk_pns_path'] ?? null,
             isActive: $validated['is_active'] ?? true,
         );
     }
@@ -87,6 +91,8 @@ class PegawaiDTO
             'npwp' => $this->npwp,
             'no_karpeg' => $this->noKarpeg,
             'no_taspen' => $this->noTaspen,
+            'sk_cpns_path' => $this->skCpnsPath,
+            'sk_pns_path' => $this->skPnsPath,
             'is_active' => $this->isActive,
         ];
     }

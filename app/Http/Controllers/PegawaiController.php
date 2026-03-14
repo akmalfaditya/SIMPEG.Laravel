@@ -13,6 +13,7 @@ use App\Models\StatusKepegawaian;
 use App\Models\StatusPernikahanMaster;
 use App\Models\TipePegawai;
 use App\Models\UnitKerja;
+use App\Services\DocumentUploadService;
 use App\Services\PegawaiService;
 use App\Services\SalaryCalculatorService;
 use App\Http\Requests\StorePegawaiRequest;
@@ -29,6 +30,7 @@ class PegawaiController extends Controller
     public function __construct(
         private PegawaiService $service,
         private SalaryCalculatorService $salaryCalculatorService,
+        private DocumentUploadService $documentService,
     ) {}
 
     public function index()
@@ -88,15 +90,22 @@ class PegawaiController extends Controller
 
     public function store(StorePegawaiRequest $request)
     {
-        $dto = PegawaiDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+
+        // Upload foundational SK documents if provided
+        $skPaths = $this->uploadSkDocuments($request, $validated['nip']);
+        $validated = array_merge($validated, $skPaths);
+
+        $dto = PegawaiDTO::fromRequest($validated);
         $pegawai = $this->service->create(
             $dto,
             golonganId: (int) $request->validated('golongan_id'),
             jabatanId: (int) $request->validated('jabatan_id'),
         );
 
+        $docInfo = $this->buildDocumentFlashInfo($skPaths);
         return redirect()->route('pegawai.show', $pegawai)
-            ->with('success', 'Data pegawai berhasil ditambahkan. Riwayat pangkat dan jabatan awal telah dibuat otomatis.');
+            ->with('success', "Data pegawai berhasil ditambahkan. Riwayat pangkat dan jabatan awal telah dibuat otomatis.{$docInfo}");
     }
 
     public function edit(Pegawai $pegawai)
@@ -108,10 +117,18 @@ class PegawaiController extends Controller
 
     public function update(UpdatePegawaiRequest $request, Pegawai $pegawai)
     {
-        $dto = PegawaiDTO::fromRequest($request->validated());
+        $validated = $request->validated();
+
+        // Upload foundational SK documents if provided (replace old files)
+        $skPaths = $this->uploadSkDocuments($request, $pegawai->nip, $pegawai);
+        $validated = array_merge($validated, $skPaths);
+
+        $dto = PegawaiDTO::fromRequest($validated);
         $this->service->update($pegawai, $dto);
 
-        return redirect()->route('pegawai.show', $pegawai)->with('success', 'Data pegawai berhasil diperbarui.');
+        $docInfo = $this->buildDocumentFlashInfo($skPaths);
+        return redirect()->route('pegawai.show', $pegawai)
+            ->with('success', "Data pegawai berhasil diperbarui.{$docInfo}");
     }
 
     public function destroy(Pegawai $pegawai)
@@ -130,6 +147,60 @@ class PegawaiController extends Controller
     {
         $this->service->cancelPensiun($pegawai);
         return redirect()->route('pegawai.index')->with('success', "Pensiun pegawai {$pegawai->nama_lengkap} berhasil dibatalkan.");
+    }
+
+    /**
+     * Upload SK CPNS and SK PNS documents if present in the request.
+     * Returns an array with sk_cpns_path and/or sk_pns_path keys.
+     */
+    private function uploadSkDocuments(Request $request, string $nip, ?Pegawai $existing = null): array
+    {
+        $paths = [];
+        $timestamp = now()->format('Ymd_His');
+
+        if ($request->hasFile('sk_cpns_file')) {
+            // Delete old file if replacing
+            if ($existing?->sk_cpns_path) {
+                $this->documentService->delete($existing->sk_cpns_path);
+            }
+            $fileName = "{$nip}_SK_CPNS_{$timestamp}.pdf";
+            $paths['sk_cpns_path'] = $this->documentService->upload(
+                $request->file('sk_cpns_file'),
+                'sk_cpns',
+                $fileName,
+            );
+        }
+
+        if ($request->hasFile('sk_pns_file')) {
+            // Delete old file if replacing
+            if ($existing?->sk_pns_path) {
+                $this->documentService->delete($existing->sk_pns_path);
+            }
+            $fileName = "{$nip}_SK_PNS_{$timestamp}.pdf";
+            $paths['sk_pns_path'] = $this->documentService->upload(
+                $request->file('sk_pns_file'),
+                'sk_pns',
+                $fileName,
+            );
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Build flash message suffix for uploaded documents.
+     */
+    private function buildDocumentFlashInfo(array $skPaths): string
+    {
+        $docs = [];
+        if (isset($skPaths['sk_cpns_path'])) {
+            $docs[] = 'SK CPNS';
+        }
+        if (isset($skPaths['sk_pns_path'])) {
+            $docs[] = 'SK PNS';
+        }
+
+        return $docs ? ' Dokumen ' . implode(' dan ', $docs) . ' berhasil diunggah.' : '';
     }
 
     private function masterDataOptions(): array

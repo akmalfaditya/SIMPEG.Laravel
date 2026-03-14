@@ -42,6 +42,8 @@ class Pegawai extends Model
         'bagian_id',
         'unit_kerja_id',
         'foto_path',
+        'sk_cpns_path',
+        'sk_pns_path',
         'is_active',
         'gaji_pokok',
         'npwp',

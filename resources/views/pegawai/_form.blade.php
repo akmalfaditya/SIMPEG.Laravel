@@ -125,6 +125,41 @@
     @endif
 </div>
 
+{{-- Section: Dokumen Dasar --}}
+<h3 class="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">Dokumen Dasar</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Upload SK CPNS (PDF)</label>
+        <input type="file" name="sk_cpns_file" accept=".pdf"
+            class="{{ $inputClass }} file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-blue-50 file:text-blue-600">
+        <p class="text-xs text-slate-400 mt-1">Maks. 5MB, format PDF</p>
+        @if($isEdit && $p?->sk_cpns_path)
+            <div class="mt-2">
+                <a href="{{ route('dokumen.download', ['type' => 'sk_cpns', 'id' => $p->id]) }}" target="_blank"
+                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Lihat SK CPNS saat ini
+                </a>
+            </div>
+        @endif
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Upload SK PNS (PDF)</label>
+        <input type="file" name="sk_pns_file" accept=".pdf"
+            class="{{ $inputClass }} file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-blue-50 file:text-blue-600">
+        <p class="text-xs text-slate-400 mt-1">Maks. 5MB, format PDF</p>
+        @if($isEdit && $p?->sk_pns_path)
+            <div class="mt-2">
+                <a href="{{ route('dokumen.download', ['type' => 'sk_pns', 'id' => $p->id]) }}" target="_blank"
+                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Lihat SK PNS saat ini
+                </a>
+            </div>
+        @endif
+    </div>
+</div>
+
 {{-- Section: Pangkat & Jabatan Awal (CREATE ONLY) --}}
 @unless($isEdit)
 <h3 class="text-sm font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-200">Pangkat & Jabatan Awal</h3>

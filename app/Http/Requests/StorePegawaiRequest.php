@@ -36,6 +36,9 @@ class StorePegawaiRequest extends FormRequest
             'npwp' => 'nullable|string',
             'no_karpeg' => 'nullable|string',
             'no_taspen' => 'nullable|string',
+            // Dokumen Dasar (foundational SK documents)
+            'sk_cpns_file' => 'nullable|file|mimes:pdf|max:5120',
+            'sk_pns_file' => 'nullable|file|mimes:pdf|max:5120',
             // One-stop creation: pangkat & jabatan awal
             'golongan_id' => 'required|integer|exists:golongan_pangkats,id',
             'jabatan_id' => 'required|integer|exists:jabatans,id',

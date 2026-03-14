@@ -112,7 +112,7 @@ Route::middleware('auth')->group(function () {
 
     // Document Download
     Route::get('/dokumen/{type}/{id}', [DocumentController::class, 'download'])
-        ->where('type', 'pangkat|jabatan|kgb|hukuman|pendidikan|latihan|skp|pensiun')
+        ->where('type', 'pangkat|jabatan|kgb|hukuman|pendidikan|latihan|skp|pensiun|sk_cpns|sk_pns')
         ->where('id', '[0-9]+')
         ->name('dokumen.download');
 

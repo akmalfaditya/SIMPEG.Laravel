@@ -24,10 +24,14 @@ class DocumentController extends Controller
         'latihan' => RiwayatLatihanJabatan::class,
         'skp' => PenilaianKinerja::class,
         'pensiun' => Pegawai::class,
+        'sk_cpns' => Pegawai::class,
+        'sk_pns' => Pegawai::class,
     ];
 
     private const FILE_PATH_COLUMN = [
         'pensiun' => 'file_sk_pensiun_path',
+        'sk_cpns' => 'sk_cpns_path',
+        'sk_pns' => 'sk_pns_path',
     ];
 
     public function download(string $type, int $id): BinaryFileResponse
