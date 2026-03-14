@@ -5,7 +5,7 @@
     <a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a> / <span class="text-slate-700">DUK</span>
 @endsection
 @section('content')
-    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm">
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-5 shadow-sm">
         <h2 class="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             Informasi Urutan DUK (Berdasarkan Aturan BKN)
@@ -20,16 +20,16 @@
         </ul>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="text-sm font-medium text-slate-700">Total: {{ $entries->total() }} pegawai</div>
             <div class="sm:ml-auto flex items-center gap-2">
                 <form method="GET" class="inline-flex">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari NIP/Nama..."
-                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
+                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800 w-48">
                 </form>
                 <a href="{{ route('export', ['type' => 'duk', 'format' => 'pdf']) }}"
-                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">PDF</a>
+                    class="px-3 py-1.5 text-xs bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-all">PDF</a>
                 <a href="{{ route('export', ['type' => 'duk', 'format' => 'excel']) }}"
                     class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-all">Excel</a>
             </div>

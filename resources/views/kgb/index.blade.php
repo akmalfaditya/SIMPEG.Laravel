@@ -5,27 +5,27 @@
     <a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a> / <span class="text-slate-700">KGB</span>
 @endsection
 @section('content')
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex items-center gap-2 flex-wrap">
                 <a href="{{ route('kgb.index', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ !$filterTitle ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
+                    class="px-3 py-1.5 text-xs rounded-lg {{ !$filterTitle ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
                 <a href="{{ route('kgb.upcoming', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'H-60') ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">H-60
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'H-60') ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">H-60
                     Hari</a>
                 <a href="{{ route('kgb.eligible', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'Eligible') ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Eligible</a>
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'Eligible') ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Eligible</a>
                 <a href="{{ route('kgb.ditunda', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'Ditunda') ? 'bg-red-600 text-white' : 'bg-red-50 text-red-600 hover:bg-red-100' }}">Ditunda
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $filterTitle && str_contains($filterTitle, 'Ditunda') ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100' }}">Ditunda
                     (Hukdis)</a>
             </div>
             <div class="sm:ml-auto flex items-center gap-2">
                 <form method="GET" class="inline-flex">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari NIP/Nama..."
-                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
+                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800 w-48">
                 </form>
                 <a href="{{ route('export', ['type' => 'kgb', 'format' => 'pdf']) }}"
-                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all"
+                    class="px-3 py-1.5 text-xs bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-all"
                     title="Export PDF">PDF</a>
                 <a href="{{ route('export', ['type' => 'kgb', 'format' => 'excel']) }}"
                     class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-all"
@@ -64,10 +64,10 @@
                             </td>
                             <td class="px-4 py-2.5">
                                 <span
-                                    class="px-2 py-1 text-xs rounded-full font-medium {{ $a['status'] === 'Ditunda' ? 'bg-red-100 text-red-700' : ($a['is_eligible'] ? 'bg-red-100 text-red-700' : ($a['hari_menuju_jatuh_tempo'] <= 60 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700')) }}">{{ $a['status'] }}</span>
+                                    class="px-2 py-1 text-xs rounded-full font-medium {{ $a['status'] === 'Ditunda' ? 'bg-rose-100 text-rose-700' : ($a['is_eligible'] ? 'bg-rose-100 text-rose-700' : ($a['hari_menuju_jatuh_tempo'] <= 60 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700')) }}">{{ $a['status'] }}</span>
                                 @if ($a['hukdis_flag'])
                                     <div class="mt-1"><span
-                                            class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-red-600 text-white">{{ $a['hukdis_note'] }}</span>
+                                            class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-rose-600 text-white">{{ $a['hukdis_note'] }}</span>
                                     </div>
                                 @endif
                             </td>

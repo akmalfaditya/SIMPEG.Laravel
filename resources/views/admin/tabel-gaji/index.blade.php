@@ -6,7 +6,7 @@
         Gaji</span>
 @endsection
 @section('content')
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100">
             <p class="text-sm text-slate-500">Matriks gaji pokok PNS berdasarkan PP 15/2019. Klik golongan untuk melihat &
                 mengelola detail per MKG.</p>

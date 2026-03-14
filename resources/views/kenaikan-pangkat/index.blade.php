@@ -10,20 +10,20 @@
         <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex items-center gap-2 flex-wrap">
                 <a href="{{ route('kenaikan-pangkat.index', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'semua' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600' }}">Semua</a>
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'semua' ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600' }}">Semua</a>
                 <a href="{{ route('kenaikan-pangkat.eligible', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'eligible' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600' }}">Eligible</a>
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'eligible' ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600' }}">Eligible</a>
                 <a href="{{ route('kenaikan-pangkat.ditunda', request()->only('search')) }}"
-                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'ditunda' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-600' }}">Ditunda
+                    class="px-3 py-1.5 text-xs rounded-lg {{ $activeFilter === 'ditunda' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600' }}">Ditunda
                     (Hukdis)</a>
             </div>
             <div class="sm:ml-auto flex items-center gap-2">
                 <form method="GET" class="inline-flex">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama..."
-                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
+                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800 w-48">
                 </form>
                 <a href="{{ route('export', ['type' => 'kenaikan-pangkat', 'format' => 'pdf']) }}"
-                    class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">PDF</a>
+                    class="px-3 py-1.5 text-xs bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-all">PDF</a>
                 <a href="{{ route('export', ['type' => 'kenaikan-pangkat', 'format' => 'excel']) }}"
                     class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-all">Excel</a>
             </div>
@@ -54,16 +54,16 @@
                             <td class="px-4 py-2.5">{{ $c['golongan_saat_ini'] }}</td>
                             <td class="px-4 py-2.5 font-medium text-blue-600">{{ $c['golongan_berikutnya'] }}</td>
                             <td class="px-4 py-2.5 text-xs">{{ $c['masa_kerja_golongan'] }}</td>
-                            <td class="px-4 py-2.5">{!! $c['syarat_masa_kerja'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-red-500">✗</span>' !!}</td>
-                            <td class="px-4 py-2.5">{!! $c['syarat_skp'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-red-500">✗</span>' !!}</td>
-                            <td class="px-4 py-2.5">{!! $c['syarat_latihan'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-red-500">✗</span>' !!}</td>
-                            <td class="px-4 py-2.5">{!! $c['syarat_hukuman'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-red-500">✗</span>' !!}</td>
+                            <td class="px-4 py-2.5">{!! $c['syarat_masa_kerja'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-rose-500">✗</span>' !!}</td>
+                            <td class="px-4 py-2.5">{!! $c['syarat_skp'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-rose-500">✗</span>' !!}</td>
+                            <td class="px-4 py-2.5">{!! $c['syarat_latihan'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-rose-500">✗</span>' !!}</td>
+                            <td class="px-4 py-2.5">{!! $c['syarat_hukuman'] ? '<span class="text-emerald-500">✓</span>' : '<span class="text-rose-500">✗</span>' !!}</td>
                             <td class="px-4 py-2.5 text-xs">{{ $c['proyeksi_periode'] }}</td>
                             <td class="px-4 py-2.5"><span
-                                    class="px-2 py-1 text-xs rounded-full font-medium {{ $c['is_eligible'] ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">{{ $c['is_eligible'] ? 'Eligible' : 'Belum' }}</span>
+                                    class="px-2 py-1 text-xs rounded-full font-medium {{ $c['is_eligible'] ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">{{ $c['is_eligible'] ? 'Eligible' : 'Belum' }}</span>
                                 @if ($c['hukdis_pangkat_flag'])
                                     <div class="mt-1"><span
-                                            class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-red-600 text-white">{{ $c['hukdis_pangkat_note'] }}</span>
+                                            class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-rose-600 text-white">{{ $c['hukdis_pangkat_note'] }}</span>
                                     </div>
                                 @endif
                             </td>

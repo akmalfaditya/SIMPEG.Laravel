@@ -7,41 +7,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
 </head>
-<body class="h-full bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 font-[Inter] flex items-center justify-center">
+<body class="h-full bg-slate-50 font-[Inter] flex items-center justify-center">
     <div class="w-full max-w-md px-6">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">SIMPEG</h1>
-            <p class="text-slate-400 text-sm mt-2">Sistem Informasi Manajemen Pegawai</p>
+            <h1 class="text-3xl font-bold text-blue-800">SIMPEG</h1>
+            <p class="text-slate-500 text-sm mt-2">Sistem Informasi Manajemen Pegawai</p>
         </div>
-        <div class="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl">
-            <h2 class="text-xl font-semibold text-white mb-6">Masuk ke Akun</h2>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+            <h2 class="text-xl font-semibold text-slate-900 mb-6">Masuk ke Akun</h2>
             @if($errors->any())
-            <div class="mb-4 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-red-300 text-sm">
+            <div class="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm">
                 @foreach($errors->all() as $e) <p>{{ $e }}</p> @endforeach
             </div>
             @endif
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                        class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                        class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-800/30 focus:border-blue-800 transition-colors">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
                     <input type="password" name="password" required
-                        class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                        class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-800/30 focus:border-blue-800 transition-colors">
                 </div>
                 <div class="flex items-center mb-6">
-                    <input type="checkbox" name="remember" id="remember" class="rounded bg-white/10 border-white/20 text-blue-500 focus:ring-blue-500/50">
-                    <label for="remember" class="ml-2 text-sm text-slate-400">Ingat saya</label>
+                    <input type="checkbox" name="remember" id="remember" class="rounded border-slate-300 text-blue-800 focus:ring-blue-800/50">
+                    <label for="remember" class="ml-2 text-sm text-slate-600">Ingat saya</label>
                 </div>
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] transition-all duration-200">
+                <button type="submit" class="w-full py-2.5 bg-blue-800 text-white font-semibold rounded-lg hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:ring-offset-2 transition-colors">
                     Masuk
                 </button>
             </form>
         </div>
-        <p class="text-center text-slate-500 text-xs mt-6">Admin: superadmin@kemenipas.go.id / password</p>
+        <p class="text-center text-slate-400 text-xs mt-6">Admin: superadmin@kemenipas.go.id / password</p>
     </div>
 </body>
 </html>

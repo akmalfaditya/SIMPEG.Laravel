@@ -4,7 +4,7 @@
 
 @section('content')
 {{-- Filter Panel --}}
-<div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-6">
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm mb-6">
     <form method="GET" action="{{ route('dashboard') }}" id="filterForm">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
@@ -13,12 +13,12 @@
             </h3>
             <div class="flex items-center gap-2">
                 @if($hasFilters)
-                <a href="{{ route('dashboard') }}" class="text-xs text-red-600 hover:text-red-700 flex items-center gap-1">
+                <a href="{{ route('dashboard') }}" class="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Reset Filter
                 </a>
                 @endif
-                <a href="{{ route('dashboard.export-pdf', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                <a href="{{ route('dashboard.export-pdf', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Export PDF
                 </a>
@@ -27,7 +27,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">Unit Kerja</label>
-                <select name="unit_kerja" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="document.getElementById('filterForm').submit()">
+                <select name="unit_kerja" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-800 focus:border-blue-800" onchange="document.getElementById('filterForm').submit()">
                     <option value="">Semua Unit</option>
                     @foreach($filterOptions['unit_kerja_list'] as $id => $nama)
                     <option value="{{ $id }}" {{ request('unit_kerja') == $id ? 'selected' : '' }}>{{ $nama }}</option>
@@ -36,7 +36,7 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">Golongan</label>
-                <select name="golongan" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="document.getElementById('filterForm').submit()">
+                <select name="golongan" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-800 focus:border-blue-800" onchange="document.getElementById('filterForm').submit()">
                     <option value="">Semua Golongan</option>
                     @foreach($filterOptions['golongan_list'] as $val => $label)
                     <option value="{{ $val }}" {{ request('golongan') == $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -45,11 +45,11 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">TMT CPNS Dari</label>
-                <input type="date" name="tmt_cpns_from" value="{{ request('tmt_cpns_from') }}" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="document.getElementById('filterForm').submit()">
+                <input type="date" name="tmt_cpns_from" value="{{ request('tmt_cpns_from') }}" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-800 focus:border-blue-800" onchange="document.getElementById('filterForm').submit()">
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">TMT CPNS Sampai</label>
-                <input type="date" name="tmt_cpns_to" value="{{ request('tmt_cpns_to') }}" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="document.getElementById('filterForm').submit()">
+                <input type="date" name="tmt_cpns_to" value="{{ request('tmt_cpns_to') }}" class="w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-800 focus:border-blue-800" onchange="document.getElementById('filterForm').submit()">
             </div>
         </div>
     </form>
@@ -57,7 +57,7 @@
 
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Pegawai</p>
@@ -68,7 +68,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Laki-Laki</p>
@@ -79,7 +79,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Perempuan</p>
@@ -90,7 +90,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Rata-rata Usia</p>
@@ -101,7 +101,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Rata-rata MK</p>
@@ -112,7 +112,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 transition-shadow">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Alerts</p>
@@ -127,19 +127,19 @@
 
 {{-- Original 4 Charts --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Golongan</h3>
         <canvas id="chartGolongan" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Gender</h3>
         <canvas id="chartGender" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Usia</h3>
         <canvas id="chartUsia" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Unit Kerja</h3>
         <canvas id="chartUnitKerja" height="200"></canvas>
     </div>
@@ -147,32 +147,32 @@
 
 {{-- Advanced Charts --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-1">Tren KGB 12 Bulan Ke Depan</h3>
         <p class="text-xs text-slate-400 mb-4">Jumlah pegawai yang jatuh tempo KGB per bulan</p>
         <canvas id="chartKgbTren" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-1">Proyeksi Pensiun 5 Tahun</h3>
         <p class="text-xs text-slate-400 mb-4">Jumlah pegawai yang akan pensiun per tahun</p>
         <canvas id="chartPensiunProyeksi" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Pendidikan Terakhir</h3>
         <canvas id="chartPendidikan" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Rumpun Jabatan</h3>
         <canvas id="chartJenisJabatan" height="200"></canvas>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-2">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm lg:col-span-2">
         <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Masa Kerja</h3>
         <canvas id="chartMasaKerja" height="120"></canvas>
     </div>
 </div>
 
 {{-- Summary Per Unit Kerja --}}
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-8">
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm mb-8">
     <div class="p-5 border-b border-slate-100">
         <h3 class="text-sm font-semibold text-slate-700">Rekapitulasi Per Unit Kerja</h3>
     </div>
@@ -220,7 +220,7 @@
 {{-- Alert Tables --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     {{-- KGB Alerts --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-slate-700">KGB Akan Datang <span class="text-xs font-normal text-slate-400">({{ $data['kgb_alert_count'] }} total)</span></h3>
             <a href="{{ route('kgb.index') }}" class="text-xs text-blue-600 hover:underline">Lihat Semua &rarr;</a>
@@ -233,7 +233,7 @@
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-2.5 font-medium text-slate-700">{{ $alert['nama_lengkap'] }}</td>
                         <td class="px-4 py-2.5 text-slate-600">{{ $alert['tanggal_jatuh_tempo']->format('d/m/Y') }}</td>
-                        <td class="px-4 py-2.5"><span class="px-2 py-1 text-xs rounded-full font-medium {{ $alert['is_eligible'] ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' }}">{{ $alert['status'] }}</span></td>
+                        <td class="px-4 py-2.5"><span class="px-2 py-1 text-xs rounded-full font-medium {{ $alert['is_eligible'] ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' }}">{{ $alert['status'] }}</span></td>
                     </tr>
                     @empty
                     <tr><td colspan="3" class="px-4 py-6 text-center text-slate-400">Tidak ada data.</td></tr>
@@ -244,7 +244,7 @@
     </div>
 
     {{-- Pensiun Alerts --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-slate-700">Alert Pensiun <span class="text-xs font-normal text-slate-400">({{ $data['pensiun_alert_count'] }} total)</span></h3>
             <a href="{{ route('pensiun.index') }}" class="text-xs text-blue-600 hover:underline">Lihat Semua &rarr;</a>
@@ -254,7 +254,7 @@
                 <thead class="bg-slate-50"><tr><th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500">Pegawai</th><th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500">Tgl Pensiun</th><th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500">Level</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse(array_slice($data['pensiun_alerts'], 0, 5) as $alert)
-                    @php $colors = ['Hitam' => 'bg-slate-800 text-white', 'Merah' => 'bg-red-100 text-red-700', 'Kuning' => 'bg-yellow-100 text-yellow-700', 'Hijau' => 'bg-green-100 text-green-700']; @endphp
+                    @php $colors = ['Hitam' => 'bg-slate-800 text-white', 'Merah' => 'bg-rose-100 text-rose-700', 'Kuning' => 'bg-yellow-100 text-yellow-700', 'Hijau' => 'bg-green-100 text-green-700']; @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-2.5 font-medium text-slate-700">{{ $alert['nama_lengkap'] }}</td>
                         <td class="px-4 py-2.5 text-slate-600">{{ $alert['tanggal_pensiun']->format('d/m/Y') }}</td>

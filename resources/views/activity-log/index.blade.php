@@ -8,12 +8,12 @@
 @endsection
 
 @section('content')
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
             <p class="text-sm text-slate-500">Log aktivitas pengguna pada sistem.</p>
             <form method="GET" action="{{ route('activity-log.index') }}" class="flex items-center gap-2">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari deskripsi..."
-                    class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48">
+                    class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800 w-48">
             </form>
         </div>
         <div class="overflow-x-auto">
@@ -37,7 +37,7 @@
                             <td class="px-4 py-2.5">
                                 <span
                                     class="px-2 py-1 text-xs rounded-full font-medium
-                            {{ $activity->event === 'created' ? 'bg-emerald-100 text-emerald-700' : ($activity->event === 'updated' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700') }}">
+                            {{ $activity->event === 'created' ? 'bg-emerald-100 text-emerald-700' : ($activity->event === 'updated' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700') }}">
                                     {{ ucfirst($activity->event ?? $activity->description) }}
                                 </span>
                             </td>

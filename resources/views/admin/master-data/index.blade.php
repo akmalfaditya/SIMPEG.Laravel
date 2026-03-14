@@ -6,17 +6,17 @@
         {{ $label }}</span>
 @endsection
 @section('content')
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
             <p class="text-sm text-slate-500">Kelola data master <strong>{{ $label }}</strong>. Data ini digunakan
                 sebagai pilihan dropdown pada formulir pegawai.</p>
             <div class="flex items-center gap-2">
                 <form method="GET" action="{{ route('admin.master-data.index', $entity) }}" class="flex items-center gap-2">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama..."
-                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-40">
+                        class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800 w-40">
                 </form>
                 <a href="{{ route('admin.master-data.create', $entity) }}"
-                    class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-1.5">
+                    class="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -54,7 +54,7 @@
                                         class="inline-flex items-center px-2 py-1 bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                     <button type="button"
                                         onclick="confirmDelete('{{ route('admin.master-data.destroy', [$entity, $row->id]) }}', 'Hapus {{ $label }} &quot;{{ $row->nama }}&quot;? Data pegawai yang menggunakan referensi ini mungkin terpengaruh.')"
-                                        class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                        class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                 </div>
                             </td>
                         </tr>

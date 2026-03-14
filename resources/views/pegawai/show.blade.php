@@ -16,11 +16,11 @@
                         {{ $pegawai->nama_lengkap }}
                         @if ($pegawai->statusKepegawaian)
                             <span class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full
-                                {{ $pegawai->statusKepegawaian->nama === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : ($pegawai->statusKepegawaian->nama === 'Pensiun' ? 'bg-slate-100 text-slate-600' : 'bg-red-100 text-red-700') }}">{{ $pegawai->statusKepegawaian->nama }}</span>
+                                {{ $pegawai->statusKepegawaian->nama === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : ($pegawai->statusKepegawaian->nama === 'Pensiun' ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-700') }}">{{ $pegawai->statusKepegawaian->nama }}</span>
                         @endif
                         @if ($pegawai->has_active_hukdis)
                             <span
-                                class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">Hukdis
+                                class="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-100 text-rose-700">Hukdis
                                 Aktif</span>
                         @endif
                     </h3>
@@ -41,7 +41,7 @@
                         class="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">Edit</a>
                     <button
                         onclick="confirmDelete('{{ route('pegawai.destroy', $pegawai) }}', 'Yakin ingin menghapus data pegawai {{ $pegawai->nama_lengkap }}? Tindakan ini tidak dapat dibatalkan.')"
-                        class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Hapus</button>
+                        class="px-4 py-2 bg-rose-600 text-white text-sm rounded-lg hover:bg-rose-700 transition-colors">Hapus</button>
                 </div>
             </div>
         </div>
@@ -179,7 +179,7 @@
             <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
                 @foreach (['timeline' => 'Timeline Karir', 'pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
                     <button onclick="showTab('{{ $key }}')"
-                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }} flex items-center gap-1"
+                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-800 text-blue-800' : 'border-transparent text-slate-500 hover:text-slate-700' }} flex items-center gap-1"
                         data-tab="{{ $key }}">{{ $label }}@if($key !== 'timeline' && !($completeness[$key]['filled'] ?? true))<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Belum ada data"></span>@endif</button>
                 @endforeach
             </div>
@@ -202,7 +202,7 @@
                                     'blue' => ['bg' => 'bg-blue-500', 'light' => 'bg-blue-50 border-blue-200 text-blue-700', 'badge' => 'bg-blue-100 text-blue-700'],
                                     'indigo' => ['bg' => 'bg-indigo-500', 'light' => 'bg-indigo-50 border-indigo-200 text-indigo-700', 'badge' => 'bg-indigo-100 text-indigo-700'],
                                     'emerald' => ['bg' => 'bg-emerald-500', 'light' => 'bg-emerald-50 border-emerald-200 text-emerald-700', 'badge' => 'bg-emerald-100 text-emerald-700'],
-                                    'red' => ['bg' => 'bg-red-500', 'light' => 'bg-red-50 border-red-200 text-red-700', 'badge' => 'bg-red-100 text-red-700'],
+                                    'red' => ['bg' => 'bg-rose-500', 'light' => 'bg-rose-50 border-rose-200 text-rose-700', 'badge' => 'bg-rose-100 text-rose-700'],
                                     'purple' => ['bg' => 'bg-purple-500', 'light' => 'bg-purple-50 border-purple-200 text-purple-700', 'badge' => 'bg-purple-100 text-purple-700'],
                                     'cyan' => ['bg' => 'bg-cyan-500', 'light' => 'bg-cyan-50 border-cyan-200 text-cyan-700', 'badge' => 'bg-cyan-100 text-cyan-700'],
                                     'amber' => ['bg' => 'bg-amber-500', 'light' => 'bg-amber-50 border-amber-200 text-amber-700', 'badge' => 'bg-amber-100 text-amber-700'],
@@ -294,7 +294,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.pangkat.destroy', $r) }}', 'Hapus data riwayat pangkat ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -342,7 +342,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.jabatan.destroy', $r) }}', 'Hapus data riwayat jabatan ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -401,7 +401,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.kgb.destroy', $r) }}', 'Hapus data riwayat KGB ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -433,14 +433,14 @@
                             <tr class="hover:bg-slate-50">
                                 <td class="px-3 py-2">
                                     <span
-                                        class="px-2 py-0.5 text-xs rounded-full {{ $r->tingkat_hukuman == \App\Enums\TingkatHukuman::Berat ? 'bg-red-100 text-red-700' : ($r->tingkat_hukuman == \App\Enums\TingkatHukuman::Sedang ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ $r->tingkat_hukuman->label() }}</span>
+                                        class="px-2 py-0.5 text-xs rounded-full {{ $r->tingkat_hukuman == \App\Enums\TingkatHukuman::Berat ? 'bg-rose-100 text-rose-700' : ($r->tingkat_hukuman == \App\Enums\TingkatHukuman::Sedang ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700') }}">{{ $r->tingkat_hukuman->label() }}</span>
                                 </td>
                                 <td class="px-3 py-2">{{ $r->jenis_sanksi->label() }}</td>
                                 <td class="px-3 py-2">{{ $r->durasi_tahun ? $r->durasi_tahun . ' thn' : '-' }}</td>
                                 <td class="px-3 py-2">{{ $r->tmt_hukuman->format('d/m/Y') }}</td>
                                 <td class="px-3 py-2">
                                     <span
-                                        class="px-2 py-0.5 text-xs rounded-full {{ $r->status?->color() ?? 'bg-red-100 text-red-700' }}">{{ $r->status?->label() ?? 'Aktif' }}</span>
+                                        class="px-2 py-0.5 text-xs rounded-full {{ $r->status?->color() ?? 'bg-rose-100 text-rose-700' }}">{{ $r->status?->label() ?? 'Aktif' }}</span>
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($r->file_pdf_path)
@@ -465,7 +465,7 @@
                                         @endif
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.hukuman.destroy', $r) }}', 'Hapus data riwayat hukuman ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -515,7 +515,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.pendidikan.destroy', $r) }}', 'Hapus data riwayat pendidikan ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -565,7 +565,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.latihan.destroy', $r) }}', 'Hapus data riwayat latihan ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -650,7 +650,7 @@
                                             class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs rounded-md font-medium transition-colors">Edit</a>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('riwayat.skp.destroy', $r) }}', 'Hapus data SKP ini?')"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -714,7 +714,7 @@
                     <button type="submit"
                         class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700">Pulihkan</button>
                     <button type="button" onclick="closePulihkanModal()"
-                        class="px-5 py-2 bg-slate-100 text-slate-600 text-sm rounded-xl hover:bg-slate-200">Batal</button>
+                        class="px-5 py-2 bg-slate-100 text-slate-600 text-sm rounded-lg hover:bg-slate-200">Batal</button>
                 </div>
             </form>
     </dialog>
@@ -725,14 +725,14 @@
         function showTab(name) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('border-blue-600', 'text-blue-600');
+                el.classList.remove('border-blue-800', 'text-blue-800');
                 el.classList.add('border-transparent', 'text-slate-500');
             });
             const panel = document.getElementById('tab-' + name);
             const btn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
             if (panel && btn) {
                 panel.classList.remove('hidden');
-                btn.classList.add('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-blue-800', 'text-blue-800');
                 btn.classList.remove('border-transparent', 'text-slate-500');
             }
         }

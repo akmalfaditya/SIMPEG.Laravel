@@ -12,21 +12,21 @@
         <div class="flex items-center gap-2 flex-wrap">
             @foreach ($allGolongan as $g)
                 <a href="{{ route('admin.tabel-gaji.show', $g->id) }}"
-                    class="px-2.5 py-1 text-xs rounded-lg transition-all {{ $g->id === $golongan->id ? 'bg-blue-600 text-white font-medium' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                    class="px-2.5 py-1 text-xs rounded-lg transition-all {{ $g->id === $golongan->id ? 'bg-blue-800 text-white font-medium' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                     {{ $g->label }}
                 </a>
             @endforeach
         </div>
 
         {{-- Tabel MKG --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <h3 class="text-base font-semibold text-slate-800">Daftar Gaji Pokok — {{ $golongan->label }}</h3>
                     <p class="text-xs text-slate-500 mt-0.5">{{ $entries->count() }} entri MKG</p>
                 </div>
                 <button onclick="document.getElementById('add-form').classList.toggle('hidden')"
-                    class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-1.5">
+                    class="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -43,21 +43,21 @@
                         <label class="block text-xs font-medium text-slate-600 mb-1">Masa Kerja (Tahun)</label>
                         <input type="number" name="masa_kerja_tahun" min="0" max="40" required
                             value="{{ old('masa_kerja_tahun') }}"
-                            class="w-32 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="w-32 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800">
                         @error('masa_kerja_tahun')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Gaji Pokok (Rp)</label>
                         <input type="number" name="gaji_pokok" min="0" required value="{{ old('gaji_pokok') }}"
-                            class="w-44 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            class="w-44 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-blue-800">
                         @error('gaji_pokok')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
                     <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">Simpan</button>
+                        class="px-4 py-2 bg-blue-800 text-white text-sm rounded-lg hover:bg-blue-900 transition-colors">Simpan</button>
                 </form>
             </div>
 
@@ -95,9 +95,9 @@
                                         @csrf @method('PUT')
                                         <input type="number" name="gaji_pokok" value="{{ intval($entry->gaji_pokok) }}"
                                             min="0"
-                                            class="w-44 px-2 py-1 text-sm text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                            class="w-44 px-2 py-1 text-sm text-right border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-800">
                                         <button type="submit"
-                                            class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">Simpan</button>
+                                            class="px-2 py-1 bg-blue-800 text-white text-xs rounded-md hover:bg-blue-900">Simpan</button>
                                         <button type="button" onclick="toggleEdit({{ $entry->id }})"
                                             class="px-2 py-1 bg-slate-200 text-slate-600 text-xs rounded-md hover:bg-slate-300">Batal</button>
                                     </form>
@@ -108,7 +108,7 @@
                                             class="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs rounded-md font-medium transition-colors">Edit</button>
                                         <button type="button"
                                             onclick="confirmDelete('{{ route('admin.tabel-gaji.destroy', $entry) }}', 'Hapus entri MKG {{ $entry->masa_kerja_tahun }} tahun?')"
-                                            class="inline-flex items-center px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                            class="inline-flex items-center px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>

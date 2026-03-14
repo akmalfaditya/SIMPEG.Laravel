@@ -7,43 +7,41 @@
     <span class="text-slate-700">{{ $item ? 'Edit' : 'Tambah' }}</span>
 @endsection
 @section('content')
-    <div class="max-w-lg bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <x-card class="max-w-lg">
         <form method="POST"
             action="{{ $item ? route('admin.master-data.update', [$entity, $item->id]) : route('admin.master-data.store', $entity) }}">
             @csrf
             @if ($item) @method('PUT') @endif
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nama {{ $label }} <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nama {{ $label }} <span class="text-rose-500">*</span></label>
                 <input type="text" name="nama" value="{{ old('nama', $item?->nama) }}" required
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800/30 focus:border-blue-800"
                     placeholder="Masukkan nama {{ strtolower($label) }}">
                 @error('nama')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             @if ($entity === 'tingkat-pendidikan')
             <div class="mt-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Bobot DUK <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Bobot DUK <span class="text-rose-500">*</span></label>
                 <input type="number" name="bobot" value="{{ old('bobot', $item?->bobot ?? 1) }}" required min="1" max="99"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800/30 focus:border-blue-800"
                     placeholder="Masukkan nilai bobot numerik">
                 <p class="text-xs text-slate-500 mt-1">Bobot menentukan urutan DUK (semakin besar semakin prioritas, contoh: S3 = 6, SMA = 2).</p>
                 @error('bobot')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
             @endif
 
             <div class="flex gap-3 mt-6 pt-4 border-t border-slate-200">
-                <button type="submit"
-                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow-md transition-all">
+                <x-button type="submit" size="lg">
                     {{ $item ? 'Perbarui' : 'Simpan' }}
-                </button>
-                <a href="{{ route('admin.master-data.index', $entity) }}"
-                    class="px-6 py-2.5 bg-slate-100 text-slate-600 text-sm rounded-xl hover:bg-slate-200 transition-colors">Batal</a>
+                </x-button>
+                <x-button variant="secondary" size="lg" href="{{ route('admin.master-data.index', $entity) }}">Batal</x-button>
             </div>
         </form>
-    </div>
+    </x-card>
 @endsection

@@ -73,7 +73,8 @@
 - [x] **HTML5 `<dialog>` Modals** — Semua modal konfirmasi (delete, PATCH reactivate/cancel-pensiun, pemulihan hukdis) dimigrasi dari `<div>` kustom ke native `<dialog>` element. Backdrop click to close. Semua native `confirm()` dieliminasi.
 - [x] **Sticky Table Headers** — Header tabel (`<th>`) di pegawai index (JS-rendered) dan DUK menggunakan `sticky top-0 bg-slate-50 z-10`. Kolom "Aksi" juga `sticky right-0`.
 - [x] **Global Command Palette (Ctrl+K)** — Input pencarian di navbar header. `Ctrl+K`/`Cmd+K` fokus input. AJAX debounced (300ms) ke `pegawai.data` endpoint, menampilkan 5 hasil cepat (avatar, nama, NIP) sebagai dropdown link.
-- [x] **Blade Components** — `<x-empty-state>` (contextual empty state dengan icon, judul, pesan per tab riwayat — 8 instances di show.blade.php). `<x-tooltip>` (CSS-only tooltip dengan `group-hover`, diterapkan pada semua label TMT di form pegawai, riwayat, dan process).
+- [x] **Blade Components** — `<x-empty-state>` (contextual empty state dengan icon, judul, pesan per tab riwayat — 8 instances di show.blade.php). `<x-tooltip>` (CSS-only tooltip dengan `group-hover`, diterapkan pada semua label TMT di form pegawai, riwayat, dan process). **Design System Components**: `<x-card>` (bg-white rounded-xl shadow-sm, slots: header/default/footer), `<x-button>` (5 variant × 4 size, primary=bg-blue-800), `<x-badge>` (6 color variants), `<x-input>`, `<x-select>`, `<x-label>`, `<x-input-error>`, `<x-table-wrapper>`.
+- [x] **Design System — Government Authority Palette** — Strict color palette (Slate, Deep Blue bg-blue-800, Emerald, Rose). Light Mode Only (sidebar, login, all views). Font "Inter". Red→Rose migration. All form views use `<x-card>` + `<x-button>`. TomSelect CSS centralized in app.css.
 
 ---
 
@@ -88,6 +89,16 @@
 ---
 
 ## Recently Completed
+
+- **2026-03-14** (Session 3):
+    - **Design System — Government Authority Palette (Enterprise UI Refactoring)**:
+        - **Phase 1 — CSS Theme**: Font changed to "Inter". TomSelect CSS overrides centralized in `app.css` (removed inline `<style>` from layout). Color palette standardized: primary `bg-blue-800`, danger `bg-rose-600`, success `bg-emerald-600`, warning `bg-amber-500`. Focus rings: `focus:ring-blue-800/30 focus:border-blue-800`. All `red-*` utility classes migrated to `rose-*`.
+        - **Phase 2 — Blade Component Library**: 8 core components created in `components/`: `card.blade.php` (slots: header/default/footer), `button.blade.php` (5 variants × 4 sizes), `badge.blade.php` (6 colors), `input.blade.php`, `select.blade.php`, `label.blade.php`, `input-error.blade.php`, `table-wrapper.blade.php`.
+        - **Phase 3 — Light Sidebar**: Sidebar converted from dark gradient (`bg-slate-900`) to light (`bg-white border-r border-slate-200`). Active nav: `bg-blue-50 text-blue-800 border-r-4 border-blue-800`. Login page rewritten from glass-morphism to standard palette. `welcome.blade.php` dark: classes stripped.
+        - **Phase 4 — Global View Refactoring**: Bulk color/border/focus standardization across ~40 blade files. `<x-card>` adopted in 14 riwayat forms, 3 admin forms, pegawai create/edit. `<x-button>` adopted in 21 form views (riwayat, admin, process, profile, pegawai). Tab colors updated to `border-blue-800 text-blue-800`. Delete buttons: `bg-rose-600`. Error boxes: `bg-rose-50 border-rose-200`. Button radius: `rounded-lg`.
+        - **Phase 5 — Documentation**: ARCHITECTURE.md updated with Design System entry (#20). STATE.md updated with component library and session log.
+    - **Files created**: `components/card.blade.php`, `components/button.blade.php`, `components/badge.blade.php`, `components/input.blade.php`, `components/select.blade.php`, `components/label.blade.php`, `components/input-error.blade.php`, `components/table-wrapper.blade.php`.
+    - **Files modified**: `app.css`, `layouts/app.blade.php`, `auth/login.blade.php`, `welcome.blade.php`, `pegawai/create.blade.php`, `pegawai/edit.blade.php`, `pegawai/_form.blade.php`, `pegawai/show.blade.php`, `pegawai/index.blade.php`, 14 riwayat form views, `admin/golongan/form.blade.php`, `admin/jabatan/form.blade.php`, `admin/master-data/form.blade.php`, `kgb/process.blade.php`, `kenaikan-pangkat/process.blade.php`, `pensiun/process.blade.php`, `profile/index.blade.php`, and ~15 other index/report views.
 
 - **2026-03-14** (Session 2):
     - **UX Overhaul — 4 Usability Heuristics**:

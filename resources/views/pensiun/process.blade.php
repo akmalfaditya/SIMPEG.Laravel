@@ -7,7 +7,7 @@
 @section('content')
 <div class="max-w-2xl">
     {{-- Pegawai Info Card --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
         <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Pegawai</h3>
         <div class="grid grid-cols-2 gap-y-2 text-sm">
             <span class="text-slate-500">NIP</span><span class="font-mono font-medium text-slate-700">{{ $data['nip'] }}</span>
@@ -24,7 +24,7 @@
     @php
         $alertColors = [
             'Hitam' => 'bg-slate-800 border-slate-700 text-white',
-            'Merah' => 'bg-red-50 border-red-200 text-red-700',
+            'Merah' => 'bg-rose-50 border-rose-200 text-rose-700',
             'Kuning' => 'bg-yellow-50 border-yellow-200 text-yellow-700',
             'Hijau' => 'bg-green-50 border-green-200 text-green-700',
         ];
@@ -41,7 +41,7 @@
     </div>
 
     {{-- Process Form --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Form Proses Pensiun</h3>
         <form method="POST" action="{{ route('pensiun.process') }}" enctype="multipart/form-data">
             @csrf
@@ -49,24 +49,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK Pensiun *</label>
-                    <input type="text" name="sk_pensiun_nomor" value="{{ old('sk_pensiun_nomor') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Nomor SK Pensiun">
-                    @error('sk_pensiun_nomor') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <input type="text" name="sk_pensiun_nomor" value="{{ old('sk_pensiun_nomor') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800" placeholder="Nomor SK Pensiun">
+                    @error('sk_pensiun_nomor') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal SK Pensiun *</label>
-                    <input type="date" name="sk_pensiun_tanggal" value="{{ old('sk_pensiun_tanggal', now()->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    @error('sk_pensiun_tanggal') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <input type="date" name="sk_pensiun_tanggal" value="{{ old('sk_pensiun_tanggal', now()->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800">
+                    @error('sk_pensiun_tanggal') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">TMT Pensiun *</label>
-                    <input type="date" name="tmt_pensiun" value="{{ old('tmt_pensiun', $data['tanggal_pensiun']->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="date" name="tmt_pensiun" value="{{ old('tmt_pensiun', $data['tanggal_pensiun']->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800">
                     <p class="text-xs text-slate-400 mt-1">Tanggal pensiun berdasarkan BUP: {{ $data['tanggal_pensiun']->format('d/m/Y') }}</p>
-                    @error('tmt_pensiun') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    @error('tmt_pensiun') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Catatan</label>
-                    <textarea name="catatan_pensiun" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Catatan tambahan (opsional)">{{ old('catatan_pensiun') }}</textarea>
-                    @error('catatan_pensiun') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <textarea name="catatan_pensiun" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800" placeholder="Catatan tambahan (opsional)">{{ old('catatan_pensiun') }}</textarea>
+                    @error('catatan_pensiun') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Dokumen SK Pensiun --}}
@@ -76,20 +76,20 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">File SK Pensiun (PDF)</label>
-                    <input type="file" name="file_sk_pensiun" accept=".pdf" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100">
+                    <input type="file" name="file_sk_pensiun" accept=".pdf" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100">
                     <p class="text-xs text-slate-400 mt-1">Maksimal 5MB, format PDF.</p>
-                    @error('file_sk_pensiun') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    @error('file_sk_pensiun') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Tautan Google Drive SK Pensiun</label>
-                    <input type="url" name="link_sk_pensiun_gdrive" value="{{ old('link_sk_pensiun_gdrive') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://drive.google.com/...">
+                    <input type="url" name="link_sk_pensiun_gdrive" value="{{ old('link_sk_pensiun_gdrive') }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-800 focus:border-blue-800" placeholder="https://drive.google.com/...">
                     <p class="text-xs text-slate-400 mt-1">Pastikan tautan dapat diakses (permission: Anyone with the link).</p>
-                    @error('link_sk_pensiun_gdrive') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    @error('link_sk_pensiun_gdrive') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             @if ($errors->any())
-            <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <div class="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700">
                 <ul class="list-disc list-inside">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -103,10 +103,8 @@
             </div>
 
             <div class="flex gap-3 mt-6 pt-4 border-t border-slate-200">
-                <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors">
-                    Proses Pensiun
-                </button>
-                <a href="{{ route('pensiun.index') }}" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-xl transition-colors">Batal</a>
+                <x-button type="submit" size="lg">Proses Pensiun</x-button>
+                <x-button variant="secondary" size="lg" href="{{ route('pensiun.index') }}">Batal</x-button>
             </div>
         </form>
     </div>

@@ -97,6 +97,12 @@ Request → Route → Controller → Service → Model → Database
     - **Error Prevention**: Global anti-double-submit pada semua `<form>` (disable button + spinner "Memproses..." + `dataset.submitting` guard). Semua dialog konfirmasi menggunakan native HTML5 `<dialog>` (bukan `<div>` overlay) — `confirmDelete()` di layout, `confirmPatch()` di pegawai index, `openPulihkanModal()` di show. Zero native `confirm()` calls remaining.
     - **Findability**: Sticky table headers (`sticky top-0 bg-slate-50 z-10`) di pegawai index dan DUK. Global Command Palette di navbar (`Ctrl+K` / `Cmd+K` focus): debounced AJAX (300ms) ke `pegawai.data` endpoint, renders 5 hasil cepat (avatar, nama, NIP) sebagai dropdown link.
     - **Contextual Help**: `<x-tooltip text="...">` component (Tailwind CSS `group-hover`, positioned bottom-full → up) pada 12 label TMT di form pegawai, riwayat, dan process. `<x-empty-state title="..." message="..." colspan="N">` component menggantikan 8 generic "Belum ada data" texts di show.blade.php (e.g., "Pegawai ini memiliki rekam jejak bersih tanpa hukuman disiplin.").
+20. **Design System — Government Authority Palette** — Enterprise-grade UI refactoring menerapkan visual consistency di seluruh aplikasi:
+    - **Color Palette**: Primary `bg-blue-800` (hover: `bg-blue-900`), Danger `bg-rose-600` (hover: `bg-rose-700`), Success `bg-emerald-600`, Warning `bg-amber-500`. Surface `bg-white`, Background `bg-slate-50`, Borders `border-slate-200`. Focus ring `focus:ring-blue-800/30 focus:border-blue-800`. Semua `red-*` utility classes dimigrasi ke `rose-*`.
+    - **Light Mode Only**: Sidebar dikonversi dari dark gradient (`bg-slate-900`) ke light (`bg-white border-r`). Active nav: `bg-blue-50 text-blue-800 border-r-4 border-blue-800`. Login page dari glass-morphism gelap ke solid white card. Semua `dark:` classes dihapus dari welcome.blade.php. Font diubah ke "Inter".
+    - **Blade Component Library**: 8 core components (`<x-card>`, `<x-button>`, `<x-badge>`, `<x-input>`, `<x-select>`, `<x-label>`, `<x-input-error>`, `<x-table-wrapper>`) dengan palette baked-in. `<x-button>` mendukung 5 variant (primary/secondary/danger/outline/ghost) × 4 size (xs/sm/md/lg). `<x-card>` dengan named slots (header, default, footer).
+    - **Component Adoption**: `<x-card>` dan `<x-button>` digunakan di semua form views (pegawai create/edit, 14 riwayat forms, 3 admin forms, 3 process views, profile). Eliminasi manual button/card HTML duplications.
+    - **Border Radius**: Cards `rounded-xl`, Buttons `rounded-lg`, Inputs `rounded-lg`, Info boxes `rounded-lg`.
 
 ---
 
@@ -236,7 +242,7 @@ SIMPEG.Laravel/
 │       ├── duk/                       #   Daftar Urut Kepangkatan
 │       ├── satyalencana/              #   Kandidat Satyalencana
 │       ├── admin/                     #   Master data (Jabatan, Tabel Gaji, Golongan, 8 Master Data Pegawai)
-│       ├── components/                #   Blade components (empty-state, tooltip)
+│       ├── components/                #   Blade components (card, button, badge, input, select, label, input-error, table-wrapper, empty-state, tooltip)
 │       ├── exports/                   #   7 template PDF (dashboard, duk, kgb, pensiun, kenaikan-pangkat, satyalencana, pegawai-profile)
 │       ├── activity-log/              #   Audit trail
 │       └── profile/                   #   Profil & ganti password

@@ -6,14 +6,14 @@
         & Pangkat</span>
 @endsection
 @section('content')
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
             <div>
                 <p class="text-sm text-slate-500">Hierarki golongan/ruang dan pangkat PNS berdasarkan peraturan KEMENIPAS.
                     SuperAdmin dapat mengelola nama pangkat, pendidikan minimum, dan status aktif.</p>
             </div>
             <a href="{{ route('admin.golongan.create') }}"
-                class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-1.5">
+                class="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -82,7 +82,7 @@
                                         class="px-2 py-0.5 text-xs rounded-full font-medium bg-emerald-100 text-emerald-700">Aktif</span>
                                 @else
                                     <span
-                                        class="px-2 py-0.5 text-xs rounded-full font-medium bg-red-100 text-red-700">Nonaktif</span>
+                                        class="px-2 py-0.5 text-xs rounded-full font-medium bg-rose-100 text-rose-700">Nonaktif</span>
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-center">
@@ -98,7 +98,7 @@
                                     </form>
                                     <button type="button"
                                         onclick="confirmDelete('{{ route('admin.golongan.destroy', $row) }}', 'Hapus golongan {{ $row->label }}?')"
-                                        class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
+                                        class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                 </div>
                             </td>
                         </tr>
