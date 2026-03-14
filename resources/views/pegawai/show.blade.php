@@ -33,6 +33,10 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <a href="{{ route('pegawai.export-pdf', $pegawai) }}"
+                        class="px-4 py-2 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Export PDF</a>
                     <a href="{{ route('pegawai.edit', $pegawai) }}"
                         class="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">Edit</a>
                     <button
@@ -130,18 +134,118 @@
             </div>
         </div>
 
+        {{-- Data Completeness Indicator --}}
+        @php
+            $completeness = [
+                'pangkat' => ['label' => 'Pangkat', 'filled' => $pegawai->riwayatPangkat->isNotEmpty()],
+                'jabatan' => ['label' => 'Jabatan', 'filled' => $pegawai->riwayatJabatan->isNotEmpty()],
+                'kgb' => ['label' => 'KGB', 'filled' => $pegawai->riwayatKgb->isNotEmpty()],
+                'hukuman' => ['label' => 'Hukuman', 'filled' => $pegawai->riwayatHukumanDisiplin->isNotEmpty()],
+                'pendidikan' => ['label' => 'Pendidikan', 'filled' => $pegawai->riwayatPendidikan->isNotEmpty()],
+                'latihan' => ['label' => 'Latihan', 'filled' => $pegawai->riwayatLatihanJabatan->isNotEmpty()],
+                'skp' => ['label' => 'SKP', 'filled' => $pegawai->penilaianKinerja->isNotEmpty()],
+                'penghargaan' => ['label' => 'Penghargaan', 'filled' => $pegawai->riwayatPenghargaan->isNotEmpty()],
+            ];
+            $filledCount = collect($completeness)->where('filled', true)->count();
+            $totalCount = count($completeness);
+            $percentage = round(($filledCount / $totalCount) * 100);
+        @endphp
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-slate-700">Kelengkapan Data:</span>
+                    <span class="text-sm font-bold {{ $percentage === 100 ? 'text-emerald-600' : ($percentage >= 50 ? 'text-blue-600' : 'text-amber-600') }}">{{ $filledCount }}/{{ $totalCount }} riwayat terisi</span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    @foreach($completeness as $key => $item)
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full {{ $item['filled'] ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-600' }}">
+                            @if($item['filled'])
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            @else
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            @endif
+                            {{ $item['label'] }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+            <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full transition-all {{ $percentage === 100 ? 'bg-emerald-500' : ($percentage >= 50 ? 'bg-blue-500' : 'bg-amber-500') }}" style="width: {{ $percentage }}%"></div>
+            </div>
+        </div>
+
         {{-- Tabs for Riwayat --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="flex border-b border-slate-200 overflow-x-auto" id="tabNav">
-                @foreach (['pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
+                @foreach (['timeline' => 'Timeline Karir', 'pangkat' => 'Pangkat', 'jabatan' => 'Jabatan', 'kgb' => 'KGB', 'hukuman' => 'Hukuman', 'pendidikan' => 'Pendidikan', 'latihan' => 'Latihan', 'skp' => 'SKP', 'penghargaan' => 'Penghargaan'] as $key => $label)
                     <button onclick="showTab('{{ $key }}')"
-                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}"
-                        data-tab="{{ $key }}">{{ $label }}</button>
+                        class="tab-btn px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 {{ $loop->first ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }} flex items-center gap-1"
+                        data-tab="{{ $key }}">{{ $label }}@if($key !== 'timeline' && !($completeness[$key]['filled'] ?? true))<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Belum ada data"></span>@endif</button>
                 @endforeach
             </div>
 
+            {{-- Timeline Karir --}}
+            <div class="tab-content p-5" id="tab-timeline">
+                @if(count($timeline) > 0)
+                <div class="relative">
+                    {{-- Vertical line --}}
+                    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+
+                    <div class="space-y-4">
+                        @php $currentYear = null; @endphp
+                        @foreach($timeline as $item)
+                            @php
+                                $itemYear = \Carbon\Carbon::parse($item['date'])->year;
+                                $showYear = $itemYear !== $currentYear;
+                                $currentYear = $itemYear;
+                                $colorMap = [
+                                    'blue' => ['bg' => 'bg-blue-500', 'light' => 'bg-blue-50 border-blue-200 text-blue-700', 'badge' => 'bg-blue-100 text-blue-700'],
+                                    'indigo' => ['bg' => 'bg-indigo-500', 'light' => 'bg-indigo-50 border-indigo-200 text-indigo-700', 'badge' => 'bg-indigo-100 text-indigo-700'],
+                                    'emerald' => ['bg' => 'bg-emerald-500', 'light' => 'bg-emerald-50 border-emerald-200 text-emerald-700', 'badge' => 'bg-emerald-100 text-emerald-700'],
+                                    'red' => ['bg' => 'bg-red-500', 'light' => 'bg-red-50 border-red-200 text-red-700', 'badge' => 'bg-red-100 text-red-700'],
+                                    'purple' => ['bg' => 'bg-purple-500', 'light' => 'bg-purple-50 border-purple-200 text-purple-700', 'badge' => 'bg-purple-100 text-purple-700'],
+                                    'cyan' => ['bg' => 'bg-cyan-500', 'light' => 'bg-cyan-50 border-cyan-200 text-cyan-700', 'badge' => 'bg-cyan-100 text-cyan-700'],
+                                    'amber' => ['bg' => 'bg-amber-500', 'light' => 'bg-amber-50 border-amber-200 text-amber-700', 'badge' => 'bg-amber-100 text-amber-700'],
+                                    'yellow' => ['bg' => 'bg-yellow-500', 'light' => 'bg-yellow-50 border-yellow-200 text-yellow-700', 'badge' => 'bg-yellow-100 text-yellow-700'],
+                                ];
+                                $c = $colorMap[$item['color']] ?? $colorMap['blue'];
+                            @endphp
+
+                            @if($showYear)
+                                <div class="relative flex items-center pl-10 pt-2">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ $currentYear }}</span>
+                                </div>
+                            @endif
+
+                            <div class="relative flex items-start gap-4 pl-10">
+                                {{-- Dot on the line --}}
+                                <div class="absolute left-2.5 top-1.5 w-3 h-3 rounded-full ring-2 ring-white {{ $c['bg'] }}"></div>
+
+                                {{-- Card --}}
+                                <div class="flex-1 border rounded-lg p-3 {{ $c['light'] }}">
+                                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $c['badge'] }}">{{ ucfirst($item['type']) }}</span>
+                                            <span class="text-sm font-semibold">{{ $item['title'] }}</span>
+                                        </div>
+                                        <span class="text-xs text-slate-500">{{ \Carbon\Carbon::parse($item['date'])->format('d/m/Y') }}</span>
+                                    </div>
+                                    <p class="text-sm mt-1">{{ $item['subtitle'] }}</p>
+                                    @if($item['detail'])
+                                        <p class="text-xs mt-0.5 opacity-75">{{ $item['detail'] }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                    <p class="text-center text-slate-400 py-8">Belum ada data riwayat untuk ditampilkan.</p>
+                @endif
+            </div>
+
             {{-- Pangkat --}}
-            <div class="tab-content p-5" id="tab-pangkat">
+            <div class="tab-content p-5 hidden" id="tab-pangkat">
                 <div class="flex justify-end mb-3"><a href="{{ route('riwayat.pangkat.create', $pegawai->id) }}"
                         class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
                 <table class="w-full text-sm">

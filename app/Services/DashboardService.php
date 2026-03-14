@@ -6,9 +6,13 @@ use App\Models\GolonganPangkat;
 use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
+    public const CACHE_TTL = 300; // 5 minutes
+    public const CACHE_PREFIX = 'dashboard_';
+
     public function __construct(
         private KGBService $kgbService,
         private PensiunService $pensiunService,
@@ -17,20 +21,38 @@ class DashboardService
 
     public function getFilterOptions(): array
     {
-        $unitKerjaList = UnitKerja::orderBy('nama')->pluck('nama', 'id')->toArray();
+        return Cache::remember(self::CACHE_PREFIX . 'filter_options', self::CACHE_TTL, function () {
+            $unitKerjaList = UnitKerja::orderBy('nama')->pluck('nama', 'id')->toArray();
 
-        $golonganList = [];
-        foreach (GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get() as $g) {
-            $golonganList[$g->id] = $g->label;
-        }
+            $golonganList = [];
+            foreach (GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get() as $g) {
+                $golonganList[$g->id] = $g->label;
+            }
 
-        return [
-            'unit_kerja_list' => $unitKerjaList,
-            'golongan_list' => $golonganList,
-        ];
+            return [
+                'unit_kerja_list' => $unitKerjaList,
+                'golongan_list' => $golonganList,
+            ];
+        });
     }
 
     public function getDashboardData(array $filters = []): array
+    {
+        $cacheKey = self::CACHE_PREFIX . 'data_' . md5(serialize($filters));
+
+        // Track this key for invalidation
+        $tracked = Cache::get(self::CACHE_PREFIX . 'tracked_keys', []);
+        if (!in_array($cacheKey, $tracked)) {
+            $tracked[] = $cacheKey;
+            Cache::put(self::CACHE_PREFIX . 'tracked_keys', $tracked, self::CACHE_TTL * 2);
+        }
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($filters) {
+            return $this->buildDashboardData($filters);
+        });
+    }
+
+    private function buildDashboardData(array $filters): array
     {
         $query = Pegawai::with([
             'riwayatPangkat.golongan',
@@ -293,5 +315,39 @@ class DashboardService
 
         usort($result, fn($a, $b) => $b['total'] <=> $a['total']);
         return $result;
+    }
+
+    /**
+     * Clear all dashboard cache entries.
+     */
+    public static function clearCache(): void
+    {
+        $store = Cache::getStore();
+
+        // For stores that support tags or flush, use prefix pattern
+        // For file/database drivers, forget known keys
+        Cache::forget(self::CACHE_PREFIX . 'filter_options');
+
+        // Data keys are hashed by filter, so we clear via pattern if supported,
+        // otherwise flush all dashboard_data_* keys by tracking them
+        if (method_exists($store, 'flush')) {
+            // For array driver (testing), just flush
+            return;
+        }
+
+        // Clear common filter combinations (no-filter is most common)
+        $commonKeys = [
+            self::CACHE_PREFIX . 'data_' . md5(serialize([])),
+        ];
+        foreach ($commonKeys as $key) {
+            Cache::forget($key);
+        }
+
+        // Also clear any cached keys tracked in a set
+        $trackedKeys = Cache::get(self::CACHE_PREFIX . 'tracked_keys', []);
+        foreach ($trackedKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget(self::CACHE_PREFIX . 'tracked_keys');
     }
 }

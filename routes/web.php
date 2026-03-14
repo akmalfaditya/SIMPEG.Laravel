@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     // Pegawai
     Route::resource('pegawai', PegawaiController::class);
     Route::get('/pegawai-data', [PegawaiController::class, 'getPaginated'])->name('pegawai.data');
+    Route::get('/pegawai/{pegawai}/export-pdf', [PegawaiController::class, 'exportPdf'])->name('pegawai.export-pdf');
     Route::patch('/pegawai/{pegawai}/reactivate', [PegawaiController::class, 'reactivate'])->name('pegawai.reactivate')->withTrashed();
     Route::patch('/pegawai/{pegawai}/cancel-pensiun', [PegawaiController::class, 'cancelPensiun'])->name('pegawai.cancel-pensiun')->withTrashed();
 

@@ -118,9 +118,19 @@
         </select>
     </div>
     @if($isEdit)
+    <div class="md:col-span-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+        <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <p class="text-xs font-medium text-blue-700">Golongan, jabatan, dan gaji pokok dikelola otomatis melalui Riwayat Pangkat, Riwayat Jabatan &amp; Proses KGB.</p>
+                <p class="text-xs text-blue-600 mt-0.5">Untuk mengubah data tersebut, gunakan tab riwayat di halaman Detail Pegawai.</p>
+            </div>
+        </div>
+    </div>
     <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Gaji Pokok <span class="text-red-500">*</span></label>
-        <input type="number" name="gaji_pokok" value="{{ old('gaji_pokok', $p?->gaji_pokok) }}" required class="{{ $inputClass }}">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Gaji Pokok</label>
+        <input type="text" value="Rp {{ number_format($p->gaji_pokok, 0, ',', '.') }}" readonly disabled class="{{ $inputClass }} bg-slate-100 text-slate-500 cursor-not-allowed">
+        <input type="hidden" name="gaji_pokok" value="{{ $p->gaji_pokok }}">
     </div>
     @endif
 </div>

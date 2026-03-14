@@ -58,12 +58,25 @@ Request → Route → Controller → Service → Model → Database
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
-8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`.
+8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`. `PegawaiObserver` menangani invalidasi cache dashboard.
 9. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
     - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
     - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun + opsional `file_sk_pensiun_path` dan `link_sk_pensiun_gdrive`). Reversible via `PegawaiService::cancelPensiun()` (nullify 6 field + delete file upload + restore).
     - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
-10. **Server-Side Pagination (Monitoring Pages)** — Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) menggunakan server-side pagination via `LengthAwarePaginator`. Karena Service-layer menjalankan kalkulasi bisnis kompleks (eligibilitas, hukdis, gaji) yang tidak bisa dipindahkan ke SQL, pattern-nya: Service mengembalikan array penuh → Controller menerapkan `?search=` filter → `PaginatesArray` trait memotong per halaman (15 item) → View merender hanya 1 halaman + `{{ $data->links() }}`. Trait `PaginatesArray` ada di `app/Http/Controllers/Traits/`.
+10. **Server-Side Pagination (Monitoring Pages)** — Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) menggunakan server-side pagination via `LengthAwarePaginator`. Karena Service-layer menjalankan kalkulasi bisnis kompleks (eligibilitas, hukdis, gaji) yang tidak bisa dipindahkan ke SQL, pattern-nya: Service mengembalikan array penuh → Controller menerapkan `?search=` filter → `PaginatesArray` trait memotong per halaman (15 item) → View merender hanya 1 halaman + `{{ $data->links() }}`. Trait `PaginatesArray` ada di `app/Http/Controllers/Traits/`. Pegawai list menggunakan DB-level `->paginate()` via `PegawaiService::getPaginatedByStatus()`.
+11. **Cache Layer** — Dua domain menggunakan `Cache::remember()` dengan TTL 5 menit:
+    - **Dashboard**: `DashboardService` meng-cache `getDashboardData()` (key per filter hash) dan `getFilterOptions()`. Invalidasi via `DashboardService::clearCache()` yang dipanggil oleh semua 3 Observer (`PegawaiObserver`, `RiwayatKgbObserver`, `RiwayatPangkatObserver`) + 6 model event listeners.
+    - **Career Timeline**: `PegawaiService::getCareerTimeline()` meng-cache timeline gabungan per pegawai (key: `career_timeline_{id}`). Invalidasi via `PegawaiService::clearTimelineCache()` yang dipanggil oleh semua Observer + model event listeners di `AppServiceProvider`.
+12. **Career Timeline View** — Tab "Timeline Karir" di halaman profil pegawai menampilkan gabungan kronologis seluruh 8 jenis riwayat dalam satu vertical timeline. Data di-merge dan di-sort descending di `PegawaiService::buildCareerTimeline()`. Setiap item memiliki type, color, icon, title, subtitle, dan detail. Grouped by year dengan separator.
+13. **Data Completeness Indicator** — Halaman profil pegawai menampilkan progress bar kelengkapan data (8 jenis riwayat) dengan badge per kategori (hijau ✓ / kuning ⚠). Tab kosong juga mendapat dot warning kuning.
+14. **Export PDF Profil Pegawai** — `PegawaiController::exportPdf()` menggunakan DomPDF untuk generate PDF profil individual (biodata + semua 8 riwayat dalam tabel). Template di `exports/pegawai-profile-pdf.blade.php`.
+15. **Edit Form Guidance** — Form edit pegawai menampilkan banner informasi bahwa gaji pokok, golongan, dan jabatan dikelola otomatis. Field `gaji_pokok` ditampilkan readonly.
+16. **Narrative Audit Logging (Bahasa Indonesia)** — Semua `setDescriptionForEvent()` menggunakan deskripsi naratif Bahasa Indonesia yang human-readable, bukan default Spatie (e.g. "created", "updated"). Tiga kategori format:
+    - **Category A (Pegawai)**: `"{Aksi} data pegawai #{id} atas nama {nama_lengkap}"` — contoh: "Mengubah data pegawai #53 atas nama Yanto"
+    - **Category B (Riwayat)**: `"{Aksi} {NamaModul} untuk pegawai #{pegawai_id} atas nama {nama_pegawai}"` — contoh: "Menambah Riwayat KGB untuk pegawai #53 atas nama Yanto"
+    - **Category C (Master Data)**: `"{Aksi} Master {NamaModel} #{id} ({nama_atau_keterangan})"` — contoh: "Menghapus Master Jabatan #2 (Polsuspas)"
+    - **State Transitions (Controller)**: Aksi non-CRUD seperti pensiun di-log eksplisit via `activity()->performedOn()->log()` di Controller — contoh: "Memproses pensiun untuk pegawai #5 atas nama Budi"
+    - Kata kerja: `Menambah` (created), `Mengubah` (updated), `Menghapus` (deleted)
 
 ---
 
@@ -132,8 +145,9 @@ SIMPEG.Laravel/
 │   │       └── PegawaiResource.php    #   API Resource (JSON transform)
 │   │
 │   ├── Observers/                     # Model Observers (event-driven sync)
-│   │   ├── RiwayatKgbObserver.php     #   Sync pegawai.gaji_pokok on KGB events
-│   │   └── RiwayatPangkatObserver.php #   Sync pegawai.gaji_pokok on Pangkat events
+│   │   ├── PegawaiObserver.php        #   Clear dashboard + timeline cache on pegawai events
+│   │   ├── RiwayatKgbObserver.php     #   Sync pegawai.gaji_pokok + clear caches on KGB events
+│   │   └── RiwayatPangkatObserver.php #   Sync pegawai.gaji_pokok + clear caches on Pangkat events
 │   │
 │   ├── Models/                        # 21 Eloquent Models
 │   │   ├── AgamaMaster.php            #   Master agama (table: agamas)
@@ -162,7 +176,7 @@ SIMPEG.Laravel/
 │   │   └── AppServiceProvider.php
 │   │
 │   └── Services/                      # 14 Service classes (business logic)
-│       ├── DashboardService.php       #   Agregasi dashboard + chart data
+│       ├── DashboardService.php       #   Agregasi dashboard + chart data (cached 5 min)
 │       ├── DocumentUploadService.php  #   Upload/delete file SK
 │       ├── DUKService.php             #   Ranking DUK per aturan BKN
 │       ├── GolonganPangkatService.php #   CRUD master golongan/pangkat
@@ -170,7 +184,7 @@ SIMPEG.Laravel/
 │       ├── KenaikanPangkatService.php #   Analisis eligibilitas kenaikan pangkat
 │       ├── KGBCalculationService.php  #   Kalkulasi gaji baru (delegates to SalaryCalculatorService)
 │       ├── KGBService.php             #   Monitoring KGB (jatuh tempo, eligibilitas)
-│       ├── PegawaiService.php         #   CRUD pegawai + One-Stop Creation Flow (auto gaji, riwayat)
+│       ├── PegawaiService.php         #   CRUD pegawai + One-Stop Creation Flow + Career Timeline (cached 5 min)
 │       ├── PensiunService.php         #   Alert pensiun (level Hijau-Hitam)
 │       ├── RiwayatService.php         #   CRUD 7 jenis riwayat + hukdis logic (durasi enforced)
 │       ├── SalaryCalculatorService.php #   **Single source of truth** untuk salary resolution (TabelGaji lookup + fallback)
@@ -202,7 +216,7 @@ SIMPEG.Laravel/
 │       ├── duk/                       #   Daftar Urut Kepangkatan
 │       ├── satyalencana/              #   Kandidat Satyalencana
 │       ├── admin/                     #   Master data (Jabatan, Tabel Gaji, Golongan, 8 Master Data Pegawai)
-│       ├── exports/                   #   6 template PDF
+│       ├── exports/                   #   7 template PDF (dashboard, duk, kgb, pensiun, kenaikan-pangkat, satyalencana, pegawai-profile)
 │       ├── activity-log/              #   Audit trail
 │       └── profile/                   #   Profil & ganti password
 │
@@ -277,7 +291,7 @@ SIMPEG.Laravel/
 - **`tabel_gajis`** — Lookup salary matrix (golongan × masa_kerja)
 - **`users`** — Authentication, simple `role` string (SuperAdmin/HR)
 
-### Relasi (ERD tersedia di TUTORIAL.md §17)
+### Relasi (ERD tersedia di README.md §Skema Database)
 
 - `pegawais` 1→N semua tabel riwayat
 - `tipe_pegawais`, `status_kepegawaans`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs` 1→N `pegawais`

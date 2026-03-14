@@ -13,7 +13,17 @@ class RiwayatJabatan extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
+        $nama = $this->pegawai->nama_lengkap ?? 'Unknown';
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => "Menambah Riwayat Jabatan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'updated' => "Mengubah Riwayat Jabatan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                'deleted' => "Menghapus Riwayat Jabatan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+                default   => "{$eventName} Riwayat Jabatan untuk pegawai #{$this->pegawai_id} atas nama {$nama}",
+            });
     }
     protected $fillable = [
         'pegawai_id', 'jabatan_id', 'nomor_sk',

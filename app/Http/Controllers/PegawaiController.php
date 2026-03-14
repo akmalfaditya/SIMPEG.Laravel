@@ -20,6 +20,7 @@ use App\Http\Requests\StorePegawaiRequest;
 use App\Http\Requests\UpdatePegawaiRequest;
 use App\DTOs\PegawaiDTO;
 use App\Http\Resources\PegawaiResource;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class PegawaiController extends Controller
@@ -40,29 +41,31 @@ class PegawaiController extends Controller
 
     public function getPaginated(Request $request)
     {
-        $page = $request->input('page', self::DEFAULT_PAGE);
-        $limit = $request->input('limit', self::DEFAULT_LIMIT);
+        $limit = (int) $request->input('limit', self::DEFAULT_LIMIT);
         $search = $request->input('search');
         $status = $request->input('status', 'aktif');
 
-        $pegawaiList = $search
-            ? $this->service->searchByStatus($search, $status)
-            : $this->service->getByStatus($status);
+        $paginated = $this->service->getPaginatedByStatus($status, $limit, $search);
 
-        $total = $pegawaiList->count();
-        $pagedModels = $pegawaiList->slice(($page - 1) * $limit, $limit)->values();
-
-        // Convert to explicitly structured Resource
-        $paged = PegawaiResource::collection($pagedModels);
-
-        return response()->json(['data' => $paged, 'total' => $total]);
+        return response()->json([
+            'data' => PegawaiResource::collection($paginated),
+            'total' => $paginated->total(),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+        ]);
     }
 
     public function show(Pegawai $pegawai)
     {
         $pegawai->load([
-            'jenisKelamin', 'agama', 'statusPernikahan', 'golonganDarah',
-            'tipePegawai', 'statusKepegawaian', 'bagian', 'unitKerja',
+            'jenisKelamin',
+            'agama',
+            'statusPernikahan',
+            'golonganDarah',
+            'tipePegawai',
+            'statusKepegawaian',
+            'bagian',
+            'unitKerja',
             'riwayatPangkat',
             'riwayatJabatan.jabatan',
             'riwayatKgb',
@@ -77,6 +80,7 @@ class PegawaiController extends Controller
             'golonganOptions' => GolonganPangkat::where('is_active', true)->orderBy('golongan_ruang')->get(),
             'jabatanOptions' => Jabatan::orderBy('nama_jabatan')->get(),
             'estimasiKgbSelanjutnya' => $this->salaryCalculatorService->calculateNextKgbDate($pegawai),
+            'timeline' => $this->service->getCareerTimeline($pegawai),
         ]);
     }
 
@@ -146,6 +150,7 @@ class PegawaiController extends Controller
     public function cancelPensiun(Pegawai $pegawai)
     {
         $this->service->cancelPensiun($pegawai);
+        activity()->performedOn($pegawai)->log("Membatalkan pensiun untuk pegawai #{$pegawai->id} atas nama {$pegawai->nama_lengkap}");
         return redirect()->route('pegawai.index')->with('success', "Pensiun pegawai {$pegawai->nama_lengkap} berhasil dibatalkan.");
     }
 
@@ -201,6 +206,33 @@ class PegawaiController extends Controller
         }
 
         return $docs ? ' Dokumen ' . implode(' dan ', $docs) . ' berhasil diunggah.' : '';
+    }
+    public function exportPdf(Pegawai $pegawai)
+    {
+        $pegawai->load([
+            'jenisKelamin',
+            'agama',
+            'statusPernikahan',
+            'golonganDarah',
+            'tipePegawai',
+            'statusKepegawaian',
+            'bagian',
+            'unitKerja',
+            'riwayatPangkat.golongan',
+            'riwayatJabatan.jabatan',
+            'riwayatKgb',
+            'riwayatHukumanDisiplin',
+            'riwayatPendidikan',
+            'riwayatLatihanJabatan',
+            'penilaianKinerja',
+            'riwayatPenghargaan',
+        ]);
+
+        $pdf = Pdf::loadView('exports.pegawai-profile-pdf', compact('pegawai'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'profil_' . $pegawai->nip . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
     }
 
     private function masterDataOptions(): array

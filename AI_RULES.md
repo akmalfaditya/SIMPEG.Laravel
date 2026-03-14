@@ -73,6 +73,8 @@
 - **WAJIB** gunakan FormRequest untuk validasi, bukan manual validation di controller.
 - **WAJIB** gunakan `DB::transaction()` untuk operasi multi-tabel (contoh: `PegawaiService@create` yang membuat Pegawai + RiwayatPangkat + RiwayatJabatan sekaligus).
 - **WAJIB** durasi hukuman disiplin Sedang/Berat di-enforce ke 1 tahun di Service layer (PP 94/2021), bukan hanya di form view.
+- **WAJIB** invalidasi cache terkait saat data berubah. Dashboard cache via `DashboardService::clearCache()`, timeline cache via `PegawaiService::clearTimelineCache($pegawaiId)`. Tambahkan ke Observer atau model event listener di `AppServiceProvider`.
+- **WAJIB** gunakan `Cache::remember()` dengan TTL wajar (300 detik) untuk query berat yang sering dipanggil. Key harus unik per parameter (gunakan md5 hash jika parameter kompleks).
 - **DILARANG** menggunakan raw SQL queries. Gunakan Eloquent ORM atau Query Builder.
 
 ### 2.4 Naming Conventions

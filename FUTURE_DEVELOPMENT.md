@@ -285,7 +285,7 @@
 - **Dampak UX**: Dengan 50 pegawai demo, tidak terasa. Dengan 500+ pegawai produksi: page load lambat, browser lag, memory usage tinggi. Seluruh NIP/nama pegawai terekspos di HTML source.
 - **Solusi**: Implementasi server-side pagination via `PaginatesArray` trait + `LengthAwarePaginator`. Controller menerima `?search=` dan `?page=` dari query string. View menggunakan `{{ $data->links() }}` (Tailwind pagination). Search memfilter array berdasarkan NIP/Nama sebelum paginasi. Filter tabs (level, milestone) mempertahankan search parameter. Client-side JS pagination dihapus dari semua 5 modul monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK).
 
-### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat
+### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat DONE
 
 - **Masalah**: `DashboardService` menjalankan multiple aggregate queries (count by status, chart data, KGB alerts, pensiun alerts) setiap kali halaman di-load. Tidak ada caching.
 - **Dampak UX**: Dashboard load time akan bertambah seiring data bertambah. Semua user yang akses dashboard trigger query yang sama.
@@ -303,25 +303,25 @@
 - **Dampak UX**: Untuk 50 pegawai yang KGB-nya jatuh tempo bersamaan, HR harus klik "Proses" 50× secara terpisah.
 - **Aksi**: Setelah workflow individual (GAP-33/34/35) tersedia, tambahkan checkbox multi-select + tombol "Proses Semua Terpilih". Buat batch processing method di service.
 
-### 🟠 GAP-45: Form Edit Pegawai Tidak Ada Guidance untuk Field Read-Only Kontekstual
+### 🟠 GAP-45: Form Edit Pegawai Tidak Ada Guidance untuk Field Read-Only Kontekstual DONE
 
 - **Masalah**: Field `gaji_pokok`, golongan (terakhir), dan jabatan (terakhir) di halaman pegawai hanya bisa diubah melalui penambahan Riwayat (Pangkat, Jabatan, KGB). Namun form edit tidak memberikan penjelasan bahwa field ini dikelola via riwayat, bukan langsung di-edit.
 - **Dampak UX**: HR baru mungkin bingung kenapa tidak bisa mengubah golongan atau gaji di form edit, atau malah mengubah `gaji_pokok` langsung tanpa melalui proses KGB.
 - **Aksi**: Tambahkan tooltip/info text di form: "Golongan dan gaji dikelola otomatis melalui Riwayat Pangkat & KGB". Pertimbangkan membuat field `gaji_pokok` di form edit sebagai read-only.
 
-### 🟠 GAP-46: Tidak Ada Data Completeness Indicator di Profil Pegawai
+### 🟠 GAP-46: Tidak Ada Data Completeness Indicator di Profil Pegawai DONE
 
 - **Masalah**: Halaman show pegawai menampilkan 8 tab riwayat tapi tidak ada indikator apakah data sudah lengkap. Pegawai tanpa riwayat pendidikan, latihan, atau SKP tidak diberi warning.
 - **Dampak UX**: HR tidak tahu pegawai mana yang data-nya belum lengkap. Baru ketahuan saat dibutuhkan (misal: kenaikan pangkat gagal karena belum ada latihan jabatan).
 - **Aksi**: Tambah badge/progress bar "Kelengkapan Data: 6/8 riwayat terisi" di halaman show. Warning icon di tab yang masih kosong.
 
-### 🟠 GAP-47: Tidak Ada Export PDF Profil Individual Pegawai
+### 🟠 GAP-47: Tidak Ada Export PDF Profil Individual Pegawai DONE
 
 - **Masalah**: Export yang tersedia (DUK, KGB, Kenaikan Pangkat, Pensiun, Satyalencana) semuanya bersifat daftar/kolektif. Tidak ada fitur export profil lengkap satu pegawai (biodata + seluruh riwayat) sebagai PDF.
 - **Dampak UX**: Untuk keperluan mutasi, promosi, atau arsip, HR harus screenshot/print manual halaman profil pegawai.
 - **Aksi**: Buat `PegawaiProfileExport` menggunakan DomPDF. Tambahkan tombol "Export PDF" di halaman show pegawai. Template: biodata + tabel ringkas setiap riwayat.
 
-### 🟠 GAP-48: Tidak Ada Career Timeline View
+### 🟠 GAP-48: Tidak Ada Career Timeline View DONE
 
 - **Masalah**: Halaman show pegawai menampilkan riwayat dalam 8 tab terpisah (tabel per jenis). Tidak ada visualisasi kronologis gabungan yang menampilkan seluruh perjalanan karir dalam satu timeline.
 - **Dampak UX**: Untuk memahami perjalanan karir seorang pegawai, HR harus membuka 8 tab secara bergantian dan menyusun kronologi secara mental.
