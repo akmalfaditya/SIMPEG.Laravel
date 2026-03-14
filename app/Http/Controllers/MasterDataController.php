@@ -16,6 +16,7 @@ class MasterDataController extends Controller
         'status-pernikahan'   => ['model' => \App\Models\StatusPernikahanMaster::class, 'label' => 'Status Pernikahan'],
         'golongan-darah'      => ['model' => \App\Models\GolonganDarahMaster::class,    'label' => 'Golongan Darah'],
         'rumpun-jabatan'      => ['model' => \App\Models\RumpunJabatan::class,          'label' => 'Rumpun Jabatan'],
+        'tingkat-pendidikan'  => ['model' => \App\Models\MasterPendidikan::class,      'label' => 'Tingkat Pendidikan'],
     ];
 
     private function resolve(string $entity): array
@@ -57,9 +58,15 @@ class MasterDataController extends Controller
     {
         $cfg       = $this->resolve($entity);
         $table     = (new $cfg['model'])->getTable();
-        $validated = $request->validate([
+        $rules = [
             'nama' => "required|string|max:100|unique:{$table},nama",
-        ]);
+        ];
+        
+        if ($entity === 'tingkat-pendidikan') {
+            $rules['bobot'] = 'required|integer|min:1|max:99';
+        }
+
+        $validated = $request->validate($rules);
 
         $cfg['model']::create($validated);
 
@@ -85,9 +92,15 @@ class MasterDataController extends Controller
         $item  = $cfg['model']::findOrFail($id);
         $table = $item->getTable();
 
-        $validated = $request->validate([
+        $rules = [
             'nama' => "required|string|max:100|unique:{$table},nama,{$id}",
-        ]);
+        ];
+
+        if ($entity === 'tingkat-pendidikan') {
+            $rules['bobot'] = 'required|integer|min:1|max:99';
+        }
+
+        $validated = $request->validate($rules);
 
         $item->update($validated);
 

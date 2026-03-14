@@ -14,7 +14,8 @@ class UpdatePendidikanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tingkat_pendidikan' => 'required|string',
+            'pegawai_id' => 'required|exists:pegawais,id',
+            'pendidikan_id' => 'required|exists:master_pendidikans,id',
             'institusi' => 'required|string',
             'jurusan' => 'required|string',
             'tahun_lulus' => 'required|integer',

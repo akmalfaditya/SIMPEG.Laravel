@@ -7,11 +7,11 @@
             @csrf @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Tingkat Pendidikan *</label><select
-                        name="tingkat_pendidikan" required
+                        name="pendidikan_id" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
-                        @foreach (['SMA', 'D3', 'S1', 'S2', 'S3'] as $t)
-                            <option value="{{ $t }}" {{ $riwayat->tingkat_pendidikan == $t ? 'selected' : '' }}>
-                                {{ $t }}</option>
+                        @foreach ($pendidikanList as $p)
+                            <option value="{{ $p?->id }}" {{ $riwayat->pendidikan_id == $p?->id ? 'selected' : '' }}>
+                                {{ $p?->nama }}</option>
                         @endforeach
                     </select>
                 </div>

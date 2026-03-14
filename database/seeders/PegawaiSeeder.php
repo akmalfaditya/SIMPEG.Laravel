@@ -311,18 +311,20 @@ class PegawaiSeeder extends Seeder
 
     private function addRiwayatPendidikan(Pegawai $peg): void
     {
-        $tingkat = ['S1', 'D3', 'SMA', 'S2'];
+        $pendidikanIds = \App\Models\MasterPendidikan::pluck('id')->toArray();
+        if (empty($pendidikanIds)) return;
+
         $jurusan = [
             'Ilmu Hukum', 'Hukum Pidana', 'Kriminologi', 'Ilmu Pemerintahan',
             'Administrasi Publik', 'Manajemen', 'Akuntansi', 'Teknik Informatika',
             'Hukum Internasional', 'Ilmu Sosial', 'Psikologi', 'Kesejahteraan Sosial',
         ];
-        $tp = $tingkat[mt_rand(0, 3)];
+        $pid = $pendidikanIds[mt_rand(0, count($pendidikanIds) - 1)];
         $tahunLulus = now()->year - mt_rand(5, 14);
 
         RiwayatPendidikan::create([
             'pegawai_id' => $peg->id,
-            'tingkat_pendidikan' => $tp,
+            'pendidikan_id' => $pid,
             'institusi' => 'Universitas ' . $this->faker->city(),
             'jurusan' => $jurusan[mt_rand(0, count($jurusan) - 1)],
             'tahun_lulus' => $tahunLulus,

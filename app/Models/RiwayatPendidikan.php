@@ -26,7 +26,7 @@ class RiwayatPendidikan extends Model
             });
     }
     protected $fillable = [
-        'pegawai_id', 'tingkat_pendidikan', 'institusi', 'jurusan',
+        'pegawai_id', 'pendidikan_id', 'institusi', 'jurusan',
         'tahun_lulus', 'no_ijazah', 'tanggal_ijazah',
         'file_pdf_path', 'google_drive_link',
     ];
@@ -38,5 +38,10 @@ class RiwayatPendidikan extends Model
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class);
+    }
+
+    public function masterPendidikan(): BelongsTo
+    {
+        return $this->belongsTo(MasterPendidikan::class, 'pendidikan_id');
     }
 }

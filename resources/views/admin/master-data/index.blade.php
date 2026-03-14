@@ -32,6 +32,9 @@
                             No</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama
                         </th>
+                        @if ($entity === 'tingkat-pendidikan')
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Bobot DUK</th>
+                        @endif
                         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide w-40">
                             Aksi</th>
                     </tr>
@@ -42,6 +45,9 @@
                             <td class="px-4 py-2.5 text-center text-slate-400 text-xs">
                                 {{ $items->firstItem() + $loop->index }}</td>
                             <td class="px-4 py-2.5 font-medium text-slate-800">{{ $row->nama }}</td>
+                            @if ($entity === 'tingkat-pendidikan')
+                                <td class="px-4 py-2.5 text-center text-slate-600 font-bold bg-slate-50 rounded">{{ $row->bobot }}</td>
+                            @endif
                             <td class="px-4 py-2.5 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <a href="{{ route('admin.master-data.edit', [$entity, $row->id]) }}"
@@ -58,7 +64,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-4 py-8 text-center text-slate-400 text-sm">Belum ada data
+                            <td colspan="{{ $entity === 'tingkat-pendidikan' ? '4' : '3' }}" class="px-4 py-8 text-center text-slate-400 text-sm">Belum ada data
                                 {{ strtolower($label) }}.</td>
                         </tr>
                     @endforelse

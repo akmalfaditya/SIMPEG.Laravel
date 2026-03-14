@@ -75,6 +75,12 @@
 
 ## Recently Completed
 *   **2026-03-14**:
+    *   **DUK Sorting Engine (BKN Rules) & Master Pendidikan**:
+        *   Migrated `RiwayatPendidikan` to use a dynamic `MasterPendidikan` table (`pendidikan_id` FK).
+        *   Seeded 6 education levels with sorting weights (`bobot`): SMP (1) to S3 (6).
+        *   Registered `tingkat-pendidikan` into the MasterData CRUD system for SuperAdmins.
+        *   Refactored `DUKService::getDUK()` to strictly follow the 6-tier BKN sorting hierarchy: Golongan (1) > Jabatan Eselon/Jenis (2) > MKG Total Bulan (3) > Latihan JP (4) > Pendidikan Bobot (5) > Tanggal Lahir/Usia (6).
+        *   Added a Tailwind Alert Banner to `duk/index.blade.php` explaining the 6 sorting rules and added a "Diklat (JP)" column to the table.
     *   **Rumpun Jabatan Refactoring**:
         *   Migrated `RumpunJabatan` from PHP Backed Enum to dynamic `rumpun_jabatans` master data table.
         *   Created migration to convert `jabatans.rumpun` (tinyInteger) to `rumpun_jabatan_id` (FK), maintaining existing data integrity.

@@ -56,9 +56,10 @@ Request → Route → Controller → Service → Model → Database
 3. **PHP Enums** — Data master statis hukdis (JenisSanksi, TingkatHukuman, StatusHukdis) menggunakan PHP 8.1 Backed Enum.
     *   `JenisJabatan` (Administrasi, Pimpinan Tinggi, Fungsional)
     *   `TingkatPendidikan` (SD, SMP, SMA, D3, S1, S2, S3)
-4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji, **serta 8 tabel referensi pegawai**:
+4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji, **serta 9 tabel referensi pegawai/riwayat**:
     *   **`tipe_pegawais`**: Tipe Pegawai (PNS, CPNS, PPPK, PPNPN)
-    *   **`rumpun_jabatans`**: Kategori/Rumpun Jabatan (Struktural, Imigrasi, Pemasyarakatan, JFT, JFU, PPPK). Di-manage oleh SuperAdmin via form master data.
+    *   **`rumpun_jabatans`**: Kategori/Rumpun Jabatan (Struktural, Imigrasi, Pemasyarakatan, dll).
+    *   **`master_pendidikans`**: Jenjang Pendidikan (S3=6, S2=5, S1=4, dll) digunakan untuk pembobotan DUK.
     *   `status_kepegawaians`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs`) disimpan di tabel database, dilayani oleh dedicated Service/Controller.
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.

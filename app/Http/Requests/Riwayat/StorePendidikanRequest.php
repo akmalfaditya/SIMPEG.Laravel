@@ -15,7 +15,7 @@ class StorePendidikanRequest extends FormRequest
     {
         return [
             'pegawai_id' => 'required|exists:pegawais,id',
-            'tingkat_pendidikan' => 'required|string',
+            'pendidikan_id' => 'required|exists:master_pendidikans,id',
             'institusi' => 'required|string',
             'jurusan' => 'required|string',
             'tahun_lulus' => 'required|integer',

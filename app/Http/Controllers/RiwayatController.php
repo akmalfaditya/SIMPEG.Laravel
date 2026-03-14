@@ -411,7 +411,10 @@ class RiwayatController extends Controller
     // --- PENDIDIKAN ---
     public function createPendidikan(int $pegawaiId)
     {
-        return view('riwayat.create-pendidikan', ['pegawaiId' => $pegawaiId]);
+        return view('riwayat.create-pendidikan', [
+            'pegawaiId' => $pegawaiId,
+            'pendidikanList' => \App\Models\MasterPendidikan::orderBy('bobot', 'desc')->get(),
+        ]);
     }
 
     public function storePendidikan(StorePendidikanRequest $request)
@@ -429,7 +432,10 @@ class RiwayatController extends Controller
 
     public function editPendidikan(RiwayatPendidikan $riwayatPendidikan)
     {
-        return view('riwayat.edit-pendidikan', ['riwayat' => $riwayatPendidikan]);
+        return view('riwayat.edit-pendidikan', [
+            'riwayat' => $riwayatPendidikan,
+            'pendidikanList' => \App\Models\MasterPendidikan::orderBy('bobot', 'desc')->get(),
+        ]);
     }
 
     public function updatePendidikan(UpdatePendidikanRequest $request, RiwayatPendidikan $riwayatPendidikan)

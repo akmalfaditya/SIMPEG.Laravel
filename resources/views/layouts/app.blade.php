@@ -157,6 +157,7 @@
                             'status-pernikahan'  => 'Status Pernikahan',
                             'golongan-darah'     => 'Golongan Darah',
                             'rumpun-jabatan'     => 'Rumpun Jabatan',
+                            'tingkat-pendidikan' => 'Tingkat Pendidikan',
                         ];
                     @endphp
                     @foreach($masterEntities as $slug => $name)
