@@ -6,7 +6,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">NIP <span class="text-rose-500">*</span></label>
-        <input type="text" name="nip" value="{{ old('nip', $p?->nip) }}" required maxlength="18" class="{{ $inputClass }}">
+        <input type="text" name="nip" value="{{ old('nip', $p?->nip) }}" required class="{{ $inputClass }}">
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Gelar Depan</label>
