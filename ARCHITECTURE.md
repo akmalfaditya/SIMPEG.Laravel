@@ -89,6 +89,7 @@ Request → Route → Controller → Service → Model → Database
     - **Category C (Master Data)**: `"{Aksi} Master {NamaModel} #{id} ({nama_atau_keterangan})"` — contoh: "Menghapus Master Jabatan #2 (Polsuspas)"
     - **State Transitions (Controller)**: Aksi non-CRUD seperti pensiun di-log eksplisit via `activity()->performedOn()->log()` di Controller — contoh: "Memproses pensiun untuk pegawai #5 atas nama Budi"
     - Kata kerja: `Menambah` (created), `Mengubah` (updated), `Menghapus` (deleted)
+18. **Satyalencana Reset Argo (PP 94/2021)** — `SatyalencanaService::getEligibleCandidates()` menerapkan aturan "Reset Argo": hukuman disiplin tingkat **Sedang/Berat** yang sudah selesai me-reset counter masa kerja murni. `startDate` di-override dari `tmt_cpns` ke `tmt_selesai_hukuman` terbaru. Hukdis **Ringan** diabaikan (tidak me-reset). Pegawai **PPPK** di-exclude seluruhnya. Jika pegawai masih menjalani hukdis Sedang/Berat aktif, di-skip dari kandidat. Output menyertakan `tanggal_mulai_hitung`, `is_reset`, dan `masa_kerja_tahun` (= masa kerja murni). Edge-case verification via `SatyalencanaEdgeCaseSeeder` (3 test cases).
 
 ---
 
@@ -200,7 +201,7 @@ SIMPEG.Laravel/
 │       ├── PensiunService.php         #   Alert pensiun (level Hijau-Hitam)
 │       ├── RiwayatService.php         #   CRUD 7 jenis riwayat + hukdis logic (durasi enforced)
 │       ├── SalaryCalculatorService.php #   **Single source of truth** untuk salary resolution (TabelGaji lookup + fallback)
-│       ├── SatyalencanaService.php    #   Kandidat penghargaan Satyalencana
+│       ├── SatyalencanaService.php    #   Kandidat Satyalencana (Reset Argo: Sedang/Berat reset counter)
 │       └── TabelGajiService.php       #   CRUD tabel gaji PP 15/2019
 │
 ├── bootstrap/                         # Laravel bootstrap
@@ -208,7 +209,7 @@ SIMPEG.Laravel/
 ├── database/
 │   ├── factories/                     # Model factories (UserFactory, PegawaiFactory)
 │   ├── migrations/                  *   **Migration Count:** 14 files
-│   └── seeders/                       # 6 seeders (User, MasterData, Golongan, Pegawai, TabelGaji, Database)
+│   └── seeders/                       # 7 seeders (User, MasterData, Golongan, Pegawai, TabelGaji, SatyalencanaEdgeCase, Database)
 │
 ├── public/                            # Entry point + compiled assets
 │   └── build/                         #   Vite build output

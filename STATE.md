@@ -40,7 +40,7 @@
 - [x] **Kenaikan Pangkat** — Analisis eligibilitas 4 syarat (masa kerja, SKP, latihan, hukuman disiplin), proyeksi periode April/Oktober, integrasi hukdis (penundaan + penurunan pangkat)
 - [x] **Alert Pensiun** — Level alert (Hijau/Kuning/Merah/Hitam) berdasarkan BUP + **Workflow Proses Pensiun** (alert → proses SK → nonaktifkan pegawai) + **Dokumen SK Pensiun** (upload PDF + tautan Google Drive fallback)
 - [x] **DUK** — Ranking otomatis sesuai hierarki BKN
-- [x] **Satyalencana** — Identifikasi kandidat 10/20/30 tahun masa kerja + filter hukdis
+- [x] **Satyalencana (Reset Argo)** — Identifikasi kandidat 10/20/30 tahun masa kerja + **Reset Argo**: hukdis Sedang/Berat yang selesai me-reset counter masa kerja murni (start date = `tmt_selesai_hukuman`), Ringan tidak me-reset. PPPK excluded. Export Excel + PDF.
 
 ### Hukuman Disiplin (PP 94/2021)
 
@@ -70,6 +70,7 @@
 
 - [x] **Rumpun Jabatan Refactoring & Sidebar Filtering**: Refactor `RumpunJabatan` (enum → DB table), update master data seeder, admin CRUD, and add "Rumpun Jabatan" navigation links to the Sidebar (Struktural, JFT, JFU, PPPK) to filter employees index view dynamically.
 - [x] **PPPK Strict Block — Riwayat Pangkat**: Blokir pembuatan/update Riwayat Pangkat untuk pegawai PPPK sesuai ketentuan BKN. Implementasi di `StorePangkatRequest` dan `UpdatePangkatRequest` (authorize → abort 403), `RiwayatController::createPangkat()` (redirect with error), dan conditional UI rendering di `show.blade.php` (banner info + button hide). Seeder diperbarui dengan 5 jabatan PPPK + 10 pegawai PPPK (hanya initial pangkat, tanpa progression).
+- [x] **Satyalencana Reset Argo (PP 94/2021)**: Rewrite `SatyalencanaService` dengan algoritma Reset Argo — hukdis Sedang/Berat yang sudah selesai me-reset counter masa kerja murni ke `tmt_selesai_hukuman`. Ringan diabaikan. PPPK excluded. Kolom baru: "Tgl Mulai Hitung" (dengan badge RESET) dan "Masa Kerja Murni". Info banner PP 94/2021. `SatyalencanaEdgeCaseSeeder` (3 test cases). Export Excel diperbarui.
 - [ ] **Dashboard Analytics**: Create summary charts (`Chart.js` / ApexCharts) and stat cards using `PegawaiService` methods.
 - [ ] **Export & Reporting**: PDF/Excel export using Spatie Laravel PDF or Laravel Excel.
 
@@ -78,6 +79,12 @@
 ## Recently Completed
 
 - **2026-03-14**:
+    - **Satyalencana Reset Argo (PP 94/2021)**:
+        - `SatyalencanaService::getEligibleCandidates()` di-rewrite total dengan algoritma 6-step: (F-1) Exclude PPPK, (A) startDate=tmt_cpns, (B/C) cari hukdis Sedang/Berat yang sudah selesai → override startDate ke `tmt_selesai_hukuman` terbaru, skip jika masih menjalani hukdis aktif Sedang/Berat, (D) masaKerjaMurni=diffInYears, (E) milestone 10/20/30, (F-2) already awarded check.
+        - Output array baru: `tanggal_mulai_hitung` (formatted dd/mm/yyyy), `is_reset` (boolean).
+        - View `satyalencana/index.blade.php`: Info banner PP 94/2021, kolom "Tgl Mulai Hitung" dengan badge merah "RESET", kolom renamed "Masa Kerja Murni".
+        - `SatyalencanaExport.php`: Kolom "Tgl Mulai Hitung" + "(RESET)" suffix + renamed "Masa Kerja Murni (Tahun)".
+        - `SatyalencanaEdgeCaseSeeder` (3 cases): Case 1 clean (eligible 10yr), Case 2 Ringan (eligible 10yr, no reset), Case 3 Sedang (NOT eligible, masa_kerja_murni=4).
     - **PPPK Strict Block — Riwayat Pangkat (BKN Rules)**:
         - Backend: `StorePangkatRequest::authorize()` dan `UpdatePangkatRequest::authorize()` memeriksa jabatan terakhir pegawai via `riwayatJabatan.jabatan.rumpunJabatan`. Jika rumpun = 'PPPK', abort 403 dengan pesan ketentuan BKN.
         - Controller: `RiwayatController::createPangkat()` juga mem-block PPPK dengan redirect + flash error sebelum menampilkan form.

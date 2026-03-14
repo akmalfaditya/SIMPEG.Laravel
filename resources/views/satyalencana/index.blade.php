@@ -35,6 +35,12 @@
                     class="px-3 py-1.5 text-xs bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-all">Excel</a>
             </div>
         </div>
+        <div class="px-5 py-3 border-b border-slate-100 bg-blue-50 rounded-t-none">
+            <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"></path></svg>
+                <p class="text-xs text-blue-700"><strong>Ketentuan Perhitungan Masa Kerja (PP No. 94 Tahun 2021):</strong> Pegawai yang pernah menjalani Hukuman Disiplin tingkat <strong>Sedang</strong> atau <strong>Berat</strong> akan dihitung ulang masa kerjanya terhitung sejak tanggal selesai menjalani hukuman (TMT Selesai Hukuman). Hukuman Disiplin tingkat <strong>Ringan</strong> tidak mempengaruhi perhitungan masa kerja. Pegawai PPPK tidak termasuk dalam skema Satyalencana Karya Satya.</p>
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm" id="data-table">
                 <thead class="bg-slate-50">
@@ -43,7 +49,8 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Nama</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Pangkat</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Jabatan</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Masa Kerja</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Tgl Mulai Hitung</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Masa Kerja Murni</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Milestone</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Penghargaan</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Aksi</th>
@@ -58,6 +65,12 @@
                                     class="hover:text-blue-600">{{ $c['nama_lengkap'] }}</a></td>
                             <td class="px-4 py-2.5">{{ $c['pangkat_terakhir'] }}</td>
                             <td class="px-4 py-2.5">{{ $c['jabatan_terakhir'] }}</td>
+                            <td class="px-4 py-2.5 text-xs">
+                                {{ $c['tanggal_mulai_hitung'] }}
+                                @if($c['is_reset'])
+                                    <span class="ml-1 px-1.5 py-0.5 text-[10px] rounded-full font-bold bg-red-100 text-red-600">RESET</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2.5">{{ $c['masa_kerja_tahun'] }} tahun</td>
                             <td class="px-4 py-2.5"><span
                                     class="px-2 py-1 text-xs rounded-full font-medium {{ $c['milestone'] == 30 ? 'bg-amber-100 text-amber-700' : ($c['milestone'] == 20 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }}">{{ $c['milestone'] }}
@@ -70,7 +83,7 @@
                             </td>
                         </tr>
                     @empty <tr class="empty-row">
-                            <td colspan="8" class="px-4 py-8 text-center text-slate-400">Tidak ada kandidat.</td>
+                            <td colspan="9" class="px-4 py-8 text-center text-slate-400">Tidak ada kandidat.</td>
                         </tr>
                     @endforelse
                 </tbody>

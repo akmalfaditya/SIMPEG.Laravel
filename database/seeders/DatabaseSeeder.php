@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             MasterDataSeeder::class,
             TabelGajiSeeder::class,
             PegawaiSeeder::class,
+            SatyalencanaEdgeCaseSeeder::class,
         ]);
     }
 }
