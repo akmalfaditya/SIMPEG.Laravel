@@ -8,7 +8,14 @@
     <title>@yield('title', 'SIMPEG') - Sistem Informasi Manajemen Pegawai</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .ts-wrapper .ts-control { border-radius: 0.5rem; border-color: #cbd5e1; font-size: 0.875rem; padding: 0.375rem 0.75rem; min-height: 2.375rem; }
+        .ts-wrapper.focus .ts-control { box-shadow: 0 0 0 2px rgba(59,130,246,0.3); border-color: #60a5fa; }
+        .ts-dropdown { border-radius: 0.5rem; border-color: #e2e8f0; font-size: 0.875rem; }
+        .ts-dropdown .option.active { background-color: #eff6ff; color: #1e40af; }
+    </style>
     @stack('styles')
 </head>
 
@@ -219,11 +226,24 @@
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <div>
+                    <div class="flex-1">
                         <h2 class="text-lg font-semibold text-slate-800">@yield('header', 'Dashboard')</h2>
                         @hasSection('breadcrumb')
                             <nav class="text-xs text-slate-500 mt-0.5">@yield('breadcrumb')</nav>
                         @endif
+                    </div>
+                    {{-- Command Palette Search --}}
+                    <div class="relative hidden sm:block" id="command-palette">
+                        <div class="flex items-center">
+                            <input type="text" id="globalSearch" placeholder="Cari pegawai... (Ctrl+K)"
+                                autocomplete="off"
+                                class="w-56 lg:w-72 px-3 py-2 pl-9 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <div id="globalSearchResults" class="absolute right-0 top-full mt-1 w-80 bg-white rounded-xl shadow-lg border border-slate-200 hidden z-50 max-h-80 overflow-y-auto">
+                        </div>
                     </div>
                 </div>
             </header>
@@ -293,28 +313,144 @@
         </main>
     </div>
 
-    {{-- Delete Confirmation Modal --}}
-    <div id="delete-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/50" onclick="closeDeleteModal()"></div>
-        <div
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-            <h3 class="text-lg font-semibold text-slate-800 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-sm text-slate-600 mb-5" id="delete-modal-message">Apakah Anda yakin ingin menghapus data
-                ini? Tindakan ini tidak dapat dibatalkan.</p>
-            <div class="flex gap-3 justify-end">
-                <button onclick="closeDeleteModal()"
-                    class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 rounded-lg border border-slate-300 hover:bg-slate-50 transition-all">Batal</button>
-                <form id="delete-modal-form" method="POST">
-                    @csrf @method('DELETE')
-                    <button type="submit"
-                        class="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all">Hapus</button>
-                </form>
-            </div>
+    {{-- Delete Confirmation Dialog (HTML5 <dialog>) --}}
+    <dialog id="delete-modal" class="rounded-2xl shadow-xl p-6 w-full max-w-sm backdrop:bg-black/50 m-auto fixed inset-0">
+        <h3 class="text-lg font-semibold text-slate-800 mb-2">Konfirmasi Hapus</h3>
+        <p class="text-sm text-slate-600 mb-5" id="delete-modal-message">Apakah Anda yakin ingin menghapus data
+            ini? Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closeDeleteModal()"
+                class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 rounded-lg border border-slate-300 hover:bg-slate-50 transition-all">Batal</button>
+            <form id="delete-modal-form" method="POST">
+                @csrf @method('DELETE')
+                <button type="submit"
+                    class="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all">Hapus</button>
+            </form>
         </div>
-    </div>
+    </dialog>
 
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
     @stack('scripts')
     <script>
+        // ── UX: TomSelect on .searchable-select ──
+        document.querySelectorAll('select.searchable-select').forEach(el => {
+            new TomSelect(el, {
+                allowEmptyOption: true,
+                sortField: { field: 'text', direction: 'asc' },
+            });
+        });
+
+        // ── UX: IMask — NIP pattern (00000000 000000 0 000) ──
+        document.querySelectorAll('input[name="nip"]').forEach(el => {
+            const nipMask = IMask(el, {
+                mask: '00000000 000000 0 000',
+                lazy: false,
+                overwrite: 'shift',
+            });
+            // Strip spaces before form submission so backend gets raw 18 digits
+            el.closest('form')?.addEventListener('submit', function() {
+                el.value = nipMask.unmaskedValue;
+            });
+        });
+
+        // ── UX: IMask — Gaji Pokok currency mask ──
+        document.querySelectorAll('input[data-mask="currency"]').forEach(el => {
+            IMask(el, {
+                mask: 'Rp num',
+                blocks: {
+                    num: {
+                        mask: Number,
+                        thousandsSeparator: '.',
+                        radix: ',',
+                        scale: 0,
+                        min: 0,
+                    },
+                },
+            });
+        });
+
+        // ── UX: Smart Defaults — prevent future dates on date inputs ──
+        document.querySelectorAll('input[type="date"]').forEach(el => {
+            const name = el.name || '';
+            if (/tanggal_lahir|tmt_|tanggal_sk|tanggal_ijazah|tanggal_pemulihan/.test(name)) {
+                if (!el.getAttribute('max')) {
+                    el.setAttribute('max', new Date().toISOString().split('T')[0]);
+                }
+            }
+        });
+
+        // ── UX: Anti-Double Submit ──
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const btn = form.querySelector('button[type="submit"]');
+                if (!btn) return;
+                if (btn.dataset.submitting === 'true') {
+                    e.preventDefault();
+                    return;
+                }
+                btn.dataset.submitting = 'true';
+                btn.disabled = true;
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Memproses...';
+            });
+        });
+
+        // ── UX: Global Command Palette (Ctrl+K) ──
+        (function() {
+            const input = document.getElementById('globalSearch');
+            const results = document.getElementById('globalSearchResults');
+            if (!input || !results) return;
+
+            let debounceTimer;
+            const searchUrl = '{{ route("pegawai.data") }}';
+
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    input.focus();
+                    input.select();
+                }
+                if (e.key === 'Escape') {
+                    results.classList.add('hidden');
+                    input.blur();
+                }
+            });
+
+            input.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const q = this.value.trim();
+                if (q.length < 2) { results.classList.add('hidden'); return; }
+                debounceTimer = setTimeout(() => {
+                    fetch(`${searchUrl}?search=${encodeURIComponent(q)}&limit=5&status=aktif`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (!d.data || !d.data.length) {
+                                results.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Tidak ditemukan.</div>';
+                            } else {
+                                results.innerHTML = d.data.map(p =>
+                                    `<a href="/pegawai/${p.id}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white shrink-0">${(p.nama_lengkap || '?')[0]}</div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-slate-800 truncate">${p.nama_lengkap}</p>
+                                            <p class="text-xs text-slate-400 font-mono">${p.nip}</p>
+                                        </div>
+                                    </a>`
+                                ).join('');
+                            }
+                            results.classList.remove('hidden');
+                        });
+                }, 300);
+            });
+
+            input.addEventListener('blur', function() {
+                setTimeout(() => results.classList.add('hidden'), 200);
+            });
+            input.addEventListener('focus', function() {
+                if (this.value.trim().length >= 2) results.classList.remove('hidden');
+            });
+        })();
+
         // Sidebar: determine initial state based on screen width
         (function() {
             const sidebar = document.getElementById('sidebar');
@@ -358,16 +494,22 @@
             }, 4000);
         });
 
-        // Delete confirmation modal
+        // Delete confirmation dialog (HTML5 <dialog>)
         function confirmDelete(url, message) {
-            document.getElementById('delete-modal').classList.remove('hidden');
+            const dialog = document.getElementById('delete-modal');
             document.getElementById('delete-modal-form').action = url;
             if (message) document.getElementById('delete-modal-message').textContent = message;
+            dialog.showModal();
         }
 
         function closeDeleteModal() {
-            document.getElementById('delete-modal').classList.add('hidden');
+            document.getElementById('delete-modal').close();
         }
+
+        // Close dialog on backdrop click
+        document.getElementById('delete-modal').addEventListener('click', function(e) {
+            if (e.target === this) this.close();
+        });
     </script>
 </body>
 

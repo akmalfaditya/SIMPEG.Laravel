@@ -96,12 +96,9 @@
                                             {{ $row->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                         </button>
                                     </form>
-                                    <form method="POST" action="{{ route('admin.golongan.destroy', $row) }}"
-                                        onsubmit="return confirm('Hapus golongan {{ $row->label }}?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                    </form>
+                                    <button type="button"
+                                        onclick="confirmDelete('{{ route('admin.golongan.destroy', $row) }}', 'Hapus golongan {{ $row->label }}?')"
+                                        class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                 </div>
                             </td>
                         </tr>

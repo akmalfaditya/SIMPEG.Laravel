@@ -64,6 +64,17 @@
 - [x] Profil & ganti password
 - [x] Activity log (audit trail)
 
+### UX Overhaul (Frontend Standardization)
+
+- [x] **TomSelect (CDN v2.4.3)** — Searchable dropdown pada semua select Jabatan, Golongan, Unit Kerja, Bagian, serta demotion/restoration selects di form Hukdis. Class marker: `.searchable-select`.
+- [x] **IMask.js (CDN v7.6.1)** — Input mask NIP (`00000000 000000 0 000`, auto-strip spasi sebelum submit) dan Gaji Pokok (prefix `Rp`, separator `.`). Data attribute marker: `data-mask="currency"`.
+- [x] **Smart Date Defaults** — Semua `<input type="date">` untuk TMT, tanggal_lahir, tanggal_sk, tanggal_ijazah otomatis mendapat `max=today` untuk mencegah input tanggal di masa depan.
+- [x] **Anti-Double Submit** — Global listener pada semua `<form>` submit event: disable tombol submit, ubah teks ke "Memproses..." dengan spinner, cegah re-submit.
+- [x] **HTML5 `<dialog>` Modals** — Semua modal konfirmasi (delete, PATCH reactivate/cancel-pensiun, pemulihan hukdis) dimigrasi dari `<div>` kustom ke native `<dialog>` element. Backdrop click to close. Semua native `confirm()` dieliminasi.
+- [x] **Sticky Table Headers** — Header tabel (`<th>`) di pegawai index (JS-rendered) dan DUK menggunakan `sticky top-0 bg-slate-50 z-10`. Kolom "Aksi" juga `sticky right-0`.
+- [x] **Global Command Palette (Ctrl+K)** — Input pencarian di navbar header. `Ctrl+K`/`Cmd+K` fokus input. AJAX debounced (300ms) ke `pegawai.data` endpoint, menampilkan 5 hasil cepat (avatar, nama, NIP) sebagai dropdown link.
+- [x] **Blade Components** — `<x-empty-state>` (contextual empty state dengan icon, judul, pesan per tab riwayat — 8 instances di show.blade.php). `<x-tooltip>` (CSS-only tooltip dengan `group-hover`, diterapkan pada semua label TMT di form pegawai, riwayat, dan process).
+
 ---
 
 ## Current Focus
@@ -78,7 +89,16 @@
 
 ## Recently Completed
 
-- **2026-03-14**:
+- **2026-03-14** (Session 2):
+    - **UX Overhaul — 4 Usability Heuristics**:
+        - **Data Entry Efficiency**: TomSelect (CDN v2.4.3) searchable dropdowns pada 12 select elements (jabatan, golongan, unit kerja, bagian, demotion, restoration). IMask.js (CDN v7.6.1) NIP pattern mask (`00000000 000000 0 000`) dengan auto-strip spasi. Smart date defaults (max=today) pada semua input date TMT/tanggal_lahir/tanggal_sk.
+        - **Error Prevention**: Global anti-double-submit (spinner + disable tombol + prevent re-submit). Migrasi semua modal dari `<div>` kustom ke native HTML5 `<dialog>` (delete modal global, PATCH modal index, pemulihan hukdis dialog). Eliminasi 4 native `confirm()` calls (tabel-gaji, master-data, jabatan, golongan).
+        - **Findability**: Sticky table headers (`sticky top-0`) di pegawai index (JS) dan DUK. Global Command Palette (Ctrl+K) — AJAX search di navbar header, 5 hasil cepat (nama+NIP) dari existing `pegawai.data` endpoint.
+        - **Contextual Help**: `<x-tooltip>` component (CSS-only, group-hover) diterapkan pada 12 label TMT di seluruh form. `<x-empty-state>` component (icon + judul + pesan kontekstual) menggantikan 8 teks "Belum ada data" generik di show.blade.php dengan pesan bermakna per riwayat.
+    - **Files modified**: `layouts/app.blade.php` (CDN, global JS), `pegawai/_form.blade.php`, `pegawai/index.blade.php`, `pegawai/show.blade.php`, `duk/index.blade.php`, 6 riwayat form views, 2 process views, 4 admin views.
+    - **Files created**: `components/empty-state.blade.php`, `components/tooltip.blade.php`.
+
+- **2026-03-14** (Session 1):
     - **Satyalencana Reset Argo (PP 94/2021)**:
         - `SatyalencanaService::getEligibleCandidates()` di-rewrite total dengan algoritma 6-step: (F-1) Exclude PPPK, (A) startDate=tmt_cpns, (B/C) cari hukdis Sedang/Berat yang sudah selesai → override startDate ke `tmt_selesai_hukuman` terbaru, skip jika masih menjalani hukdis aktif Sedang/Berat, (D) masaKerjaMurni=diffInYears, (E) milestone 10/20/30, (F-2) already awarded check.
         - Output array baru: `tanggal_mulai_hitung` (formatted dd/mm/yyyy), `is_reset` (boolean).

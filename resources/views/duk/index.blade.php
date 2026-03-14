@@ -38,15 +38,15 @@
             <table class="w-full text-sm" id="data-table">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">NIP</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Nama</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Golongan</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Jabatan</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Masa Kerja</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Diklat (JP)</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Pendidikan</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500">Usia</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">NIP</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Nama</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Golongan</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Jabatan</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Masa Kerja</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Diklat (JP)</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Pendidikan</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 sticky top-0 bg-slate-50 z-10">Usia</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100" id="table-body">

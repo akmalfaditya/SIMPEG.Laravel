@@ -18,6 +18,8 @@
 | **CSS Framework**     | @tailwindcss/vite              | ^4.0                     |
 | **Charts**            | Chart.js 4                     | CDN                      |
 | **Font**              | Inter                          | Google Fonts CDN         |
+| **Searchable Select** | TomSelect                      | CDN v2.4.3               |
+| **Input Masking**     | IMask.js                       | CDN v7.6.1               |
 | **PDF Export**        | barryvdh/laravel-dompdf        | ^3.1                     |
 | **Excel Export**      | maatwebsite/excel              | ^3.1                     |
 | **Activity Log**      | spatie/laravel-activitylog     | ^4.12                    |
@@ -90,6 +92,11 @@ Request → Route → Controller → Service → Model → Database
     - **State Transitions (Controller)**: Aksi non-CRUD seperti pensiun di-log eksplisit via `activity()->performedOn()->log()` di Controller — contoh: "Memproses pensiun untuk pegawai #5 atas nama Budi"
     - Kata kerja: `Menambah` (created), `Mengubah` (updated), `Menghapus` (deleted)
 18. **Satyalencana Reset Argo (PP 94/2021)** — `SatyalencanaService::getEligibleCandidates()` menerapkan aturan "Reset Argo": hukuman disiplin tingkat **Sedang/Berat** yang sudah selesai me-reset counter masa kerja murni. `startDate` di-override dari `tmt_cpns` ke `tmt_selesai_hukuman` terbaru. Hukdis **Ringan** diabaikan (tidak me-reset). Pegawai **PPPK** di-exclude seluruhnya. Jika pegawai masih menjalani hukdis Sedang/Berat aktif, di-skip dari kandidat. Output menyertakan `tanggal_mulai_hitung`, `is_reset`, dan `masa_kerja_tahun` (= masa kerja murni). Edge-case verification via `SatyalencanaEdgeCaseSeeder` (3 test cases).
+19. **UX Overhaul — Frontend Standardization** — Empat pilar usability diterapkan secara global:
+    - **Data Entry Efficiency**: TomSelect (CDN v2.4.3) pada class `.searchable-select` di semua dropdown Jabatan, Golongan, Unit Kerja, Bagian, dan demotion/restoration selects. IMask.js (CDN v7.6.1) pada input NIP (pattern `00000000 000000 0 000`, unmasked sebelum submit) dan input gaji (`data-mask="currency"`). Smart date defaults via regex `tanggal_lahir|tmt_|tanggal_sk|tanggal_ijazah|tanggal_pemulihan` → `max=today`.
+    - **Error Prevention**: Global anti-double-submit pada semua `<form>` (disable button + spinner "Memproses..." + `dataset.submitting` guard). Semua dialog konfirmasi menggunakan native HTML5 `<dialog>` (bukan `<div>` overlay) — `confirmDelete()` di layout, `confirmPatch()` di pegawai index, `openPulihkanModal()` di show. Zero native `confirm()` calls remaining.
+    - **Findability**: Sticky table headers (`sticky top-0 bg-slate-50 z-10`) di pegawai index dan DUK. Global Command Palette di navbar (`Ctrl+K` / `Cmd+K` focus): debounced AJAX (300ms) ke `pegawai.data` endpoint, renders 5 hasil cepat (avatar, nama, NIP) sebagai dropdown link.
+    - **Contextual Help**: `<x-tooltip text="...">` component (Tailwind CSS `group-hover`, positioned bottom-full → up) pada 12 label TMT di form pegawai, riwayat, dan process. `<x-empty-state title="..." message="..." colspan="N">` component menggantikan 8 generic "Belum ada data" texts di show.blade.php (e.g., "Pegawai ini memiliki rekam jejak bersih tanpa hukuman disiplin.").
 
 ---
 
@@ -229,6 +236,7 @@ SIMPEG.Laravel/
 │       ├── duk/                       #   Daftar Urut Kepangkatan
 │       ├── satyalencana/              #   Kandidat Satyalencana
 │       ├── admin/                     #   Master data (Jabatan, Tabel Gaji, Golongan, 8 Master Data Pegawai)
+│       ├── components/                #   Blade components (empty-state, tooltip)
 │       ├── exports/                   #   7 template PDF (dashboard, duk, kgb, pensiun, kenaikan-pangkat, satyalencana, pegawai-profile)
 │       ├── activity-log/              #   Audit trail
 │       └── profile/                   #   Profil & ganti password

@@ -106,12 +106,9 @@
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="button" onclick="toggleEdit({{ $entry->id }})"
                                             class="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs rounded-md font-medium transition-colors">Edit</button>
-                                        <form method="POST" action="{{ route('admin.tabel-gaji.destroy', $entry) }}"
-                                            onsubmit="return confirm('Hapus entri MKG {{ $entry->masa_kerja_tahun }} tahun?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit"
-                                                class="inline-flex items-center px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                        </form>
+                                        <button type="button"
+                                            onclick="confirmDelete('{{ route('admin.tabel-gaji.destroy', $entry) }}', 'Hapus entri MKG {{ $entry->masa_kerja_tahun }} tahun?')"
+                                            class="inline-flex items-center px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                     </div>
                                 </td>
                             </tr>

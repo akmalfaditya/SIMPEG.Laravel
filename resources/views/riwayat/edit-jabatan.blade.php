@@ -7,7 +7,7 @@
             @csrf @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Jabatan *</label><select name="jabatan_id"
-                        required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm searchable-select">
                         @foreach ($jabatanOptions as $j)
                             <option value="{{ $j->id }}" {{ $riwayat->jabatan_id == $j->id ? 'selected' : '' }}>
                                 {{ $j->nama_jabatan }}</option>
@@ -17,7 +17,7 @@
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK</label><input type="text"
                         name="nomor_sk" value="{{ $riwayat->nomor_sk }}"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Jabatan *</label><input type="date"
+                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Jabatan *<x-tooltip text="Terhitung Mulai Tanggal yang tertera di SK jabatan" /></label><input type="date"
                         name="tmt_jabatan" value="{{ $riwayat->tmt_jabatan->format('Y-m-d') }}" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Tanggal SK *</label><input type="date"

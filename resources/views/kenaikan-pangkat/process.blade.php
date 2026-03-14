@@ -46,7 +46,7 @@
                     @error('nomor_sk') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">TMT Pangkat *</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">TMT Pangkat *<x-tooltip text="Terhitung Mulai Tanggal kenaikan pangkat" /></label>
                     <input type="date" name="tmt_pangkat" value="{{ old('tmt_pangkat', $data['proyeksi_tmt']) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @error('tmt_pangkat') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>

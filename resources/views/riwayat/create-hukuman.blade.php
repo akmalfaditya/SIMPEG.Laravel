@@ -34,10 +34,10 @@
                 <div><label class="block text-sm font-medium text-slate-700 mb-1">Tanggal SK</label><input type="date"
                         name="tanggal_sk" value="{{ old('tanggal_sk') }}"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Hukuman *</label><input type="date"
+                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Hukuman *<x-tooltip text="Terhitung Mulai Tanggal berlakunya hukuman" /></label><input type="date"
                         name="tmt_hukuman" value="{{ old('tmt_hukuman', today()->format('Y-m-d')) }}" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
-                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Selesai Hukuman</label><input
+                <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT Selesai Hukuman<x-tooltip text="Tanggal selesai menjalani hukuman" /></label><input
                         type="date" name="tmt_selesai_hukuman" value="{{ old('tmt_selesai_hukuman') }}"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
                 <div class="md:col-span-2"><label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi</label>
@@ -49,7 +49,7 @@
                     class="md:col-span-2 hidden p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <p class="text-xs font-semibold text-amber-700 mb-2">Penurunan Pangkat — Pilih pangkat baru setelah
                         demosi:</p>
-                    <select name="demotion_golongan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <select name="demotion_golongan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm searchable-select">
                         <option value="">-- Pilih Golongan Ruang --</option>
                         @foreach ($golonganOptions as $g)
                             <option value="{{ $g->id }}"
@@ -63,7 +63,7 @@
                     class="md:col-span-2 hidden p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <p class="text-xs font-semibold text-amber-700 mb-2">Penurunan/Pembebasan Jabatan — Pilih jabatan baru:
                     </p>
-                    <select name="demotion_jabatan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <select name="demotion_jabatan_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm searchable-select">
                         <option value="">-- Pilih Jabatan --</option>
                         @foreach ($jabatanOptions as $j)
                             <option value="{{ $j->id }}"

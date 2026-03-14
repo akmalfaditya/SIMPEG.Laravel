@@ -92,16 +92,16 @@
         </select>
     </div>
     <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">TMT CPNS <span class="text-red-500">*</span></label>
+        <label class="block text-sm font-medium text-slate-700 mb-1">TMT CPNS <span class="text-red-500">*</span><x-tooltip text="Terhitung Mulai Tanggal pengangkatan CPNS" /></label>
         <input type="date" name="tmt_cpns" value="{{ old('tmt_cpns', $p?->tmt_cpns?->format('Y-m-d')) }}" required class="{{ $inputClass }}">
     </div>
     <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">TMT PNS</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1">TMT PNS<x-tooltip text="Terhitung Mulai Tanggal pengangkatan PNS" /></label>
         <input type="date" name="tmt_pns" value="{{ old('tmt_pns', $p?->tmt_pns?->format('Y-m-d')) }}" class="{{ $inputClass }}">
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Bagian</label>
-        <select name="bagian_id" class="{{ $inputClass }}">
+        <select name="bagian_id" class="{{ $inputClass }} searchable-select">
             <option value="">-- Pilih Bagian --</option>
             @foreach($bagianOptions as $opt)
                 <option value="{{ $opt->id }}" {{ old('bagian_id', $p?->bagian_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
@@ -110,7 +110,7 @@
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Unit Kerja</label>
-        <select name="unit_kerja_id" class="{{ $inputClass }}">
+        <select name="unit_kerja_id" class="{{ $inputClass }} searchable-select">
             <option value="">-- Pilih Unit Kerja --</option>
             @foreach($unitKerjaOptions as $opt)
                 <option value="{{ $opt->id }}" {{ old('unit_kerja_id', $p?->unit_kerja_id) == $opt->id ? 'selected' : '' }}>{{ $opt->nama }}</option>
@@ -177,7 +177,7 @@
     <p class="md:col-span-2 text-xs text-blue-700">Gaji pokok akan dihitung otomatis berdasarkan golongan yang dipilih. Riwayat pangkat dan jabatan awal dibuat otomatis.</p>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Golongan/Pangkat <span class="text-red-500">*</span></label>
-        <select name="golongan_id" required class="{{ $inputClass }}">
+        <select name="golongan_id" required class="{{ $inputClass }} searchable-select">
             <option value="">-- Pilih Golongan --</option>
             @foreach($golonganOptions as $g)
                 <option value="{{ $g->id }}" {{ old('golongan_id') == $g->id ? 'selected' : '' }}>{{ $g->label }} — {{ $g->pangkat }}</option>
@@ -186,7 +186,7 @@
     </div>
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
-        <select name="jabatan_id" required class="{{ $inputClass }}">
+        <select name="jabatan_id" required class="{{ $inputClass }} searchable-select">
             <option value="">-- Pilih Jabatan --</option>
             @foreach($jabatanOptions as $j)
                 <option value="{{ $j->id }}" {{ old('jabatan_id') == $j->id ? 'selected' : '' }}>{{ $j->nama_jabatan }}</option>

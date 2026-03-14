@@ -53,23 +53,20 @@
     </div>
 </div>
 
-{{-- Confirmation Modal for PATCH actions (reactivate / cancel-pensiun) --}}
-<div id="patch-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/50" onclick="closePatchModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-        <h3 class="text-lg font-semibold text-slate-800 mb-2" id="patch-modal-title">Konfirmasi</h3>
-        <p class="text-sm text-slate-600 mb-5" id="patch-modal-message"></p>
-        <div class="flex gap-3 justify-end">
-            <button onclick="closePatchModal()"
-                class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 rounded-lg border border-slate-300 hover:bg-slate-50 transition-all">Batal</button>
-            <form id="patch-modal-form" method="POST">
-                @csrf @method('PATCH')
-                <button type="submit" id="patch-modal-submit"
-                    class="px-4 py-2 text-sm text-white rounded-lg transition-all">Konfirmasi</button>
-            </form>
-        </div>
+{{-- Confirmation Dialog for PATCH actions (reactivate / cancel-pensiun) --}}
+<dialog id="patch-modal" class="rounded-2xl shadow-xl p-6 w-full max-w-sm backdrop:bg-black/50 m-auto fixed inset-0">
+    <h3 class="text-lg font-semibold text-slate-800 mb-2" id="patch-modal-title">Konfirmasi</h3>
+    <p class="text-sm text-slate-600 mb-5" id="patch-modal-message"></p>
+    <div class="flex gap-3 justify-end">
+        <button onclick="closePatchModal()"
+            class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 rounded-lg border border-slate-300 hover:bg-slate-50 transition-all">Batal</button>
+        <form id="patch-modal-form" method="POST">
+            @csrf @method('PATCH')
+            <button type="submit" id="patch-modal-submit"
+                class="px-4 py-2 text-sm text-white rounded-lg transition-all">Konfirmasi</button>
+        </form>
     </div>
-</div>
+</dialog>
 @endsection
 
 @push('scripts')
@@ -81,27 +78,27 @@ const rumpunFilter = new URLSearchParams(window.location.search).get('rumpun') |
 
 const headConfigs = {
     'aktif': `
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">NIP</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama Lengkap</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Pangkat</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Jabatan</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Masa Kerja</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>`,
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">NIP</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Nama Lengkap</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Pangkat</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Jabatan</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Masa Kerja</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10 sticky right-0">Aksi</th>`,
     'tidak-aktif': `
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">NIP</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama Lengkap</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Pangkat</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Jabatan</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Masa Kerja</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>`,
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">NIP</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Nama Lengkap</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Pangkat</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Jabatan</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Masa Kerja</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10 sticky right-0">Aksi</th>`,
     'pensiun': `
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">NIP</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama Lengkap</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Pangkat</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">SK Pensiun</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">TMT Pensiun</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Dokumen SK</th>
-        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>`,
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">NIP</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Nama Lengkap</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Pangkat</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">SK Pensiun</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">TMT Pensiun</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10">Dokumen SK</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky top-0 bg-slate-50 z-10 sticky right-0">Aksi</th>`,
 };
 
 function switchTab(tab) {
@@ -251,19 +248,24 @@ function loadTabCounts() {
     });
 }
 
-// PATCH confirmation modal
+// PATCH confirmation dialog (HTML5 <dialog>)
 function confirmPatch(url, title, message, btnClass) {
-    document.getElementById('patch-modal').classList.remove('hidden');
+    const dialog = document.getElementById('patch-modal');
     document.getElementById('patch-modal-form').action = url;
     document.getElementById('patch-modal-title').textContent = title;
     document.getElementById('patch-modal-message').textContent = message;
     const submitBtn = document.getElementById('patch-modal-submit');
     submitBtn.className = 'px-4 py-2 text-sm text-white rounded-lg transition-all ' + btnClass;
+    dialog.showModal();
 }
 
 function closePatchModal() {
-    document.getElementById('patch-modal').classList.add('hidden');
+    document.getElementById('patch-modal').close();
 }
+
+document.getElementById('patch-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.close();
+});
 
 let searchTimer;
 document.getElementById('searchInput').addEventListener('input', function() {

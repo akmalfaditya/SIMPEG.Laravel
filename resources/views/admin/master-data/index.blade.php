@@ -52,13 +52,9 @@
                                 <div class="flex items-center justify-center gap-1.5">
                                     <a href="{{ route('admin.master-data.edit', [$entity, $row->id]) }}"
                                         class="inline-flex items-center px-2 py-1 bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs rounded-md font-medium transition-colors">Edit</a>
-                                    <form method="POST"
-                                        action="{{ route('admin.master-data.destroy', [$entity, $row->id]) }}"
-                                        onsubmit="return confirm('Hapus {{ $label }} &quot;{{ $row->nama }}&quot;? Data pegawai yang menggunakan referensi ini mungkin terpengaruh.')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit"
-                                            class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                                    </form>
+                                    <button type="button"
+                                        onclick="confirmDelete('{{ route('admin.master-data.destroy', [$entity, $row->id]) }}', 'Hapus {{ $label }} &quot;{{ $row->nama }}&quot;? Data pegawai yang menggunakan referensi ini mungkin terpengaruh.')"
+                                        class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                                 </div>
                             </td>
                         </tr>

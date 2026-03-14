@@ -299,9 +299,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="6" title="Belum Ada Riwayat Pangkat" message="Riwayat pangkat/golongan pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -349,9 +347,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="5" title="Belum Ada Riwayat Jabatan" message="Riwayat jabatan/mutasi pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -410,9 +406,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="6" title="Belum Ada Riwayat KGB" message="Kenaikan gaji berkala pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -476,9 +470,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="7" title="Tidak Ada Hukuman Disiplin" message="Pegawai ini memiliki rekam jejak bersih tanpa hukuman disiplin." />
                         @endforelse
                     </tbody>
                 </table>
@@ -528,9 +520,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="6" title="Belum Ada Riwayat Pendidikan" message="Data pendidikan formal pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -580,9 +570,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="6" title="Belum Ada Riwayat Latihan" message="Pelatihan/diklat pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -618,9 +606,7 @@
                                 <td class="px-3 py-2">{{ $r->tanggal_sk?->format('d/m/Y') ?? '-' }}</td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="5" title="Belum Ada Penghargaan" message="Penghargaan/tanda jasa pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
@@ -669,19 +655,15 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data.</td>
-                            </tr>
+                            <x-empty-state colspan="4" title="Belum Ada Data SKP" message="Penilaian kinerja pegawai ini belum dicatat." />
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    {{-- Pemulihan Modal --}}
-    <div id="pulihkanModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.4);">
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;max-width:32rem;"
-            class="bg-white rounded-2xl shadow-xl p-6">
+    {{-- Pemulihan Dialog (HTML5 <dialog>) --}}
+    <dialog id="pulihkanModal" class="rounded-2xl shadow-xl p-6 w-full max-w-lg backdrop:bg-black/50 m-auto fixed inset-0">
             <h3 class="text-lg font-bold text-slate-800 mb-4">Pemulihan Hukuman Disiplin</h3>
             <form id="pulihkanForm" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -707,7 +689,7 @@
                         <p class="text-xs font-semibold text-green-700 mb-2">Pemulihan Pangkat — Pilih pangkat yang
                             dikembalikan:</p>
                         <select name="restoration_golongan_id"
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm searchable-select">
                             <option value="">-- Pilih Golongan Ruang --</option>
                             @foreach ($golonganOptions as $g)
                                 <option value="{{ $g->id }}">{{ $g->label }}</option>
@@ -720,7 +702,7 @@
                         <p class="text-xs font-semibold text-green-700 mb-2">Pemulihan Jabatan — Pilih jabatan yang
                             dikembalikan:</p>
                         <select name="restoration_jabatan_id"
-                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm searchable-select">
                             <option value="">-- Pilih Jabatan --</option>
                             @foreach ($jabatanOptions as $j)
                                 <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
@@ -735,8 +717,7 @@
                         class="px-5 py-2 bg-slate-100 text-slate-600 text-sm rounded-xl hover:bg-slate-200">Batal</button>
                 </div>
             </form>
-        </div>
-    </div>
+    </dialog>
 @endsection
 
 @push('scripts')
@@ -772,7 +753,7 @@
         });
 
         function openPulihkanModal(hukumanId, jenisSanksiValue) {
-            var modal = document.getElementById('pulihkanModal');
+            var dialog = document.getElementById('pulihkanModal');
             var form = document.getElementById('pulihkanForm');
             form.action = '/riwayat/hukuman/' + hukumanId + '/pulihkan';
 
@@ -783,11 +764,15 @@
             pangkatEl.style.display = (jenisSanksiValue === 3) ? 'block' : 'none';
             jabatanEl.style.display = (jenisSanksiValue === 4 || jenisSanksiValue === 5) ? 'block' : 'none';
 
-            modal.style.display = 'block';
+            dialog.showModal();
         }
 
         function closePulihkanModal() {
-            document.getElementById('pulihkanModal').style.display = 'none';
+            document.getElementById('pulihkanModal').close();
         }
+
+        document.getElementById('pulihkanModal').addEventListener('click', function(e) {
+            if (e.target === this) this.close();
+        });
     </script>
 @endpush

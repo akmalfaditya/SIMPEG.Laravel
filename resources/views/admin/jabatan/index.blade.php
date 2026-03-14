@@ -73,10 +73,8 @@
                                     {{ $j->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.jabatan.destroy', $j) }}" onsubmit="return confirm('Hapus jabatan {{ $j->nama_jabatan }}?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
-                            </form>
+                            <button type="button" onclick="confirmDelete('{{ route('admin.jabatan.destroy', $j) }}', 'Hapus jabatan {{ $j->nama_jabatan }}?')"
+                                    class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs rounded-md font-medium transition-colors">Hapus</button>
                         </div>
                     </td>
                 </tr>

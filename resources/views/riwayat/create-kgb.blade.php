@@ -16,7 +16,7 @@
         <input type="hidden" name="pegawai_id" value="{{ $pegawaiId }}">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Nomor SK</label><input type="text" name="nomor_sk" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
-            <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT KGB *</label><input type="date" name="tmt_kgb" value="{{ today()->format('Y-m-d') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">TMT KGB *<x-tooltip text="Terhitung Mulai Tanggal kenaikan gaji berkala" /></label><input type="date" name="tmt_kgb" value="{{ today()->format('Y-m-d') }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Gaji Lama *</label><input type="number" name="gaji_lama" value="{{ $gajiPokok ?? 0 }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Gaji Baru *</label><input type="number" name="gaji_baru" value="{{ $calculatedGajiBaru ?? '' }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>
             <div><label class="block text-sm font-medium text-slate-700 mb-1">Masa Kerja Gol. (Tahun) *</label><input type="number" name="masa_kerja_golongan_tahun" value="{{ $calculatedMkgTahun ?? 0 }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></div>

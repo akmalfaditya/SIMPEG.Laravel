@@ -45,7 +45,7 @@
                     @error('nomor_sk') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">TMT KGB Baru *</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">TMT KGB Baru *<x-tooltip text="Terhitung Mulai Tanggal kenaikan gaji berkala" /></label>
                     <input type="date" name="tmt_kgb" value="{{ old('tmt_kgb', $data['tanggal_jatuh_tempo']->format('Y-m-d')) }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     @error('tmt_kgb') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
