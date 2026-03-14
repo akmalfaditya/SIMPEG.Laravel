@@ -2,12 +2,23 @@
 
 namespace App\Http\Requests\Riwayat;
 
+use App\Models\Pegawai;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePangkatRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        $riwayatPangkat = $this->route('riwayatPangkat');
+        $pegawai = Pegawai::with('riwayatJabatan.jabatan.rumpunJabatan')->find($riwayatPangkat->pegawai_id);
+
+        if ($pegawai) {
+            $latestJabatan = $pegawai->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
+            if ($latestJabatan?->jabatan?->rumpunJabatan?->nama === 'PPPK') {
+                abort(403, 'PPPK tidak memiliki skema Kenaikan Pangkat sesuai ketentuan BKN. Kenaikan Pangkat hanya berlaku untuk PNS.');
+            }
+        }
+
         return true;
     }
 

@@ -68,7 +68,7 @@ class PegawaiController extends Controller
             'bagian',
             'unitKerja',
             'riwayatPangkat',
-            'riwayatJabatan.jabatan',
+            'riwayatJabatan.jabatan.rumpunJabatan',
             'riwayatKgb',
             'riwayatHukumanDisiplin',
             'riwayatPendidikan',

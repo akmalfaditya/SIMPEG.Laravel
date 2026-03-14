@@ -73,12 +73,17 @@ class PegawaiFactory extends Factory
 
             if (!$golongan || !$jabatan) return;
 
+            // Check if PPPK via jabatan rumpun
+            $isPPPK = $jabatan->rumpunJabatan?->nama === 'PPPK'
+                || $pegawai->tipePegawai?->nama === 'PPPK';
+
             // 1. Initial RiwayatPangkat at tmt_cpns (Observer fires → sets initial gaji_pokok)
+            //    PPPK only gets initial pangkat, no progression
             $pegawai->riwayatPangkat()->create([
                 'golongan_id' => $golongan->id,
                 'tmt_pangkat' => $pegawai->tmt_cpns,
                 'tanggal_sk' => $pegawai->tmt_cpns,
-                'nomor_sk' => 'SK-CPNS/' . $pegawai->tmt_cpns->year . '/AUTO',
+                'nomor_sk' => ($isPPPK ? 'SK-PPPK/' : 'SK-CPNS/') . $pegawai->tmt_cpns->year . '/AUTO',
             ]);
 
             // 2. Initial RiwayatJabatan
@@ -91,6 +96,7 @@ class PegawaiFactory extends Factory
 
             // 3. Build KGB timeline every 2 years from tmt_cpns
             //    Observer fires on each create → gaji_pokok auto-synced
+            //    ALL employees (including PPPK) receive KGB
             $salaryService = app(SalaryCalculatorService::class);
             $tmtKgb = $pegawai->tmt_cpns->copy()->addYears(2);
             $mkgTahun = 2;

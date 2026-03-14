@@ -39,7 +39,7 @@ class PegawaiSeeder extends Seeder
         $this->random = mt_srand(42);
         $this->faker = Faker::create('id_ID');
 
-        $jabatanList = Jabatan::all();
+        $jabatanList = Jabatan::with('rumpunJabatan')->get();
         if ($jabatanList->isEmpty()) return;
 
         $today = today();
@@ -162,6 +162,37 @@ class PegawaiSeeder extends Seeder
             }
         }
 
+        // GROUP 6: PPPK employees (10 — no RiwayatPangkat progression per BKN rules)
+        $pppkTipePegawaiId = TipePegawai::where('nama', 'PPPK')->value('id');
+        $jabatanPPPK = $jabatanList->filter(fn($j) => $j->rumpunJabatan?->nama === 'PPPK')->values();
+        if ($pppkTipePegawaiId && $jabatanPPPK->isNotEmpty()) {
+            for ($i = 0; $i < 10; $i++) {
+                $birthDate = $today->copy()->subYears(mt_rand(28, 48))->subDays(mt_rand(0, 180));
+                $tmtCpns = $birthDate->copy()->addYears(mt_rand(23, 30));
+                if ($tmtCpns->gt($today->copy()->subYear())) {
+                    $tmtCpns = $today->copy()->subYears(mt_rand(1, 8));
+                }
+                $jabatan = $jabatanPPPK[$i % $jabatanPPPK->count()];
+                $peg = $this->createPegawai($birthDate, $tmtCpns, $pppkTipePegawaiId);
+                $this->addRiwayatJabatan($peg, $jabatan, $tmtCpns);
+                // PPPK: only initial pangkat, NO progression
+                $golongan = GolonganPangkat::where('is_active', true)
+                    ->where('golongan_ruang', '>=', 5)->where('golongan_ruang', '<=', 8)
+                    ->inRandomOrder()->first();
+                if ($golongan) {
+                    RiwayatPangkat::create([
+                        'pegawai_id' => $peg->id,
+                        'golongan_id' => $golongan->id,
+                        'nomor_sk' => 'SK-PPPK/' . $tmtCpns->year . '/001',
+                        'tmt_pangkat' => $tmtCpns->copy(),
+                        'tanggal_sk' => $tmtCpns->copy()->subDays(14),
+                    ]);
+                }
+                // PPPK still receives KGB
+                $this->addKgbTimeline($peg, $today, mt_rand(1, 21));
+            }
+        }
+
         // Add secondary data for all pegawai
         foreach (Pegawai::all() as $peg) {
             $this->addRiwayatPendidikan($peg);
@@ -170,7 +201,7 @@ class PegawaiSeeder extends Seeder
         }
     }
 
-    private function createPegawai($birthDate, $tmtCpns): Pegawai
+    private function createPegawai($birthDate, $tmtCpns, ?int $tipePegawaiId = null): Pegawai
     {
         $genderId = mt_rand(0, 1) === 0
             ? JenisKelaminMaster::where('nama', 'Laki-laki')->value('id')
@@ -219,7 +250,7 @@ class PegawaiSeeder extends Seeder
             'no_taspen' => 'T-' . mt_rand(1000000, 9999999),
             'bagian_id' => $bagianIds[mt_rand(0, count($bagianIds) - 1)],
             'unit_kerja_id' => UnitKerja::where('nama', 'Kanim Jakut')->value('id'),
-            'tipe_pegawai_id' => TipePegawai::where('nama', 'PNS')->value('id'),
+            'tipe_pegawai_id' => $tipePegawaiId ?? TipePegawai::where('nama', 'PNS')->value('id'),
             'status_kepegawaian_id' => StatusKepegawaian::where('nama', 'Aktif')->value('id'),
         ]);
     }

@@ -246,8 +246,19 @@
 
             {{-- Pangkat --}}
             <div class="tab-content p-5 hidden" id="tab-pangkat">
+                @php
+                    $latestJabatan = $pegawai->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
+                    $isPPPK = $latestJabatan?->jabatan?->rumpunJabatan?->nama === 'PPPK';
+                @endphp
+                @if($isPPPK)
+                <div class="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"></path></svg>
+                    <p class="text-xs text-blue-700">Pegawai PPPK tidak memiliki skema Kenaikan Pangkat sesuai ketentuan BKN. Kenaikan pangkat hanya berlaku untuk PNS (Struktural, JFT, JFU).</p>
+                </div>
+                @else
                 <div class="flex justify-end mb-3"><a href="{{ route('riwayat.pangkat.create', $pegawai->id) }}"
                         class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">+ Tambah</a></div>
+                @endif
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50">
                         <tr>

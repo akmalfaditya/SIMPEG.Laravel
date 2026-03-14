@@ -54,30 +54,36 @@ Request → Route → Controller → Service → Model → Database
 1. **Thin Controller, Fat Service** — Controller hanya menerima request, memanggil service, dan mengembalikan response/view. Semua business logic ada di Service.
 2. **DTO Pattern** — Data dari FormRequest di-transform ke DTO sebelum masuk Service, memastikan type-safety dan decoupling.
 3. **PHP Enums** — Data master statis hukdis (JenisSanksi, TingkatHukuman, StatusHukdis) menggunakan PHP 8.1 Backed Enum.
-    *   `JenisJabatan` (Administrasi, Pimpinan Tinggi, Fungsional)
-    *   `TingkatPendidikan` (SD, SMP, SMA, D3, S1, S2, S3)
+    - `JenisJabatan` (Administrasi, Pimpinan Tinggi, Fungsional)
+    - `TingkatPendidikan` (SD, SMP, SMA, D3, S1, S2, S3)
 4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji, **serta 9 tabel referensi pegawai/riwayat**:
-    *   **`tipe_pegawais`**: Tipe Pegawai (PNS, CPNS, PPPK, PPNPN)
-    *   **`rumpun_jabatans`**: Kategori/Rumpun Jabatan (Struktural, Imigrasi, Pemasyarakatan, dll).
-    *   **`master_pendidikans`**: Jenjang Pendidikan (S3=6, S2=5, S1=4, dll) digunakan untuk pembobotan DUK.
-    *   `status_kepegawaians`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs`) disimpan di tabel database, dilayani oleh dedicated Service/Controller.
+    - **`tipe_pegawais`**: Tipe Pegawai (PNS, CPNS, PPPK, PPNPN)
+    - **`rumpun_jabatans`**: Kategori/Rumpun Jabatan (Struktural, Imigrasi, Pemasyarakatan, dll).
+    - **`master_pendidikans`**: Jenjang Pendidikan (S3=6, S2=5, S1=4, dll) digunakan untuk pembobotan DUK.
+    - `status_kepegawaians`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs`) disimpan di tabel database, dilayani oleh dedicated Service/Controller.
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
 8. **Model Observers — "Tongkat Estafet TMT"** — Kolom denormalized `pegawais.gaji_pokok` disinkronisasi otomatis via Laravel Observers (`RiwayatKgbObserver`, `RiwayatPangkatObserver`) menggunakan event `saved` (created + updated) dan `deleted`. Logika inti: siapapun yang memegang TMT terbaru (KGB atau Pangkat) menjadi penentu gaji pokok saat ini. Semua sync di-delegasi ke `SalaryCalculatorService::syncCurrentSalary()`. `PegawaiObserver` menangani invalidasi cache dashboard.
-9. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
+9. **PPPK Business Rules (BKN Compliance)** — Pegawai PPPK (Pegawai Pemerintah dengan Perjanjian Kerja) **tidak memiliki hak Kenaikan Pangkat** sesuai PP No. 49 Tahun 2018 tentang Manajemen PPPK. Enforcement tiga lapis:
+    - **Backend**: `StorePangkatRequest::authorize()` dan `UpdatePangkatRequest::authorize()` memeriksa rumpun jabatan terakhir pegawai. Jika rumpun = 'PPPK', `abort(403)` dengan pesan BKN.
+    - **Controller**: `RiwayatController::createPangkat()` mem-redirect PPPK sebelum menampilkan form create.
+    - **UI**: Tab Pangkat di `show.blade.php` menampilkan banner informasi (biru) alih-alih tombol "+ Tambah" untuk pegawai PPPK.
+    - **Catatan**: JFT (Jabatan Fungsional Tertentu) **tetap memiliki hak kenaikan pangkat** melalui Angka Kredit. Semua pegawai (termasuk PPPK) **tetap menerima KGB** (Kenaikan Gaji Berkala).
+    - **Seeder**: `PegawaiSeeder` Group 6 membuat 10 pegawai PPPK dengan tipe_pegawai PPPK, hanya initial pangkat (tanpa progression), dan KGB normal. `PegawaiFactory::afterCreating()` mendeteksi PPPK dan skip pangkat progression.
+10. **Employee Lifecycle State Transitions** — Pegawai memiliki 3 status: Aktif, Tidak Aktif, Pensiun. Transisi:
     - **Aktif → Tidak Aktif**: via `PegawaiService::delete()` (soft-delete + `is_active=false`). Reversible via `reactivate()`.
     - **Aktif → Pensiun**: via `PensiunService::processPensiun()` (set status, `is_active=false`, record 4 field SK pensiun + opsional `file_sk_pensiun_path` dan `link_sk_pensiun_gdrive`). Reversible via `PegawaiService::cancelPensiun()` (nullify 6 field + delete file upload + restore).
     - Halaman index pegawai menggunakan **Tabbed UI** dengan data isolation via `getByStatus()`: Aktif (`is_active=true`), Tidak Aktif (`is_active=false AND tmt_pensiun IS NULL`), Pensiun (`is_active=false AND tmt_pensiun IS NOT NULL`). Masing-masing tab memiliki aksi kontekstual (Detail/Edit/Hapus, Aktifkan Kembali, Batalkan Pensiun).
-10. **Server-Side Pagination (Monitoring Pages)** — Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) menggunakan server-side pagination via `LengthAwarePaginator`. Karena Service-layer menjalankan kalkulasi bisnis kompleks (eligibilitas, hukdis, gaji) yang tidak bisa dipindahkan ke SQL, pattern-nya: Service mengembalikan array penuh → Controller menerapkan `?search=` filter → `PaginatesArray` trait memotong per halaman (15 item) → View merender hanya 1 halaman + `{{ $data->links() }}`. Trait `PaginatesArray` ada di `app/Http/Controllers/Traits/`. Pegawai list menggunakan DB-level `->paginate()` via `PegawaiService::getPaginatedByStatus()`.
-11. **Cache Layer** — Dua domain menggunakan `Cache::remember()` dengan TTL 5 menit:
+11. **Server-Side Pagination (Monitoring Pages)** — Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK) menggunakan server-side pagination via `LengthAwarePaginator`. Karena Service-layer menjalankan kalkulasi bisnis kompleks (eligibilitas, hukdis, gaji) yang tidak bisa dipindahkan ke SQL, pattern-nya: Service mengembalikan array penuh → Controller menerapkan `?search=` filter → `PaginatesArray` trait memotong per halaman (15 item) → View merender hanya 1 halaman + `{{ $data->links() }}`. Trait `PaginatesArray` ada di `app/Http/Controllers/Traits/`. Pegawai list menggunakan DB-level `->paginate()` via `PegawaiService::getPaginatedByStatus()`.
+12. **Cache Layer** — Dua domain menggunakan `Cache::remember()` dengan TTL 5 menit:
     - **Dashboard**: `DashboardService` meng-cache `getDashboardData()` (key per filter hash) dan `getFilterOptions()`. Invalidasi via `DashboardService::clearCache()` yang dipanggil oleh semua 3 Observer (`PegawaiObserver`, `RiwayatKgbObserver`, `RiwayatPangkatObserver`) + 6 model event listeners.
     - **Career Timeline**: `PegawaiService::getCareerTimeline()` meng-cache timeline gabungan per pegawai (key: `career_timeline_{id}`). Invalidasi via `PegawaiService::clearTimelineCache()` yang dipanggil oleh semua Observer + model event listeners di `AppServiceProvider`.
-12. **Career Timeline View** — Tab "Timeline Karir" di halaman profil pegawai menampilkan gabungan kronologis seluruh 8 jenis riwayat dalam satu vertical timeline. Data di-merge dan di-sort descending di `PegawaiService::buildCareerTimeline()`. Setiap item memiliki type, color, icon, title, subtitle, dan detail. Grouped by year dengan separator.
-13. **Data Completeness Indicator** — Halaman profil pegawai menampilkan progress bar kelengkapan data (8 jenis riwayat) dengan badge per kategori (hijau ✓ / kuning ⚠). Tab kosong juga mendapat dot warning kuning.
-14. **Export PDF Profil Pegawai** — `PegawaiController::exportPdf()` menggunakan DomPDF untuk generate PDF profil individual (biodata + semua 8 riwayat dalam tabel). Template di `exports/pegawai-profile-pdf.blade.php`.
-15. **Edit Form Guidance** — Form edit pegawai menampilkan banner informasi bahwa gaji pokok, golongan, dan jabatan dikelola otomatis. Field `gaji_pokok` ditampilkan readonly.
-16. **Narrative Audit Logging (Bahasa Indonesia)** — Semua `setDescriptionForEvent()` menggunakan deskripsi naratif Bahasa Indonesia yang human-readable, bukan default Spatie (e.g. "created", "updated"). Tiga kategori format:
+13. **Career Timeline View** — Tab "Timeline Karir" di halaman profil pegawai menampilkan gabungan kronologis seluruh 8 jenis riwayat dalam satu vertical timeline. Data di-merge dan di-sort descending di `PegawaiService::buildCareerTimeline()`. Setiap item memiliki type, color, icon, title, subtitle, dan detail. Grouped by year dengan separator.
+14. **Data Completeness Indicator** — Halaman profil pegawai menampilkan progress bar kelengkapan data (8 jenis riwayat) dengan badge per kategori (hijau ✓ / kuning ⚠). Tab kosong juga mendapat dot warning kuning.
+15. **Export PDF Profil Pegawai** — `PegawaiController::exportPdf()` menggunakan DomPDF untuk generate PDF profil individual (biodata + semua 8 riwayat dalam tabel). Template di `exports/pegawai-profile-pdf.blade.php`.
+16. **Edit Form Guidance** — Form edit pegawai menampilkan banner informasi bahwa gaji pokok, golongan, dan jabatan dikelola otomatis. Field `gaji_pokok` ditampilkan readonly.
+17. **Narrative Audit Logging (Bahasa Indonesia)** — Semua `setDescriptionForEvent()` menggunakan deskripsi naratif Bahasa Indonesia yang human-readable, bukan default Spatie (e.g. "created", "updated"). Tiga kategori format:
     - **Category A (Pegawai)**: `"{Aksi} data pegawai #{id} atas nama {nama_lengkap}"` — contoh: "Mengubah data pegawai #53 atas nama Yanto"
     - **Category B (Riwayat)**: `"{Aksi} {NamaModul} untuk pegawai #{pegawai_id} atas nama {nama_pegawai}"` — contoh: "Menambah Riwayat KGB untuk pegawai #53 atas nama Yanto"
     - **Category C (Master Data)**: `"{Aksi} Master {NamaModel} #{id} ({nama_atau_keterangan})"` — contoh: "Menghapus Master Jabatan #2 (Polsuspas)"
@@ -375,3 +381,4 @@ SIMPEG.Laravel/
 
 - `RiwayatService@storeHukuman` dan `updateHukuman`: Jika tingkat hukuman Sedang atau Berat, `durasi_tahun` di-force ke 1 tahun
 - Form hukdis (create & edit) menampilkan field durasi sebagai readonly dengan value=1
+```

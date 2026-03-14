@@ -60,7 +60,15 @@ class RiwayatController extends Controller
     // --- PANGKAT ---
     public function createPangkat(int $pegawaiId)
     {
-        $pegawai = Pegawai::with(['riwayatPangkat', 'riwayatHukumanDisiplin'])->findOrFail($pegawaiId);
+        $pegawai = Pegawai::with(['riwayatPangkat', 'riwayatHukumanDisiplin', 'riwayatJabatan.jabatan.rumpunJabatan'])->findOrFail($pegawaiId);
+
+        // Block PPPK employees from creating pangkat records
+        $latestJabatan = $pegawai->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
+        if ($latestJabatan?->jabatan?->rumpunJabatan?->nama === 'PPPK') {
+            return redirect(route('pegawai.show', $pegawaiId) . '#tab-pangkat')
+                ->with('error', 'PPPK tidak memiliki skema Kenaikan Pangkat sesuai ketentuan BKN.');
+        }
+
         $currentPangkat = $pegawai->riwayatPangkat->sortByDesc('tmt_pangkat')->first();
 
         // Block if active sanctions that prevent pangkat promotion

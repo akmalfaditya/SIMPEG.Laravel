@@ -11,6 +11,15 @@ class StorePangkatRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        $pegawai = Pegawai::with('riwayatJabatan.jabatan.rumpunJabatan')->find($this->input('pegawai_id'));
+
+        if ($pegawai) {
+            $latestJabatan = $pegawai->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
+            if ($latestJabatan?->jabatan?->rumpunJabatan?->nama === 'PPPK') {
+                abort(403, 'PPPK tidak memiliki skema Kenaikan Pangkat sesuai ketentuan BKN. Kenaikan Pangkat hanya berlaku untuk PNS.');
+            }
+        }
+
         return true;
     }
 

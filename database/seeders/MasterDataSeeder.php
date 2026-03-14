@@ -175,6 +175,17 @@ class MasterDataSeeder extends Seeder
             ['nama_jabatan' => 'Direktur Pembinaan Narapidana dan Latihan Kerja', 'jenis_jabatan' => JenisJabatan::PejabatPimpinanTinggi, 'bup' => 60, 'eselon_level' => 2, 'kelas_jabatan' => 15, 'rumpun_jabatan_id' => $rumpunMap['Pemasyarakatan']],
             ['nama_jabatan' => 'Direktur Bimbingan Kemasyarakatan', 'jenis_jabatan' => JenisJabatan::PejabatPimpinanTinggi, 'bup' => 60, 'eselon_level' => 2, 'kelas_jabatan' => 15, 'rumpun_jabatan_id' => $rumpunMap['Pemasyarakatan']],
             ['nama_jabatan' => 'Direktur Keamanan dan Ketertiban', 'jenis_jabatan' => JenisJabatan::PejabatPimpinanTinggi, 'bup' => 60, 'eselon_level' => 2, 'kelas_jabatan' => 15, 'rumpun_jabatan_id' => $rumpunMap['Pemasyarakatan']],
+
+            // ═══════════════════════════════════════════════════════
+            // RUMPUN PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)
+            // Berdasarkan PP No. 49 Tahun 2018 tentang Manajemen PPPK
+            // PPPK tidak memiliki skema Kenaikan Pangkat (BKN)
+            // ═══════════════════════════════════════════════════════
+            ['nama_jabatan' => 'Pengelola Layanan Keimigrasian PPPK', 'jenis_jabatan' => JenisJabatan::PejabatAdministrasi, 'bup' => 58, 'eselon_level' => 0, 'kelas_jabatan' => 5, 'rumpun_jabatan_id' => $rumpunMap['PPPK']],
+            ['nama_jabatan' => 'Operator Sistem Informasi PPPK', 'jenis_jabatan' => JenisJabatan::PejabatAdministrasi, 'bup' => 58, 'eselon_level' => 0, 'kelas_jabatan' => 5, 'rumpun_jabatan_id' => $rumpunMap['PPPK']],
+            ['nama_jabatan' => 'Pengelola Arsip dan Dokumen PPPK', 'jenis_jabatan' => JenisJabatan::PejabatAdministrasi, 'bup' => 58, 'eselon_level' => 0, 'kelas_jabatan' => 4, 'rumpun_jabatan_id' => $rumpunMap['PPPK']],
+            ['nama_jabatan' => 'Tenaga Teknis Pemasyarakatan PPPK', 'jenis_jabatan' => JenisJabatan::PejabatAdministrasi, 'bup' => 58, 'eselon_level' => 0, 'kelas_jabatan' => 5, 'rumpun_jabatan_id' => $rumpunMap['PPPK']],
+            ['nama_jabatan' => 'Tenaga Pendukung Administrasi PPPK', 'jenis_jabatan' => JenisJabatan::PejabatAdministrasi, 'bup' => 58, 'eselon_level' => 0, 'kelas_jabatan' => 4, 'rumpun_jabatan_id' => $rumpunMap['PPPK']],
         ];
 
         foreach ($jabatanList as $item) {
