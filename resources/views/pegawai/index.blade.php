@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Data Pegawai')
-@section('header', 'Data Pegawai')
+@section('title', request()->query('rumpun') ? 'Pegawai ' . request()->query('rumpun') : 'Data Pegawai')
+@section('header', request()->query('rumpun') ? 'Data Pegawai ' . request()->query('rumpun') : 'Semua Pegawai')
 
 @section('content')
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
@@ -77,6 +77,7 @@
 let currentPage = 1;
 let activeTab = 'aktif';
 const limit = 10;
+const rumpunFilter = new URLSearchParams(window.location.search).get('rumpun') || '';
 
 const headConfigs = {
     'aktif': `
@@ -173,7 +174,11 @@ function renderRow(r) {
 
 function loadData() {
     const search = document.getElementById('searchInput').value;
-    fetch(`{{ route('pegawai.data') }}?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}&status=${activeTab}`)
+    let url = `{{ route('pegawai.data') }}?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}&status=${activeTab}`;
+    if (rumpunFilter) {
+        url += `&rumpun=${encodeURIComponent(rumpunFilter)}`;
+    }
+    fetch(url)
         .then(r => r.json())
         .then(d => {
             const body = document.getElementById('pegawaiBody');
@@ -234,7 +239,11 @@ function loadData() {
 // Load initial counts for all tabs
 function loadTabCounts() {
     ['aktif', 'tidak-aktif', 'pensiun'].forEach(tab => {
-        fetch(`{{ route('pegawai.data') }}?page=1&limit=1&status=${tab}`)
+        let url = `{{ route('pegawai.data') }}?page=1&limit=1&status=${tab}`;
+        if (rumpunFilter) {
+            url += `&rumpun=${encodeURIComponent(rumpunFilter)}`;
+        }
+        fetch(url)
             .then(r => r.json())
             .then(d => {
                 document.getElementById('count-' + tab).textContent = d.total;

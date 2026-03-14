@@ -66,13 +66,24 @@
 
 ---
 
-## Active Development
+## Current Focus
+*   [x] **Rumpun Jabatan Refactoring & Sidebar Filtering**: Refactor `RumpunJabatan` (enum → DB table), update master data seeder, admin CRUD, and add "Rumpun Jabatan" navigation links to the Sidebar (Struktural, JFT, JFU, PPPK) to filter employees index view dynamically.
+*   [ ] **Dashboard Analytics**: Create summary charts (`Chart.js` / ApexCharts) and stat cards using `PegawaiService` methods.
+*   [ ] **Export & Reporting**: PDF/Excel export using Spatie Laravel PDF or Laravel Excel.
 
-_Tidak ada fitur yang sedang aktif dikerjakan saat ini._
+---
 
-### Recently Completed
-
-- **Dokumen Dasar SK CPNS & SK PNS** — Kolom `sk_cpns_path` dan `sk_pns_path` ditambahkan ke tabel `pegawais`. Form create/edit pegawai mendapat section "Dokumen Dasar" dengan file input (PDF, maks 5MB). `PegawaiController` menangani upload via `DocumentUploadService` ke disk `documents` subfolder `sk_cpns/` dan `sk_pns/`. `DocumentController` di-extend dengan type mapping `sk_cpns` dan `sk_pns`. Halaman profil (Data Kepegawaian) menampilkan tombol "Lihat SK CPNS" dan "Lihat SK PNS" di samping TMT masing-masing jika dokumen tersedia. File lama otomatis dihapus saat diganti.
+## Recently Completed
+*   **2026-03-14**:
+    *   **Rumpun Jabatan Refactoring**:
+        *   Migrated `RumpunJabatan` from PHP Backed Enum to dynamic `rumpun_jabatans` master data table.
+        *   Created migration to convert `jabatans.rumpun` (tinyInteger) to `rumpun_jabatan_id` (FK), maintaining existing data integrity.
+        *   Added "Rumpun Jabatan" section in Sidebar navigation.
+        *   Implemented dynamic AJAX filtering by `rumpun` in `PegawaiService` (`whereHas` traversal) and `PegawaiController`.
+        *   Registered `rumpun-jabatan` in `MasterDataController` to provide out-of-the-box SuperAdmin CRUD capabilities.
+        *   Updated `MasterDataSeeder` to use Rumpun Jabatan FKs and seeded new categories (Struktural, JFT, JFU, PPPK, Imigrasi, Pemasyarakatan).
+    *   **Core HR Document Uploads**:
+        *   Added `sk_cpns_path` and `sk_pns_path` to `pegawais` table and model. Form create/edit pegawai mendapat section "Dokumen Dasar" dengan file input (PDF, maks 5MB). `PegawaiController` menangani upload via `DocumentUploadService` ke disk `documents` subfolder `sk_cpns/` dan `sk_pns/`. `DocumentController` di-extend dengan type mapping `sk_cpns` dan `sk_pns`. Halaman profil (Data Kepegawaian) menampilkan tombol "Lihat SK CPNS" dan "Lihat SK PNS" di samping TMT masing-masing jika dokumen tersedia. File lama otomatis dihapus saat diganti.
 
 - **Narrative Audit Logging (Bahasa Indonesia)** — Semua 20 model (1 Pegawai + 8 Riwayat + 11 Master Data) menggunakan `setDescriptionForEvent()` dengan deskripsi naratif Bahasa Indonesia. Tiga format: Category A "Mengubah data pegawai #53 atas nama Yanto", Category B "Menambah Riwayat KGB untuk pegawai #53 atas nama Yanto", Category C "Menghapus Master Jabatan #2 (Polsuspas)". 11 master data models yang sebelumnya tidak di-log (Jabatan, GolonganPangkat, TabelGaji, TipePegawai, StatusKepegawaian, Bagian, UnitKerja, JenisKelaminMaster, AgamaMaster, StatusPernikahanMaster, GolonganDarahMaster) sekarang memiliki trait `LogsActivity`. `PensiunController::process()` dan `PegawaiController::cancelPensiun()` menambahkan log eksplisit via `activity()->performedOn()->log()`. UI Audit Log diperlebar kolom deskripsi (`min-w-[300px]`).
 - **GAP-48: Career Timeline View** — Tab "Timeline Karir" ditambahkan sebagai tab pertama (default aktif) di halaman profil pegawai. Merge kronologis semua 8 riwayat (pangkat, jabatan, KGB, hukdis, pendidikan, latihan, SKP, penghargaan) dalam vertical timeline dengan year separator, color-coded dot markers, dan card per event. Logic di `PegawaiService::getCareerTimeline()` dengan `Cache::remember()` (5 min TTL). Invalidasi via semua 3 Observer + 6 model event listeners di `AppServiceProvider`.

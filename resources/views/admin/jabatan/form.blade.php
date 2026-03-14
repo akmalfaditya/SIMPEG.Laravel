@@ -35,13 +35,13 @@
             {{-- Rumpun --}}
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Rumpun <span class="text-red-500">*</span></label>
-                <select name="rumpun" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                <select name="rumpun_jabatan_id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
                     <option value="">-- Pilih Rumpun --</option>
                     @foreach($rumpunList as $r)
-                        <option value="{{ $r->value }}" {{ (int) old('rumpun', $jabatan?->rumpun?->value) === $r->value ? 'selected' : '' }}>{{ $r->label() }}</option>
+                        <option value="{{ $r->id }}" {{ (int) old('rumpun_jabatan_id', $jabatan?->rumpun_jabatan_id) === $r->id ? 'selected' : '' }}>{{ $r->nama }}</option>
                     @endforeach
                 </select>
-                @error('rumpun') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                @error('rumpun_jabatan_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
             {{-- BUP --}}

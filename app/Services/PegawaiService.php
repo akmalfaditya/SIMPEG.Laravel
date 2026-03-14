@@ -40,7 +40,7 @@ class PegawaiService
         };
     }
 
-    public function getPaginatedByStatus(string $status, int $perPage = 10, ?string $search = null)
+    public function getPaginatedByStatus(string $status, int $perPage = 10, ?string $search = null, ?string $rumpun = null)
     {
         $query = Pegawai::with(self::EAGER_LOADS);
 
@@ -56,6 +56,12 @@ class PegawaiService
                 $q->where('nip', 'like', "%{$search}%")
                   ->orWhere('nama_lengkap', 'like', "%{$search}%")
                   ->orWhereHas('unitKerja', fn ($r) => $r->where('nama', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($rumpun) {
+            $query->whereHas('riwayatJabatan.jabatan.rumpunJabatan', function ($q) use ($rumpun) {
+                $q->where('nama', $rumpun);
             });
         }
 

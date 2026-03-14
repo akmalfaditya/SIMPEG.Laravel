@@ -11,7 +11,7 @@
             {{-- Filter Rumpun --}}
             <a href="{{ route('admin.jabatan.index', array_filter(['search' => $filterSearch, 'status' => $filterStatus])) }}" class="px-3 py-1.5 text-xs rounded-lg {{ $filterRumpun === null ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">Semua</a>
             @foreach($rumpunList as $r)
-                <a href="{{ route('admin.jabatan.index', array_filter(['rumpun' => $r->value, 'search' => $filterSearch, 'status' => $filterStatus])) }}" class="px-3 py-1.5 text-xs rounded-lg {{ (int) $filterRumpun === $r->value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">{{ $r->label() }}</a>
+                <a href="{{ route('admin.jabatan.index', array_filter(['rumpun' => $r->id, 'search' => $filterSearch, 'status' => $filterStatus])) }}" class="px-3 py-1.5 text-xs rounded-lg {{ (int) $filterRumpun === $r->id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">{{ $r->nama }}</a>
             @endforeach
             <span class="text-slate-300 mx-1">|</span>
             {{-- Filter Status --}}
@@ -52,8 +52,7 @@
                     <td class="px-4 py-2.5 font-medium text-slate-800">{{ $j->nama_jabatan }}</td>
                     <td class="px-4 py-2.5 text-slate-600">{{ $j->jenis_jabatan->label() }}</td>
                     <td class="px-4 py-2.5">
-                        @php $color = $j->rumpun->color(); @endphp
-                        <span class="px-2 py-0.5 text-xs rounded-full font-medium bg-{{ $color }}-100 text-{{ $color }}-700">{{ $j->rumpun->label() }}</span>
+                        <span class="px-2 py-0.5 text-xs rounded-full font-medium bg-slate-100 text-slate-700">{{ $j->rumpunJabatan->nama ?? '-' }}</span>
                     </td>
                     <td class="px-4 py-2.5 text-center text-slate-600">{{ $j->bup }} th</td>
                     <td class="px-4 py-2.5 text-center text-slate-600">{{ $j->eselon_level ?: '—' }}</td>

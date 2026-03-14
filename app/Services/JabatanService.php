@@ -19,9 +19,9 @@ class JabatanService
 
     public function getAllPaginated(int $perPage = 20, ?string $search = null, ?int $rumpun = null, ?string $status = null)
     {
-        return Jabatan::query()
+        return Jabatan::with('rumpunJabatan')
             ->when($search, fn ($q) => $q->where('nama_jabatan', 'like', "%{$search}%"))
-            ->when($rumpun !== null, fn ($q) => $q->where('rumpun', $rumpun))
+            ->when($rumpun !== null, fn ($q) => $q->where('rumpun_jabatan_id', $rumpun))
             ->when($status === 'active', fn ($q) => $q->where('is_active', true))
             ->when($status === 'inactive', fn ($q) => $q->where('is_active', false))
             ->orderBy('jenis_jabatan')

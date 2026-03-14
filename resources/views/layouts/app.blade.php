@@ -46,13 +46,27 @@
                     Dashboard
                 </a>
                 <a href="{{ route('pegawai.index') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('pegawai.*') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('pegawai.*') && !request()->query('rumpun') ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Data Pegawai
+                    Semua Pegawai
                 </a>
+
+                <div class="pt-3 pb-1 px-3">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Rumpun Jabatan</p>
+                </div>
+                
+                @foreach(['Struktural', 'JFT', 'JFU', 'PPPK'] as $rumpun)
+                    <a href="{{ route('pegawai.index', ['rumpun' => $rumpun]) }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 {{ request()->query('rumpun') === $rumpun ? 'bg-blue-600/30 text-blue-300 font-medium' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white' }}">
+                        <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pegawai {{ $rumpun }}
+                    </a>
+                @endforeach
 
                 <div class="pt-3 pb-1 px-3">
                     <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Laporan</p>
@@ -142,6 +156,7 @@
                             'agama'              => 'Agama',
                             'status-pernikahan'  => 'Status Pernikahan',
                             'golongan-darah'     => 'Golongan Darah',
+                            'rumpun-jabatan'     => 'Rumpun Jabatan',
                         ];
                     @endphp
                     @foreach($masterEntities as $slug => $name)

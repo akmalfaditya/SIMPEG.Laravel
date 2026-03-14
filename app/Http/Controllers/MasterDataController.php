@@ -15,6 +15,7 @@ class MasterDataController extends Controller
         'agama'               => ['model' => \App\Models\AgamaMaster::class,            'label' => 'Agama'],
         'status-pernikahan'   => ['model' => \App\Models\StatusPernikahanMaster::class, 'label' => 'Status Pernikahan'],
         'golongan-darah'      => ['model' => \App\Models\GolonganDarahMaster::class,    'label' => 'Golongan Darah'],
+        'rumpun-jabatan'      => ['model' => \App\Models\RumpunJabatan::class,          'label' => 'Rumpun Jabatan'],
     ];
 
     private function resolve(string $entity): array

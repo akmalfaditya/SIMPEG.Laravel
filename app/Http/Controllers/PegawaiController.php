@@ -41,17 +41,18 @@ class PegawaiController extends Controller
 
     public function getPaginated(Request $request)
     {
-        $limit = (int) $request->input('limit', self::DEFAULT_LIMIT);
-        $search = $request->input('search');
-        $status = $request->input('status', 'aktif');
+        $status = $request->query('status', 'aktif');
+        $search = $request->query('search');
+        $limit = $request->query('limit', 10);
+        $rumpun = $request->query('rumpun');
 
-        $paginated = $this->service->getPaginatedByStatus($status, $limit, $search);
+        $paginator = $this->service->getPaginatedByStatus($status, $limit, $search, $rumpun);
 
         return response()->json([
-            'data' => PegawaiResource::collection($paginated),
-            'total' => $paginated->total(),
-            'current_page' => $paginated->currentPage(),
-            'last_page' => $paginated->lastPage(),
+            'data' => PegawaiResource::collection($paginator),
+            'total' => $paginator->total(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
         ]);
     }
 

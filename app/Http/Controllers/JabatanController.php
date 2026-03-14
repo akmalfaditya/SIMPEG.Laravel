@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\JenisJabatan;
-use App\Enums\RumpunJabatan;
 use App\Models\Jabatan;
+use App\Models\RumpunJabatan;
 use App\Services\JabatanService;
 use Illuminate\Http\Request;
 
@@ -24,7 +24,7 @@ class JabatanController extends Controller
                 status: $request->query('status'),
             ),
             'jenisJabatanList' => JenisJabatan::cases(),
-            'rumpunList' => RumpunJabatan::cases(),
+            'rumpunList' => RumpunJabatan::orderBy('nama')->get(),
             'filterRumpun' => $request->query('rumpun'),
             'filterSearch' => $request->query('search'),
             'filterStatus' => $request->query('status'),
@@ -36,7 +36,7 @@ class JabatanController extends Controller
         return view('admin.jabatan.form', [
             'jabatan' => null,
             'jenisJabatanList' => JenisJabatan::cases(),
-            'rumpunList' => RumpunJabatan::cases(),
+            'rumpunList' => RumpunJabatan::orderBy('nama')->get(),
         ]);
     }
 
@@ -45,7 +45,7 @@ class JabatanController extends Controller
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
             'jenis_jabatan' => 'required|integer|min:1|max:6',
-            'rumpun' => 'required|integer|min:1|max:3',
+            'rumpun_jabatan_id' => 'required|exists:rumpun_jabatans,id',
             'bup' => 'required|integer|min:50|max:70',
             'eselon_level' => 'nullable|integer|min:0|max:5',
             'kelas_jabatan' => 'nullable|integer|min:1|max:17',
@@ -66,7 +66,7 @@ class JabatanController extends Controller
         return view('admin.jabatan.form', [
             'jabatan' => $jabatan,
             'jenisJabatanList' => JenisJabatan::cases(),
-            'rumpunList' => RumpunJabatan::cases(),
+            'rumpunList' => RumpunJabatan::orderBy('nama')->get(),
         ]);
     }
 
@@ -75,7 +75,7 @@ class JabatanController extends Controller
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
             'jenis_jabatan' => 'required|integer|min:1|max:6',
-            'rumpun' => 'required|integer|min:1|max:3',
+            'rumpun_jabatan_id' => 'required|exists:rumpun_jabatans,id',
             'bup' => 'required|integer|min:50|max:70',
             'eselon_level' => 'nullable|integer|min:0|max:5',
             'kelas_jabatan' => 'nullable|integer|min:1|max:17',

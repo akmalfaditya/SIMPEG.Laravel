@@ -53,8 +53,13 @@ Request → Route → Controller → Service → Model → Database
 
 1. **Thin Controller, Fat Service** — Controller hanya menerima request, memanggil service, dan mengembalikan response/view. Semua business logic ada di Service.
 2. **DTO Pattern** — Data dari FormRequest di-transform ke DTO sebelum masuk Service, memastikan type-safety dan decoupling.
-3. **PHP Enums** — Data master statis hukdis (JenisSanksi, TingkatHukuman, StatusHukdis) dan jabatan (JenisJabatan, RumpunJabatan) menggunakan PHP 8.1 Backed Enum.
-4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji, **serta 8 tabel referensi pegawai**: Tipe Pegawai, Status Kepegawaian, Bagian, Unit Kerja, Jenis Kelamin, Agama, Status Pernikahan, Golongan Darah) disimpan di tabel database, dilayani oleh dedicated Service/Controller.
+3. **PHP Enums** — Data master statis hukdis (JenisSanksi, TingkatHukuman, StatusHukdis) menggunakan PHP 8.1 Backed Enum.
+    *   `JenisJabatan` (Administrasi, Pimpinan Tinggi, Fungsional)
+    *   `TingkatPendidikan` (SD, SMP, SMA, D3, S1, S2, S3)
+4. **Dynamic Master Data** — Data master yang perlu CRUD (Golongan/Pangkat, Jabatan, Tabel Gaji, **serta 8 tabel referensi pegawai**:
+    *   **`tipe_pegawais`**: Tipe Pegawai (PNS, CPNS, PPPK, PPNPN)
+    *   **`rumpun_jabatans`**: Kategori/Rumpun Jabatan (Struktural, Imigrasi, Pemasyarakatan, JFT, JFU, PPPK). Di-manage oleh SuperAdmin via form master data.
+    *   `status_kepegawaians`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs`) disimpan di tabel database, dilayani oleh dedicated Service/Controller.
 5. **Activity Logging** — Semua perubahan data pegawai dan riwayat dicatat otomatis via Spatie `LogsActivity` trait.
 6. **Tab Retention via URL Fragment** — Redirect dari `RiwayatController` menyertakan `#tab-{type}` fragment. JavaScript di `show.blade.php` membaca `window.location.hash` pada `DOMContentLoaded` dan mengaktifkan tab yang sesuai.
 7. **Descriptive Flash Messages** — Semua flash message `success`/`error` harus deskriptif (menyebut nama modul + aksi + info dokumen jika ada). Layout (`app.blade.php`) menampilkan alert dengan icon, judul bold, pesan detail, dan tombol dismiss.
@@ -195,7 +200,7 @@ SIMPEG.Laravel/
 ├── config/                            # Konfigurasi (app, auth, database, dll)
 ├── database/
 │   ├── factories/                     # Model factories (UserFactory, PegawaiFactory)
-│   ├── migrations/                    # 23 migration files
+│   ├── migrations/                  *   **Migration Count:** 14 files
 │   └── seeders/                       # 6 seeders (User, MasterData, Golongan, Pegawai, TabelGaji, Database)
 │
 ├── public/                            # Entry point + compiled assets
@@ -226,7 +231,6 @@ SIMPEG.Laravel/
 ├── storage/                           # Upload, cache, logs
 ├── tests/                             # PHPUnit tests
 └── vendor/                            # Composer dependencies
-```
 
 ---
 
@@ -285,16 +289,24 @@ SIMPEG.Laravel/
 ### Entitas Utama
 
 - **`pegawais`** — Central entity, connected to 8 riwayat tables + 8 master data tables via FK. Fields include gelar_depan, gelar_belakang, jenis_kelamin_id, agama_id, status_pernikahan_id, golongan_darah_id, tipe_pegawai_id, status_kepegawaian_id, bagian_id, unit_kerja_id, sk_cpns_path, sk_pns_path
-- **`tipe_pegawais`**, **`status_kepegawaans`**, **`bagians`**, **`unit_kerjas`**, **`jenis_kelamins`**, **`agamas`**, **`status_pernikahans`**, **`golongan_darahs`** — 8 master data tables (id + nama unique), FK from `pegawais`
+- **`tipe_pegawais`**, **`status_kepegawaians`**, **`bagians`**, **`unit_kerjas`**, **`jenis_kelamins`**, **`agamas`**, **`status_pernikahans`**, **`golongan_darahs`** — 8 master data tables (id + nama unique), FK from `pegawais`
 - **`golongan_pangkats`** — Master golongan/pangkat (17 level I/a – IV/e), FK from `riwayat_pangkats` dan `tabel_gajis`
-- **`jabatans`** — Master jabatan, FK from `riwayat_jabatans`
+- **`rumpun_jabatans`** — Master data untuk kategori/rumpun jabatan (Struktural, Imigrasi, Pemasyarakatan, JFT, JFU, PPPK).
+- **`jabatans`**: Master Data Jabatan (Reference table for `riwayat_jabatans`).
+    *   `nama_jabatan`: Name of passing grade/job.
+    *   `eselon_level`: Eselon category (0-4).
+    *   `kelas_jabatan`: Grade level used for allowance multiplication.
+    *   `bup`: Batas Usia Pensiun.
+    *   `rumpun_jabatan_id`: FK to `rumpun_jabatans`.
+    *   `jenis_jabatan`: Enum (Administrasi, Pimpinan Tinggi, Fungsional).
+    *   `is_active`: Soft switch for deprecating old roles.
 - **`tabel_gajis`** — Lookup salary matrix (golongan × masa_kerja)
 - **`users`** — Authentication, simple `role` string (SuperAdmin/HR)
 
 ### Relasi (ERD tersedia di README.md §Skema Database)
 
 - `pegawais` 1→N semua tabel riwayat
-- `tipe_pegawais`, `status_kepegawaans`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs` 1→N `pegawais`
+- `tipe_pegawais`, `status_kepegawaians`, `bagians`, `unit_kerjas`, `jenis_kelamins`, `agamas`, `status_pernikahans`, `golongan_darahs` 1→N `pegawais`
 - `golongan_pangkats` 1→N `riwayat_pangkats`, 1→N `tabel_gajis`
 - `jabatans` 1→N `riwayat_jabatans`
 - `activity_log` polimorfik ke semua model (Spatie)
