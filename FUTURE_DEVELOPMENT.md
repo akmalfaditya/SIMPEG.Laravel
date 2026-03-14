@@ -45,7 +45,9 @@
 
 - **Status**: Kolom `durasi_tahun` (integer, nullable) sudah ditambahkan di migration. Model `$fillable`, DTO, dan form sudah di-update.
 
-### 🟡 GAP-07: Upload SK Hukdis Belum Diimplementasikan
+### ~~🟡 GAP-07: Upload SK Hukdis Belum Diimplementasikan~~ ✅ RESOLVED
+
+- **Status**: Semua form riwayat (Pangkat, Jabatan, KGB, Hukdis, Pendidikan, Latihan, Penghargaan, SKP) sudah memiliki input file upload SK (PDF, maks 5MB) + Google Drive link opsional. `DocumentUploadService` terintegrasi. SK CPNS & SK PNS tersedia di form pegawai.
 
 - **PRD**: Form hukdis harus memiliki upload SK opsional (`dokumen_sk_path`).
 - **Aktual**: Migration `riwayat_hukuman_disiplins` **tidak punya** kolom `file_pdf_path` atau `google_drive_link` (berbeda dengan riwayat lain yang sudah punya). Form create-hukuman juga tidak memiliki file upload.
@@ -75,7 +77,9 @@
 
 - **Status**: `KenaikanPangkatService` sekarang mendeteksi sanksi `PenurunanPangkat`, menurunkan golongan (`golLevel - 1`), reset TMT pangkat ke `tmt_hukuman`, dan menghitung ulang masa kerja dari tanggal tersebut.
 
-### 🟡 GAP-12: Proyeksi Kenaikan Pangkat Periode April/Oktober Belum Ada
+### ~~🟡 GAP-12: Proyeksi Kenaikan Pangkat Periode April/Oktober Belum Ada~~ ✅ RESOLVED
+
+- **Status**: `KenaikanPangkatService` sudah menghitung proyeksi periode April/Oktober berdasarkan TMT pangkat terakhir. Kolom "Proyeksi Periode" ditampilkan di view.
 
 - **PRD**: Output dasbor ditampilkan sebagai "Proyeksi Kenaikan Pangkat Periode April/Oktober" dengan label status jelas.
 - **Aktual**: View hanya menampilkan tabel semua/eligible tanpa konteks periode.
@@ -85,20 +89,26 @@
 
 ## 5. Manajemen Dokumen SK Terproteksi (PRD §3.1)
 
-### 🔴 GAP-13: DocumentController untuk Secure Download Tidak Ada
+### ~~🔴 GAP-13: DocumentController untuk Secure Download Tidak Ada~~ ✅ RESOLVED
+
+- **Status**: `DocumentController` sudah tersedia dengan `TYPE_MODEL_MAP` untuk semua jenis dokumen. Route `GET /dokumen/{type}/{id}` melayani inline PDF preview + meaningful filenames. Mendukung: pangkat, jabatan, kgb, hukuman, pendidikan, latihan, penghargaan, skp, sk_cpns, sk_pns, pensiun.
 
 - **PRD**: Endpoint khusus `/dokumen/sk/{id}` dilindungi middleware Auth + otorisasi pengguna. Menggunakan `Storage::download()`.
 - **Aktual**: **Tidak ada** `DocumentController` di codebase. Tidak ada route `/dokumen/sk/{id}`. `DocumentUploadService` ada tapi tidak dipakai di controller manapun.
 - **Aksi**: Buat `DocumentController` dengan method `download($type, $id)`, implementasi otorisasi (Policy), return `Storage::disk('local')->download()`.
 
-### 🟡 GAP-14: File Storage pada Disk "documents" Bukan Private Path per PRD
+### ~~🟡 GAP-14: File Storage pada Disk "documents" Bukan Private Path per PRD~~ ✅ RESOLVED
+
+- **Status**: File SK disimpan di disk `documents` (storage/app/documents) dengan akses melalui `DocumentController` (autentikasi required). Tidak bisa diakses langsung via URL publik.
 
 - **PRD**: File harus disimpan di `storage/app/private/sk_documents/`.
 - **Aktual**: Config filesystems punya disk `documents` dengan root `storage/app/documents/` (bukan `private/sk_documents/`).
 - **Dampak**: Minor — path berbeda dari PRD spec tapi masih private (tidak di `public/`). Cukup aman.
 - **Aksi**: Pertimbangkan ubah path disk ke `storage/app/private/sk_documents/` agar konsisten PRD.
 
-### 🟡 GAP-15: Form Upload File PDF Tidak Terpasang di Semua Riwayat
+### ~~🟡 GAP-15: Form Upload File PDF Tidak Terpasang di Semua Riwayat~~ ✅ RESOLVED
+
+- **Status**: Semua 8 form riwayat (create & edit) sudah memiliki input file PDF + Google Drive link field. `enctype="multipart/form-data"` terpasang. `DocumentUploadService` diintegrasikan di `RiwayatService`.
 
 - **PRD**: Kolom unggahan PDF dan Google Drive bersifat opsional di semua riwayat.
 - **Aktual**: Migration riwayat pangkat/jabatan/kgb/pendidikan/latihan/penghargaan sudah punya kolom `file_pdf_path` dan `google_drive_link`. **Namun**, form Blade untuk CRUD riwayat **tidak menampilkan** input file upload atau Google Drive link field.
@@ -120,7 +130,9 @@
 
 - **Status**: Golongan/Pangkat sudah dimigrasi dari Enum ke tabel master `golongan_pangkats` (FK-based). `GolonganController` dengan full CRUD sudah tersedia. 8 atribut master data total sudah dinormalisasi.
 
-### 🟡 GAP-19: Field "Rumpun" pada Jabatan Tidak Ada
+### ~~🟡 GAP-19: Field "Rumpun" pada Jabatan Tidak Ada~~ ✅ RESOLVED
+
+- **Status**: `RumpunJabatan` telah di-refactor dari Enum ke tabel database `rumpun_jabatans`. Migration mengkonversi `jabatans.rumpun` (tinyInteger) ke `rumpun_jabatan_id` (FK). CRUD via `MasterDataController`. Seeder: Struktural, JFT, JFU, PPPK, Imigrasi, Pemasyarakatan.
 
 - **PRD**: Jabatan harus memiliki parameter Rumpun (Imigrasi/Pemasyarakatan/Struktural).
 - **Aktual**: Migration `jabatans` punya `nama_jabatan`, `jenis_jabatan`, `bup`, `eselon_level`, `kelas_jabatan` — **tidak ada** kolom `rumpun`.
@@ -130,7 +142,9 @@
 
 ## 7. Seeder & Data Demo (PRD §6)
 
-### 🟡 GAP-20: Email Seeder Tidak Sesuai Domain Kemenipas
+### ~~🟡 GAP-20: Email Seeder Tidak Sesuai Domain Kemenipas~~ ✅ RESOLVED
+
+- **Status**: Seeder menggunakan `superadmin@kemenipas.go.id` dan `hr@kemenipas.go.id` sesuai domain Kemenipas.
 
 - **PRD**: Akun seeder harus `superadmin@kemenipas.go.id` dan `hr@kemenipas.go.id`.
 - **Aktual**: Seeder menggunakan `admin@simpeg.go.id` dan `hr@simpeg.go.id`.
@@ -170,7 +184,9 @@
 
 ## 9. Keamanan & Kualitas (PRD §4)
 
-### 🟡 GAP-25: NIP Validasi 18 Digit Belum Diterapkan Ketat
+### ~~🟡 GAP-25: NIP Validasi 18 Digit Belum Diterapkan Ketat~~ ✅ RESOLVED
+
+- **Status**: `StorePegawaiRequest` dan `UpdatePegawaiRequest` sudah menerapkan validasi `'digits:18'` untuk field NIP.
 
 - **PRD**: NIP harus unik dan terdiri dari **18 digit angka**.
 - **Aktual**: `StorePegawaiRequest` validasi: `'nip' => ['required', 'string', 'unique:pegawais,nip']`. **Tidak ada** validasi `digits:18` atau regex digit-only.
@@ -188,14 +204,18 @@
     - `DUKServiceTest` — sorting hierarchy
     - Feature test CRUD Pegawai, auth, RBAC
 
-### 🟢 GAP-27: Audit Trail Belum Lengkap
+### ~~🟢 GAP-27: Audit Trail Belum Lengkap~~ ✅ RESOLVED
+
+- **Status**: Semua 20 model (1 Pegawai + 8 Riwayat + 11 Master Data) memiliki trait `LogsActivity` dengan `setDescriptionForEvent()` naratif Bahasa Indonesia. Activity Log view tersedia.
 
 - **PRD**: SuperAdmin bisa melihat audit trail.
 - **Aktual**: Spatie Activity Log sudah terpasang di `Pegawai`, `RiwayatPangkat`, `RiwayatJabatan`, `RiwayatKgb`, `RiwayatPenghargaan`. View `activity-log/index.blade.php` ada.
 - **Dampak**: Model `RiwayatHukumanDisiplin`, `RiwayatPendidikan`, `RiwayatLatihanJabatan`, `PenilaianKinerja` **belum** memiliki trait `LogsActivity`.
 - **Aksi**: Tambahkan `LogsActivity` trait di model yang belum.
 
-### 🟢 GAP-28: CSRF & Form Enkripsi File — Multipart Form Belum
+### ~~🟢 GAP-28: CSRF & Form Enkripsi File — Multipart Form Belum~~ ✅ RESOLVED
+
+- **Status**: Semua form yang memiliki file input menggunakan `enctype="multipart/form-data"`. CSRF token terpasang via `@csrf`.
 
 - **Aktual**: Form riwayat menggunakan `method="POST"` dengan `@csrf` (baik). Namun tidak ada `enctype="multipart/form-data"` karena file upload belum diimplementasikan.
 - **Aksi**: Saat implementasi upload file (GAP-15), pastikan semua form yang punya file input menggunakan `enctype="multipart/form-data"`.
@@ -219,7 +239,9 @@
 
 - **Status**: Sidebar sekarang memiliki section "Master Data Pegawai" dengan 8 link dinamis + section "Admin" untuk Jabatan, Golongan, Tabel Gaji.
 
-### 🟢 GAP-32: Satyalencana — Filter Berdasarkan Milestone Belum Ada di UI
+### ~~🟢 GAP-32: Satyalencana — Filter Berdasarkan Milestone Belum Ada di UI~~ ✅ RESOLVED
+
+- **Status**: View `satyalencana/index.blade.php` memiliki 4 tombol filter (Semua, 10 Tahun, 20 Tahun, 30 Tahun). Controller menerima parameter `?milestone=`. Server-side pagination mempertahankan filter.
 
 - **PRD**: Filter berdasarkan milestone (10/20/30 tahun).
 - **Aktual**: `SatyalencanaService::getCandidatesByMilestone()` sudah ada. Controller `SatyalencanaController` sudah memiliki parameter `milestone`. Tapi perlu verifikasi bahwa UI menampilkan tombol filter milestone.
@@ -232,13 +254,13 @@
 > Hasil analisis mendalam terhadap seluruh Service, Controller, dan View.  
 > Fokus: workflow yang belum komplit sehingga UX terasa terputus — HR harus melakukan workaround manual.
 
-### 🔴 GAP-33: Workflow Proses KGB Tidak Ada — Monitoring Only - DONE
+### ~~🔴 GAP-33: Workflow Proses KGB Tidak Ada — Monitoring Only~~ ✅ RESOLVED
 
 - **Masalah**: KGBController hanya memiliki 4 aksi read-only: `index`, `upcoming`, `eligible`, `ditunda`. Tidak ada method `store`/`process`/`approve`. HR melihat daftar pegawai yang eligible KGB tapi **tidak bisa memproses** dari halaman tersebut.
 - **Dampak UX**: HR harus: (1) catat NIP dari halaman KGB → (2) navigasi ke Pegawai → (3) buka tab Riwayat KGB → (4) klik Tambah → (5) isi manual semua field (gaji baru harus hitung sendiri). Alur ini sangat rentan human error dan membuang waktu.
 - **Aksi**: Tambah `processKGB(Request $request)` di KGBController. Buat form modal/halaman "Proses KGB" yang pre-fill data dari KGBService (gaji_baru dari TabelGaji lookup, TMT KGB baru = jatuh tempo). Saat submit: otomatis buat RiwayatKgb record + update `gaji_pokok` di Pegawai. Tambahkan tombol "Proses" di setiap baris tabel eligible.
 
-### 🔴 GAP-34: Workflow Proses Kenaikan Pangkat Tidak Ada — Eligibility Only - DONE
+### ~~🔴 GAP-34: Workflow Proses Kenaikan Pangkat Tidak Ada — Eligibility Only~~ ✅ RESOLVED
 
 - **Masalah**: KenaikanPangkatController hanya memiliki `index`, `eligible`, `ditunda` (read-only). Tidak ada method untuk memproses kenaikan pangkat. Halaman hanya menampilkan checklist 4 kriteria (✓/✗) dan proyeksi pangkat berikutnya.
 - **Dampak UX**: HR melihat pegawai eligible beserta proyeksi golongan, tapi harus keluar, cari pegawai, tambah RiwayatPangkat manual. Tidak ada koneksi antara halaman monitoring dan aksi.
@@ -260,32 +282,34 @@
 - **Dampak UX**: Tidak ada pencatatan alasan, tanggal efektif, atau SK pemberhentian. Data bisa diubah tanpa audit trail yang jelas.
 - **Aksi**: Buat `OffboardingController` dengan form: jenis off-boarding (Resign/Diberhentikan/Meninggal/Pensiun), tanggal efektif, nomor SK, alasan. Saat submit: update status, set `is_active = false`, catat di tabel riwayat.
 
-### 🟡 GAP-38: Satyalencana Service Bug — `golongan_ruang?->label()` Error DONE
+### ~~🟡 GAP-38: Satyalencana Service Bug — `golongan_ruang?->label()` Error~~ ✅ RESOLVED
 
 - **Masalah**: `SatyalencanaService` baris 57 menggunakan `$pangkat?->golonSatyalencanaService` baris 36-40 men-disqualify kandidat berdasarkan **seluruh riwayat** hukdis Sedang/Berat, tanpa memfilter `isAktif()`.
 - **Dampak UX**: Halaman Satyalencana kemungkinan error saat menampilkan kolom "Pangkat Terakhir", atau menampilkan "-" default untuk semua pegawai.
 - **Aksi**: Ubah `$pangkat?->golongan_ruang?->label()` menjadi `$pangkat?->golongan?->label ?? '-'`. Tambahkan `riwayatPangkat.golongan` di eager-load query (baris 13) untuk menghindari N+1.
 
-### 🟡 GAP-39: Satyalencana Hukdis Check Terlalu Luas — Tidak Cek Status Aktif DONE
+### ~~🟡 GAP-39: Satyalencana Hukdis Check Terlalu Luas — Tidak Cek Status Aktif~~ ✅ RESOLVED
 
 - **Masalah**: `Pegawai yang hukdisnya sudah selesai (status Selesai) tetap didiskualifikasi permanen.
 - **Dampak UX**: Pegawai yang pernah kena hukdis Sedang 10 tahun lalu (sudah selesai dan dipulihkan) tidak akan pernah muncul di daftar kandidat Satyalencana.
 - **Aksi**: Tambah filter `->filter(fn($h) => $h->isAktif())` sebelum cek tingkat hukuman, atau tambah parameter time-window (misal 5 tahun terakhir) sesuai regulasi.
   gan_ruang?->label()`. Setelah normalisasi, `golongan_ruang`bukan lagi Enum object — field lama sudah diganti dengan FK`golongan_id`. Kode akan menghasilkan error karena `golongan_ruang`bernilai`null` (field tidak ada) atau integer.
 
-### 🟡 GAP-40: No "Quick Action" Buttons dari Halaman Monitoring
+### ~~🟡 GAP-40: No "Quick Action" Buttons dari Halaman Monitoring~~ ✅ RESOLVED
+
+- **Status**: Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) memiliki tombol "Proses" di setiap baris eligible. KGB dan Kenaikan Pangkat mengarah ke form pre-filled. Pensiun mengarah ke form proses pensiun. Satyalencana memiliki "Berikan Penghargaan".
 
 - **Masalah**: Semua halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) menampilkan data dalam tabel tapi **tidak ada tombol aksi** (selain Satyalencana yang punya "Berikan Penghargaan"). HR harus meninggalkan halaman untuk melakukan tindak lanjut.
 - **Dampak UX**: Informasi dan aksi terpisah. HR harus bolak-balik antara halaman monitoring dan halaman pegawai.
 - **Aksi**: Setelah GAP-33/34/35 diimplementasikan, tambahkan tombol "Proses" di setiap baris tabel eligible. Tombol bisa membuka modal form atau redirect ke halaman proses dengan data pre-filled.
 
-### 🟡 GAP-41: Client-Side Pagination — Semua Data Di-render ke HTML DONE
+### ~~🟡 GAP-41: Client-Side Pagination — Semua Data Di-render ke HTML~~ ✅ RESOLVED
 
 - **Masalah**: Seluruh halaman monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana) menggunakan pola: server kirim **semua** data → render semua ke HTML → JavaScript sembunyikan/tampilkan 15 baris per halaman. Juga berlaku untuk `PegawaiService::getAll()` yang load seluruh collection ke PHP memory.
 - **Dampak UX**: Dengan 50 pegawai demo, tidak terasa. Dengan 500+ pegawai produksi: page load lambat, browser lag, memory usage tinggi. Seluruh NIP/nama pegawai terekspos di HTML source.
 - **Solusi**: Implementasi server-side pagination via `PaginatesArray` trait + `LengthAwarePaginator`. Controller menerima `?search=` dan `?page=` dari query string. View menggunakan `{{ $data->links() }}` (Tailwind pagination). Search memfilter array berdasarkan NIP/Nama sebelum paginasi. Filter tabs (level, milestone) mempertahankan search parameter. Client-side JS pagination dihapus dari semua 5 modul monitoring (KGB, Kenaikan Pangkat, Pensiun, Satyalencana, DUK).
 
-### 🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat DONE
+### ~~🟡 GAP-42: Dashboard Tidak Ada Caching — Query Aggregasi Berat~~ ✅ RESOLVED
 
 - **Masalah**: `DashboardService` menjalankan multiple aggregate queries (count by status, chart data, KGB alerts, pensiun alerts) setiap kali halaman di-load. Tidak ada caching.
 - **Dampak UX**: Dashboard load time akan bertambah seiring data bertambah. Semua user yang akses dashboard trigger query yang sama.
@@ -303,31 +327,33 @@
 - **Dampak UX**: Untuk 50 pegawai yang KGB-nya jatuh tempo bersamaan, HR harus klik "Proses" 50× secara terpisah.
 - **Aksi**: Setelah workflow individual (GAP-33/34/35) tersedia, tambahkan checkbox multi-select + tombol "Proses Semua Terpilih". Buat batch processing method di service.
 
-### 🟠 GAP-45: Form Edit Pegawai Tidak Ada Guidance untuk Field Read-Only Kontekstual DONE
+### ~~🟠 GAP-45: Form Edit Pegawai Tidak Ada Guidance untuk Field Read-Only Kontekstual~~ ✅ RESOLVED
 
 - **Masalah**: Field `gaji_pokok`, golongan (terakhir), dan jabatan (terakhir) di halaman pegawai hanya bisa diubah melalui penambahan Riwayat (Pangkat, Jabatan, KGB). Namun form edit tidak memberikan penjelasan bahwa field ini dikelola via riwayat, bukan langsung di-edit.
 - **Dampak UX**: HR baru mungkin bingung kenapa tidak bisa mengubah golongan atau gaji di form edit, atau malah mengubah `gaji_pokok` langsung tanpa melalui proses KGB.
 - **Aksi**: Tambahkan tooltip/info text di form: "Golongan dan gaji dikelola otomatis melalui Riwayat Pangkat & KGB". Pertimbangkan membuat field `gaji_pokok` di form edit sebagai read-only.
 
-### 🟠 GAP-46: Tidak Ada Data Completeness Indicator di Profil Pegawai DONE
+### ~~🟠 GAP-46: Tidak Ada Data Completeness Indicator di Profil Pegawai~~ ✅ RESOLVED
 
 - **Masalah**: Halaman show pegawai menampilkan 8 tab riwayat tapi tidak ada indikator apakah data sudah lengkap. Pegawai tanpa riwayat pendidikan, latihan, atau SKP tidak diberi warning.
 - **Dampak UX**: HR tidak tahu pegawai mana yang data-nya belum lengkap. Baru ketahuan saat dibutuhkan (misal: kenaikan pangkat gagal karena belum ada latihan jabatan).
 - **Aksi**: Tambah badge/progress bar "Kelengkapan Data: 6/8 riwayat terisi" di halaman show. Warning icon di tab yang masih kosong.
 
-### 🟠 GAP-47: Tidak Ada Export PDF Profil Individual Pegawai DONE
+### ~~🟠 GAP-47: Tidak Ada Export PDF Profil Individual Pegawai~~ ✅ RESOLVED
 
 - **Masalah**: Export yang tersedia (DUK, KGB, Kenaikan Pangkat, Pensiun, Satyalencana) semuanya bersifat daftar/kolektif. Tidak ada fitur export profil lengkap satu pegawai (biodata + seluruh riwayat) sebagai PDF.
 - **Dampak UX**: Untuk keperluan mutasi, promosi, atau arsip, HR harus screenshot/print manual halaman profil pegawai.
 - **Aksi**: Buat `PegawaiProfileExport` menggunakan DomPDF. Tambahkan tombol "Export PDF" di halaman show pegawai. Template: biodata + tabel ringkas setiap riwayat.
 
-### 🟠 GAP-48: Tidak Ada Career Timeline View DONE
+### ~~🟠 GAP-48: Tidak Ada Career Timeline View~~ ✅ RESOLVED
 
 - **Masalah**: Halaman show pegawai menampilkan riwayat dalam 8 tab terpisah (tabel per jenis). Tidak ada visualisasi kronologis gabungan yang menampilkan seluruh perjalanan karir dalam satu timeline.
 - **Dampak UX**: Untuk memahami perjalanan karir seorang pegawai, HR harus membuka 8 tab secara bergantian dan menyusun kronologi secara mental.
 - **Aksi**: Tambahkan tab "Timeline Karir" yang merge semua riwayat (pangkat, jabatan, KGB, hukdis, pendidikan, latihan, penghargaan, SKP) ke dalam satu timeline kronologis. Tampilkan sebagai vertical timeline card.
 
-### 🟠 GAP-49: Proyeksi Kenaikan Pangkat Belum Grouped per Periode April/Oktober
+### ~~🟠 GAP-49: Proyeksi Kenaikan Pangkat Belum Grouped per Periode April/Oktober~~ ✅ RESOLVED
+
+- **Status**: `KenaikanPangkatService` sudah menghitung proyeksi periode April/Oktober. Tampilan di view sudah menampilkan kolom "Proyeksi Periode" dan bisa difilter.
 
 - **Masalah**: Halaman kenaikan pangkat menampilkan semua pegawai eligible dalam satu tabel flat. Tidak ada pengelompokan atau filter berdasarkan periode kenaikan (April atau Oktober).
 - **Dampak UX**: HR tidak langsung tahu pegawai mana yang naik pangkat April vs Oktober. Harus menghitung dari TMT pangkat terakhir secara manual.
@@ -337,16 +363,16 @@
 
 ## Ringkasan Prioritas
 
-| Prioritas   | Count                   | ID                                                                                                                   |
-| ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 🔴 Kritis   | 4 (aktif) + 9 resolved  | Aktif: GAP-01, 02, 03, 13, 36, 37 · Resolved: ~~05, 06, 08, 10, 11, 16, 17, 18, 33, 34, 35~~                         |
-| 🟡 Sedang   | 12 (aktif) + 3 resolved | Aktif: GAP-04, 07, 12, 14, 15, 19, 20, 21, 22, 23, 25, 26, 29, 38, 39, 40, 41, 42, 43, 44 · Resolved: ~~09, 30, 31~~ |
-| 🟠 Menengah | 5                       | GAP-45, 46, 47, 48, 49                                                                                               |
-| 🟢 Rendah   | 4                       | GAP-24, 27, 28, 32                                                                                                   |
+| Prioritas   | Aktif | Resolved | ID Aktif                              |
+| ----------- | ----- | -------- | ------------------------------------- |
+| 🔴 Kritis   | 3     | 11       | GAP-01, 02, 03, 36, 37                |
+| 🟡 Sedang   | 4     | 16       | GAP-04, 21, 22, 23, 26, 29, 43, 44    |
+| 🟠 Menengah | 0     | 5        | ~~45, 46, 47, 48, 49~~ semua resolved |
+| 🟢 Rendah   | 1     | 3        | GAP-24                                |
 
-### ✅ Total Resolved: 14 GAP
+### ✅ Total Resolved: 35 GAP (dari 49)
 
-> GAP-05, 06, 08, 09, 10, 11, 16, 17, 18, 30, 31, 33, 34, 35
+> GAP-05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 27, 28, 30, 31, 32, 33, 34, 35, 38, 39, 40, 41, 42, 45, 46, 47, 48, 49
 
 ---
 
@@ -368,38 +394,179 @@
 
 > ~~GAP-16, 17, 18, 31~~ — CRUD Jabatan, Tabel Gaji, Golongan, dan Sidebar Admin Setting sudah tersedia. 6. **GAP-19** Field Rumpun di Jabatan (belum)
 
-### Phase 4 — Core Workflow Implementation (NEW — Highest Impact)
+### Phase 4 — Core Workflow Implementation ✅ MOSTLY COMPLETED
 
-7. **GAP-38** Fix bug SatyalencanaService `golongan_ruang` (quick fix)
-8. **GAP-39** Fix Satyalencana hukdis check (quick fix)
-9. **GAP-33** Workflow Proses KGB (eligible → proses → RiwayatKgb + update gaji)
-10. **GAP-34** Workflow Proses Kenaikan Pangkat (eligible → proses → RiwayatPangkat + update gaji)
-11. **GAP-35** Workflow Proses Pensiun (alert → proses → update status + nonaktif)
-12. **GAP-36** Workflow CPNS → PNS Transition
-13. **GAP-37** Workflow Off-boarding (Resign/Berhenti/Meninggal)
-14. **GAP-40** Quick Action buttons di halaman monitoring
-15. **GAP-13** DocumentController secure download
+> ~~GAP-33, 34, 35, 38, 39, 40~~ — Workflow KGB, Kenaikan Pangkat, Pensiun, Satyalencana bug fixes, dan Quick Action buttons semua resolved.
+> **Masih aktif**: GAP-36 (CPNS → PNS), GAP-37 (Off-boarding), ~~GAP-13~~ (DocumentController ✅), ~~GAP-19~~ (Rumpun ✅)
 
-### Phase 5 — Performance & UX Improvement
+### Phase 5 — Performance & UX Improvement ✅ MOSTLY COMPLETED
 
-16. **GAP-41** Server-side pagination (semua monitoring + daftar pegawai)
-17. **GAP-42** Dashboard caching
-18. **GAP-43** Widget "Perlu Tindakan" di dashboard
-19. **GAP-44** Bulk/Batch processing
-20. **GAP-49** Proyeksi pangkat grouped per April/Oktober
+> ~~GAP-41, 42, 49~~ — Server-side pagination, dashboard caching, dan proyeksi April/Oktober semua resolved.
+> **Masih aktif**: GAP-43 (Widget "Perlu Tindakan"), GAP-44 (Bulk Processing)
 
-### Phase 6 — Polish & Completeness
+### Phase 6 — Polish & Completeness ✅ MOSTLY COMPLETED
 
-21. **GAP-04** Role Pegawai self-service
-22. **GAP-07** Upload SK Hukdis
-23. **GAP-15** Upload file di semua form riwayat
-24. ~~**GAP-30** Estimasi gaji baru di KGB view~~ ✅
-25. **GAP-20, 21, 22** Seeder fixes
-26. **GAP-25** Validasi NIP 18 digit
-27. **GAP-26** Unit & Feature tests
-28. **GAP-27** Audit trail lengkap
-29. **GAP-45** Form guidance untuk field read-only kontekstual
-30. **GAP-46** Data completeness indicator
-31. **GAP-47** Export PDF profil individual
-32. **GAP-48** Career timeline view
-33. Sisanya (GAP-12, 14, 23, 24, 28, 29, 32)
+> ~~GAP-07, 12, 13, 14, 15, 19, 20, 25, 27, 28, 30, 32, 45, 46, 47, 48~~ — Semua resolved.
+> **Masih aktif**: GAP-04 (Role Pegawai), GAP-21/22 (Seeder Spatie role), GAP-26 (Unit tests)
+> **Low priority**: GAP-23 (tabel riwayat_sk terpisah), GAP-24 (penamaan field — sudah tepat, no action), GAP-29 (threshold Hijau)
+
+---
+
+## 12. PRD Compliance Check — Versi Final (14 Maret 2026)
+
+> Perbandingan terhadap **PRD Portal Kepegawaian** (9 menu fitur) yang diberikan stakeholder.
+
+### Requirement 1: Dashboard
+
+| Sub-fitur                                                         | Status            | Detail Implementasi                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jenis Kelamin                                                     | ✅ Selesai        | Chart "Distribusi Gender" (Laki-laki/Perempuan) via `DashboardService`                                                                                                                                                                                                      |
+| Pendidikan (SMP, SMA, S1, S2, S3)                                 | ✅ Selesai        | Chart "Distribusi Pendidikan Terakhir" — menampilkan S3, S2, S1, D4, D3, D2, D1, SMA/SMK, Lainnya                                                                                                                                                                           |
+| Nama Jabatan (Struktural, JFT, JFU, PPPK)                         | ⚠️ **GAP-NEW-01** | Chart saat ini: "Distribusi Jenis Jabatan" menampilkan label `JenisJabatan` enum (Administrasi, Fungsional, Pimpinan Tinggi). **Seharusnya**: distribusi per Rumpun Jabatan (Struktural, JFT, JFU, PPPK). Data `rumpun_jabatans` sudah tersedia — tinggal ubah source chart |
+| Pangkat                                                           | ✅ Selesai        | Chart "Distribusi Golongan" (I/a s.d IV/e)                                                                                                                                                                                                                                  |
+| Pegawai Unit Kerja                                                | ✅ Selesai        | Chart distribusi + tabel ringkasan per unit kerja (total, L/P, rata-rata usia)                                                                                                                                                                                              |
+| Sub-unit Urusan (Keuangan, Kepegawaian, Umum) di bawah Tata Usaha | ⚠️ **GAP-NEW-02** | Tabel `bagians` saat ini flat (5 entry singkatan). Belum ada sub-unit "Urusan" di bawah Subbagian Tata Usaha                                                                                                                                                                |
+
+### Requirement 2: Profil Pegawai & Dokumen
+
+| Sub-fitur                                    | Status     | Detail                                                             |
+| -------------------------------------------- | ---------- | ------------------------------------------------------------------ |
+| Profil Pegawai (Nama, NIP, Pangkat, Jabatan) | ✅ Selesai | Halaman show pegawai lengkap dengan 9 tab + timeline karir         |
+| SK CPNS                                      | ✅ Selesai | Upload di form pegawai, preview inline PDF, `sk_cpns_path`         |
+| SK PNS                                       | ✅ Selesai | Upload di form pegawai, preview inline PDF, `sk_pns_path`          |
+| SK KP (Kenaikan Pangkat)                     | ✅ Selesai | Upload di form riwayat pangkat, `file_pdf_path`                    |
+| SK KGB                                       | ✅ Selesai | Upload di form riwayat KGB, `file_pdf_path`                        |
+| SK Jabatan (Struktural, JFT, JFU, PPPK)      | ✅ Selesai | Upload di form riwayat jabatan — berlaku untuk semua jenis jabatan |
+
+### Requirement 3: DUK
+
+| Sub-fitur               | Status     | Detail                                                                                            |
+| ----------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
+| Daftar Urut Kepangkatan | ✅ Selesai | `DUKService` — ranking 6-tier hierarki BKN (Pangkat > Jabatan > MKG > Diklat > Pendidikan > Usia) |
+
+### Requirement 4: KGB (Periode 2 Tahun)
+
+| Sub-fitur           | Status     | Detail                                                                            |
+| ------------------- | ---------- | --------------------------------------------------------------------------------- |
+| Monitoring KGB      | ✅ Selesai | `KGBService` — siklus 2 tahun, status upcoming/eligible/ditunda                   |
+| Kalkulasi gaji baru | ✅ Selesai | `KGBCalculationService` + `SalaryCalculatorService` — lookup TabelGaji PP 15/2019 |
+| Integrasi hukdis    | ✅ Selesai | Penundaan KGB dari hukdis aktif                                                   |
+| Proses KGB          | ✅ Selesai | Tombol "Proses" → form pre-filled → auto-create RiwayatKgb + sync gaji_pokok      |
+
+### Requirement 5: KP (Kenaikan Pangkat) — Struktural dan JFU
+
+| Sub-fitur               | Status            | Detail                                                                                                                                 |
+| ----------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Struktural              | ✅ Selesai        | Eligibilitas 4 syarat (masa kerja 48 bulan, SKP, latihan, hukdis)                                                                      |
+| JFU                     | ✅ Selesai        | Sama dengan Struktural                                                                                                                 |
+| JFT (Angka Kredit)      | ⚠️ **GAP-NEW-03** | PRD hanya menyebut "Struktural dan JFU". JFT memiliki mekanisme berbeda (angka kredit) yang **belum ada** — tapi **tidak diminta PRD** |
+| PPPK exclusion          | ✅ Selesai        | PPPK di-block 3 lapis (authorize, controller, UI)                                                                                      |
+| Proyeksi April/Oktober  | ✅ Selesai        | Kolom "Proyeksi Periode" di view                                                                                                       |
+| Proses Kenaikan Pangkat | ✅ Selesai        | Tombol "Proses" → form pre-filled → auto-create RiwayatPangkat + sync gaji_pokok                                                       |
+
+### Requirement 6: Pensiun
+
+| Sub-fitur                  | Status     | Detail                                                      |
+| -------------------------- | ---------- | ----------------------------------------------------------- |
+| Monitoring berdasarkan BUP | ✅ Selesai | `PensiunService` — 4 level alert (Hitam/Merah/Kuning/Hijau) |
+| Proses pensiun             | ✅ Selesai | Form proses pensiun dengan SK fields + upload dokumen       |
+| SK Pensiun                 | ✅ Selesai | `file_sk_pensiun_path` + `link_sk_pensiun_gdrive`           |
+
+### Requirement 7: Satyalencana (X, XX, XXX Tahun)
+
+| Sub-fitur                 | Status     | Detail                                                                      |
+| ------------------------- | ---------- | --------------------------------------------------------------------------- |
+| Milestone 10/20/30 tahun  | ✅ Selesai | `SatyalencanaService` — filter 3 tier                                       |
+| Reset hukdis Sedang/Berat | ✅ Selesai | Reset Argo: `tmt_selesai_hukuman` sebagai start date baru, Ringan diabaikan |
+| PPPK exclusion            | ✅ Selesai | PPPK di-exclude dari skema Satyalencana                                     |
+| Award recording           | ✅ Selesai | `awardCandidate()` → RiwayatPenghargaan + duplikasi check                   |
+
+### Requirement 8: Hukdis (Hukuman Disiplin)
+
+| Sub-fitur          | Status     | Detail                                                                                          |
+| ------------------ | ---------- | ----------------------------------------------------------------------------------------------- |
+| 3 tingkat hukuman  | ✅ Selesai | `TingkatHukuman` enum: Ringan, Sedang, Berat                                                    |
+| 6 jenis sanksi     | ✅ Selesai | `JenisSanksi` enum: Penundaan KGB/Pangkat, Penurunan Pangkat/Jabatan, Pembebasan, Pemberhentian |
+| 3 status           | ✅ Selesai | `StatusHukdis` enum: Aktif, Selesai, Dipulihkan                                                 |
+| Integrasi KGB + KP | ✅ Selesai | Penundaan, penurunan, pemulihan, blokir                                                         |
+| Upload SK Hukdis   | ✅ Selesai | `file_pdf_path` + `file_sk_pemulihan_path`                                                      |
+
+### Requirement 9: Page Views (KGB, KP, Pensiun, Satyalencana)
+
+| Sub-fitur                                      | Status     | Detail                                                      |
+| ---------------------------------------------- | ---------- | ----------------------------------------------------------- |
+| Halaman KGB (`/kgb`)                           | ✅ Selesai | Filter: upcoming, eligible, ditunda. Pagination server-side |
+| Halaman Kenaikan Pangkat (`/kenaikan-pangkat`) | ✅ Selesai | Filter: eligible, ditunda. Pagination server-side           |
+| Halaman Pensiun (`/pensiun`)                   | ✅ Selesai | Filter: level alert. Pagination server-side                 |
+| Halaman Satyalencana (`/satyalencana`)         | ✅ Selesai | Filter: milestone 10/20/30. Pagination server-side          |
+
+---
+
+## 13. GAP Baru dari PRD Final
+
+### ~~⚠️ GAP-NEW-01: Dashboard Chart Jabatan → Rumpun~~ ✅ RESOLVED
+
+- **Status**: Chart dashboard diubah dari `JenisJabatan` enum → `rumpunJabatan->nama` (tabel `rumpun_jabatans`). Eager-load `riwayatJabatan.jabatan.rumpunJabatan`. Label chart: "Distribusi Rumpun Jabatan". Key data: `rumpun_jabatan`.
+
+- **PRD**: "Nama Jabatan — Struktural, JFT, JFU, PPPK"
+- **Current**: Chart "Distribusi Jenis Jabatan" mengelompokkan berdasarkan `JenisJabatan` enum (Administrasi, Fungsional, Pimpinan Tinggi) — bukan rumpun organisasi.
+- **Expected**: Chart berdasarkan tabel `rumpun_jabatans` (Struktural, JFT, JFU, PPPK, Imigrasi, Pemasyarakatan).
+- **Solusi**: Ubah `DashboardService` — eager-load `riwayatJabatan.jabatan.rumpunJabatan`, group by `rumpunJabatan->nama`. Rename label chart.
+- **Prioritas**: 🟡 Sedang
+- **Kompleksitas**: Rendah (1 method service + 1 label view)
+
+### ⚠️ GAP-NEW-02: Data Master Bagian — Nama Formal + Sub-unit Urusan
+
+- **PRD**: Struktur organisasi Kantor Imigrasi:
+    ```
+    SUBBAGIAN TATA USAHA
+      ├── URUSAN KEUANGAN
+      ├── URUSAN KEPEGAWAIAN
+      └── URUSAN UMUM
+    SEKSI LALU LINTAS KEIMIGRASIAN
+    SEKSI INTELIJEN DAN PENINDAKAN KEIMIGRASIAN
+    SEKSI TEKNOLOGI INFORMASI DAN KOMUNIKASI KEIMIGRASIAN
+    SEKSI IZIN TINGGAL DAN STATUS KEIMIGRASIAN
+    ```
+- **Current Seeder**: `['Tata Usaha', 'Tikim', 'Lantaskim', 'Inteldakim', 'Intaltuskim']` — nama disingkat, tidak ada sub-unit urusan.
+- **Dua bagian masalah**:
+    1. **Penamaan**: Ganti singkatan ke nama formal lengkap → update seeder saja.
+    2. **Sub-unit Urusan**: 3 urusan di bawah Subbagian Tata Usaha. Opsi:
+        - **Opsi A (Simple)**: Tambah 3 entry flat di `bagians`: "Subbag TU — Urusan Keuangan", dll.
+        - **Opsi B (Hierarchical)**: Tambah kolom `parent_id` di `bagians` untuk hierarki 2 level.
+- **Rekomendasi**: Opsi A untuk iterasi cepat. Opsi B jika dibutuhkan multi-level reporting.
+- **Prioritas**: 🟡 Sedang (penamaan) / 🟢 Rendah (hierarki)
+- **Kompleksitas**: Rendah s.d Sedang
+
+### ℹ️ GAP-NEW-03: Kenaikan Pangkat JFT via Angka Kredit (NOT in PRD)
+
+- **Catatan**: PRD secara eksplisit hanya menyebut "KP (Struktural dan JFU)". JFT menggunakan mekanisme angka kredit yang berbeda. Ini **bukan gap terhadap PRD** melainkan potensi peningkatan di masa depan.
+- **Prioritas**: 🟢 Rendah (future enhancement)
+- **Kompleksitas**: Tinggi (migration, service logic, form UI)
+
+---
+
+## 14. Fitur Melampaui PRD (Bonus Implementations)
+
+Fitur-fitur berikut **sudah diimplementasikan** tetapi **tidak diminta** dalam PRD:
+
+| Fitur                                   | Deskripsi                                                  |
+| --------------------------------------- | ---------------------------------------------------------- |
+| Timeline Karir                          | Gabungan kronologis 8 riwayat dalam vertical timeline card |
+| Data Completeness Indicator             | Progress bar kelengkapan data per pegawai                  |
+| Export PDF Profil Individual            | PDF profil pegawai (biodata + seluruh riwayat)             |
+| Export Excel/PDF Monitoring             | DUK, KGB, Pensiun, Kenaikan Pangkat, Satyalencana          |
+| Activity Log (Audit Trail)              | Semua 20 model dengan deskripsi naratif Bahasa Indonesia   |
+| Salary Calculator (Tongkat Estafet TMT) | Observer-driven gaji_pokok sync otomatis                   |
+| Dashboard Advanced Charts               | KGB trend, Pensiun proyeksi, Masa Kerja, Usia              |
+| PPPK Strict Block                       | 3 lapis pencegahan kenaikan pangkat PPPK                   |
+| Reset Argo Satyalencana                 | Perhitungan masa kerja murni (PP 94/2021)                  |
+| Pemulihan Hukdis                        | Restore pangkat/jabatan + rekalkulasi gaji                 |
+| One-Stop Creation Flow                  | Auto-generate riwayat saat create pegawai                  |
+| Tab Retention                           | Kembali ke tab aktif setelah CRUD                          |
+| Google Drive Link                       | Opsional link GDrive per dokumen SK                        |
+| Inline PDF Preview                      | Preview dokumen langsung di browser                        |
+| Server-Side Pagination                  | Semua monitoring menggunakan `LengthAwarePaginator`        |
+| Caching (5 min TTL)                     | Dashboard + Career Timeline                                |
+| Dokumen SK Pensiun                      | Upload PDF + GDrive fallback                               |
+| Edge-case Seeder                        | `SatyalencanaEdgeCaseSeeder` (3 mathematical test cases)   |

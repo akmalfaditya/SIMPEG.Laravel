@@ -56,7 +56,7 @@ class DashboardService
     {
         $query = Pegawai::with([
             'riwayatPangkat.golongan',
-            'riwayatJabatan.jabatan',
+            'riwayatJabatan.jabatan.rumpunJabatan',
             'riwayatKgb',
             'riwayatPendidikan',
             'riwayatLatihanJabatan',
@@ -250,12 +250,12 @@ class DashboardService
             $pendidikan[$level] = ($pendidikan[$level] ?? 0) + 1;
         }
 
-        // 4. Distribusi Jenis Jabatan
-        $jenisJabatan = [];
+        // 4. Distribusi Rumpun Jabatan
+        $rumpunJabatan = [];
         foreach ($allPegawai as $peg) {
             $jabatanTerakhir = $peg->riwayatJabatan->sortByDesc('tmt_jabatan')->first();
-            $label = $jabatanTerakhir?->jabatan?->jenis_jabatan?->label() ?? 'Belum Ada';
-            $jenisJabatan[$label] = ($jenisJabatan[$label] ?? 0) + 1;
+            $label = $jabatanTerakhir?->jabatan?->rumpunJabatan?->nama ?? 'Belum Ada';
+            $rumpunJabatan[$label] = ($rumpunJabatan[$label] ?? 0) + 1;
         }
 
         // 5. Distribusi Masa Kerja
@@ -279,7 +279,7 @@ class DashboardService
             'kgb_tren' => $kgbTren,
             'pensiun_proyeksi' => $pensiunProyeksi,
             'pendidikan' => $pendidikan,
-            'jenis_jabatan' => $jenisJabatan,
+            'rumpun_jabatan' => $rumpunJabatan,
             'masa_kerja' => $mkBrackets,
         ];
     }

@@ -162,7 +162,7 @@
         <canvas id="chartPendidikan" height="200"></canvas>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Jenis Jabatan</h3>
+        <h3 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Rumpun Jabatan</h3>
         <canvas id="chartJenisJabatan" height="200"></canvas>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-2">
@@ -325,7 +325,7 @@ makeChart('chartUnitKerja', 'doughnut', Object.keys(charts.unit_kerja), Object.v
 makeLineChart('chartKgbTren', Object.keys(adv.kgb_tren), Object.values(adv.kgb_tren), 'Jatuh Tempo KGB', '#f59e0b');
 makeChart('chartPensiunProyeksi', 'bar', Object.keys(adv.pensiun_proyeksi).map(String), Object.values(adv.pensiun_proyeksi), 'Pensiun', ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16']);
 makeChart('chartPendidikan', 'doughnut', Object.keys(adv.pendidikan), Object.values(adv.pendidikan), 'Jumlah');
-makeChart('chartJenisJabatan', 'doughnut', Object.keys(adv.jenis_jabatan), Object.values(adv.jenis_jabatan), 'Jumlah');
+makeChart('chartJenisJabatan', 'doughnut', Object.keys(adv.rumpun_jabatan), Object.values(adv.rumpun_jabatan), 'Jumlah');
 makeChart('chartMasaKerja', 'bar', Object.keys(adv.masa_kerja), Object.values(adv.masa_kerja), 'Jumlah', blueGradient);
 </script>
 @endpush
